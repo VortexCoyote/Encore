@@ -1,3 +1,4 @@
 # untitled_chart_editor
 
-work in progress
+progress: https://trello.com/b/vueBj1U0/vsrg-editor
+
