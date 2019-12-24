@@ -5,6 +5,15 @@
 
 #include <vector>
 
+enum class NoteType
+{
+	Note,
+	HoldBegin,
+	HoldEnd,
+
+	Count
+};
+
 
 struct TimeFieldObject
 {
@@ -19,10 +28,11 @@ struct BPMData : public TimeFieldObject
 
 struct NoteData : public TimeFieldObject
 {
-	int column = 0;
+	int column = 0;	
 
-	bool isHold = false;
-	int timePointEnd = 0;
+	NoteType noteType = NoteType::Note;
+
+	NoteData* relevantNote = nullptr;
 };
 
 struct SelectableItem : public TimeFieldObject
@@ -36,7 +46,7 @@ struct SelectableItem : public TimeFieldObject
 
 struct ChartData
 {
-	std::vector<NoteData> noteData;
+	std::vector<NoteData*> noteData;
 	
 	int songLength;
 	

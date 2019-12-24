@@ -230,25 +230,19 @@ void ChartEditor::SetSelectedChart(ChartData* aChartData)
 	mySelectableItems.clear();
 	mySelectedItems.clear();
 
-	myNoteHandler.ClearLNs();
-
 	for (auto& note : mySelectedChart->noteData)
 	{
 		SelectableItem selectableNote;
-		selectableNote.noteData = &note;
+		selectableNote.noteData = note;
 		selectableNote.selected = false;
-		selectableNote.timePoint = note.timePoint;
-		selectableNote.cullTimeOffset = note.cullTimeOffset;
-
-		if (note.isHold == true)
-			myNoteHandler.AddLN(selectableNote);
+		selectableNote.timePoint = note->timePoint;
 
 		mySelectableItems.push_back(selectableNote);
 	}
 
 	myNoteHandler.Init(&mySelectableItems);
 	myBPMLineHandler.Init(&(mySelectedChart->BPMPoints));
-	mySongTimeHandler.Init(&(mySelectedChart->song), -mySelectedChart->BPMPoints[0].BPM);
+	mySongTimeHandler.Init(&(mySelectedChart->song), 0 /*-mySelectedChart->BPMPoints[0].timePoint*/ );
 	
 	mySongTimeHandler.SetTimeNormalized(0.f);
 }

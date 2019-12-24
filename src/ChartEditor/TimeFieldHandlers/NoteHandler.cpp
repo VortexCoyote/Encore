@@ -3,6 +3,7 @@
 #include "ofWindowSettings.h"
 #include "ofMain.h"
 
+#include <string>
 
 NoteHandler::NoteHandler()
 {
@@ -32,24 +33,16 @@ void NoteHandler::Init(std::vector<SelectableItem>* aObjectData)
 {
 	TimeFieldHandlerBase<SelectableItem>::Init(aObjectData);
 
-	myLastLNIndex = 0;
-	myLastLNTimePoint = 0.0;
+	myVisibleHolds.clear();
+	myVisibleHoldsToRemove.clear();
 }
+
 
 std::vector<SelectableItem*>& NoteHandler::GetVisibleNotes()
 {
 	return myVisibleObjects;
 }
 
-void NoteHandler::ClearLNs()
-{
-	myLNs.clear();
-}
-
-void NoteHandler::AddLN(SelectableItem aLN)
-{
-	myLNs.push_back(aLN);
-}
 
 void NoteHandler::DrawRoutine(SelectableItem* aTimeObject, float aTimePoint)
 {
@@ -58,10 +51,66 @@ void NoteHandler::DrawRoutine(SelectableItem* aTimeObject, float aTimePoint)
 	aTimeObject->x = ofGetWindowWidth() / 2 - myNoteImage[column].getWidth() * 2 + myNoteImage[column].getWidth() * column;
 	aTimeObject->y = ofGetWindowHeight() - aTimePoint;
 
-	myNoteImage[column].draw(aTimeObject->x, aTimeObject->y);
+
+	switch (aTimeObject->noteData->noteType)
+	{
+	case NoteType::HoldEnd:
+
+		myHoldBodyImage.draw(aTimeObject->x, aTimeObject->y + myNoteImage[column].getHeight() / 2.f, myHoldBodyImage.getWidth(), abs(GetScreenTimePoint(aTimeObject->noteData->timePoint, 0) - GetScreenTimePoint(aTimeObject->noteData->relevantNote->timePoint, 0)));
+		myHoldCapImage.draw(aTimeObject->x, aTimeObject->y - myHoldCapImage.getHeight() / 2.f);
+
+		myNoteImage[column].draw(aTimeObject->x, aTimeObject->y + abs(GetScreenTimePoint(aTimeObject->noteData->timePoint, 0) - GetScreenTimePoint(aTimeObject->noteData->relevantNote->timePoint, 0)));
+
+
+		break;
+
+	case NoteType::HoldBegin:
+
+		//myHoldBodyImage.draw(aTimeObject->x, aTimeObject->y + myNoteImage[column].getHeight() / 2.f, myHoldBodyImage.getWidth(), -abs(GetScreenTimePoint(aTimeObject->noteData->timePoint, 0) - GetScreenTimePoint(aTimeObject->noteData->relevantNote->timePoint, 0)));
+		//myNoteImage[column].draw(aTimeObject->x, aTimeObject->y);
+
+		myVisibleHolds[aTimeObject->noteData] = aTimeObject;
+
+	case NoteType::Note:
+
+		myNoteImage[column].draw(aTimeObject->x, aTimeObject->y);
+
+		break;
+
+	default:
+
+		std::cout << "invalid notetype" << std::endl;
+		
+		break;
+	}
 
 	if (aTimeObject->selected)
 		mySelectedImage.draw(aTimeObject->x, aTimeObject->y);
+}
+
+void NoteHandler::VisibleHoldDrawRoutine(double aTimePoint)
+{
+	for (auto& hold : myVisibleHolds)
+	{
+		float y = ofGetWindowHeight() - GetScreenTimePoint(hold.first->timePoint, aTimePoint);
+		float yParent = ofGetWindowHeight() - GetScreenTimePoint(hold.first->relevantNote->timePoint, aTimePoint);
+
+		if (yParent > ofGetWindowHeight() || y < 0)
+		{
+			myVisibleHoldsToRemove.push_back(myVisibleHolds.find(hold.first));
+		}
+		else
+		{
+			myHoldBodyImage.draw(hold.second->x, y + myNoteImage[hold.first->column].getHeight() / 2.f, myHoldBodyImage.getWidth(), -abs(GetScreenTimePoint(hold.second->noteData->timePoint, 0) - GetScreenTimePoint(hold.second->noteData->relevantNote->timePoint, 0)));
+		}
+	}
+
+	for (auto& holdToRemove : myVisibleHoldsToRemove)
+	{
+		myVisibleHolds.erase(holdToRemove);
+	}
+
+	myVisibleHoldsToRemove.clear();
 }
 
 void NoteHandler::Draw(double aTimePoint)
@@ -69,63 +118,11 @@ void NoteHandler::Draw(double aTimePoint)
 	if (myObjectData == nullptr)
 		return void();
 
-	//handle LN rewinds
-	if (aTimePoint < myLastLNTimePoint)
-	{
-		for (unsigned int rewindLNIndex = myLastLNIndex; rewindLNIndex >= 0; rewindLNIndex--)
-		{
-			float LNTimePointEnd = GetScreenTimePoint(myLNs[rewindLNIndex].noteData->timePointEnd, aTimePoint);
-
-			if (LNTimePointEnd < 0 || rewindLNIndex == 0)
-			{
-				myLastLNIndex = rewindLNIndex;
-				break;
-			}
-		}
-	}
-
-	//Handle LNs 
-	for (unsigned int LNIndex = myLastLNIndex; LNIndex < myLNs.size(); LNIndex++)
-	{
-		float LNTimePoint = GetScreenTimePoint(myLNs[LNIndex].timePoint,				 aTimePoint);
-		float LNTimePointEnd = GetScreenTimePoint(myLNs[LNIndex].noteData->timePointEnd, aTimePoint);
-
-		//render all visible LNs
-		if (LNTimePoint >= 0 || LNTimePointEnd >= 0)
-		{
-			myLastLNIndex = LNIndex;
-
-			for (unsigned int visibleLNIndex = LNIndex; visibleLNIndex < myLNs.size(); visibleLNIndex++)
-			{
-				float visibleLNTimePoint = GetScreenTimePoint(myLNs[visibleLNIndex].timePoint,				    aTimePoint);
-				float visibleLNTimePointEnd = GetScreenTimePoint(myLNs[visibleLNIndex].noteData->timePointEnd,  aTimePoint);
-
-				if (visibleLNTimePoint <= ofGetScreenHeight() || visibleLNTimePointEnd <= ofGetScreenHeight())
-				{
-					int column = myLNs[visibleLNIndex].noteData->column;
-
-					myLNs[visibleLNIndex].x = ofGetWindowWidth() / 2 - myNoteImage[column].getWidth() * 2 + myNoteImage[column].getWidth() * column;
-					myLNs[visibleLNIndex].y = ofGetWindowHeight() - visibleLNTimePoint;
-
-					myHoldBodyImage.draw(myLNs[visibleLNIndex].x, myLNs[visibleLNIndex].y + myNoteImage[0].getHeight() / 2.f, myHoldBodyImage.getWidth(), visibleLNTimePoint - visibleLNTimePointEnd);
-					myHoldCapImage.draw(myLNs[visibleLNIndex].x, myLNs[visibleLNIndex].y + myNoteImage[0].getHeight() / 2.f + visibleLNTimePoint - visibleLNTimePointEnd - myHoldCapImage.getHeight());
-				}
-				else
-				{
-					break;
-				}
-			}
-			break;
-		}
-	}
-
+	VisibleHoldDrawRoutine(aTimePoint);
 
 	TimeFieldHandlerBase<SelectableItem>::Draw(aTimePoint);
-	myHitLineImage.draw(ofGetWindowWidth() / 2 - myNoteImage[0].getWidth() * 2, ofGetWindowHeight() - EditorConfig::hitLinePosition /*+ myNoteImage[0].getHeight()*/);
-
-	myLastLNTimePoint = aTimePoint;
+	myHitLineImage.draw(ofGetWindowWidth() / 2 - myNoteImage[0].getWidth() * 2, ofGetWindowHeight() - EditorConfig::hitLinePosition /*+ myNoteImage[0].getHeight()*/ );
 }
-
 
 void NoteHandler::DrawPreviewBox(double aTimePoint, float aMouseY)
 {

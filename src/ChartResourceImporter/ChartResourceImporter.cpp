@@ -6,6 +6,7 @@
 
 #include <filesystem>
 #include <sstream>
+#include <algorithm>
 
 ChartResourceImporter::ChartResourceImporter()
 {
@@ -36,6 +37,8 @@ ChartSet* ChartResourceImporter::ImportChart(std::string aPath)
 
 		myCharts[aPath].charts.push_back(new ChartData());
 		ChartData* chartData = myCharts[aPath].charts.back();
+
+		chartData->noteData.reserve(100000);
 
 		std::string line;
 		while (std::getline(chartFile, line))
@@ -154,8 +157,7 @@ ChartSet* ChartResourceImporter::ImportChart(std::string aPath)
 
 					std::stringstream timePointStream(line);
 
-					int timePoint;
-					float bpm;
+					float timePoint, bpm;
 					int filler1, filler2, filler3, filler4, filler5, filler6;
 
 					PARSE_COMMA_VALUE(timePointStream, timePoint);
@@ -174,7 +176,7 @@ ChartSet* ChartResourceImporter::ImportChart(std::string aPath)
 
 					BPMData bpmData;
 					bpmData.BPM = bpm;
-					bpmData.timePoint = timePoint;
+					bpmData.timePoint = int(timePoint);
 
 					chartData->BPMPoints.push_back(bpmData);
 				}
@@ -195,22 +197,45 @@ ChartSet* ChartResourceImporter::ImportChart(std::string aPath)
 					PARSE_COMMA_VALUE(noteStream, filler2);
 					PARSE_COMMA_VALUE(noteStream, timePointEnd);
 	
-					NoteData note;
 
-					note.timePoint = timePoint;
-					note.column = column <= 64 ? 0 : (column <= 192 ? 1 : (column <= 320 ? 2 : (column <= 448 ? 3 : 3)));
-					
 					if (isLN == 128)
 					{
-						note.isHold = true;
-						note.timePointEnd = timePointEnd;
-						note.cullTimeOffset = timePointEnd;
-					}
+						NoteData* note = new NoteData();
+						NoteData* holdNote = new NoteData();
 
-					chartData->noteData.push_back(note);
+						note->timePoint = timePoint;
+						note->column = column <= 64 ? 0 : (column <= 192 ? 1 : (column <= 320 ? 2 : (column <= 448 ? 3 : 3)));
+						note->noteType = NoteType::HoldBegin;
+
+						holdNote->timePoint = timePointEnd;
+						holdNote->column	= note->column;
+						holdNote->noteType  = NoteType::HoldEnd;
+
+						note->relevantNote = holdNote;
+						holdNote->relevantNote = note;
+
+						chartData->noteData.push_back(note);
+						chartData->noteData.push_back(holdNote);
+					}
+					else
+					{
+						NoteData* note = new NoteData();
+
+						note->timePoint = timePoint;
+						note->column = column <= 64 ? 0 : (column <= 192 ? 1 : (column <= 320 ? 2 : (column <= 448 ? 3 : 3)));
+						note->noteType = NoteType::Note;
+
+						chartData->noteData.push_back(note);
+					}
 				}
 			}				
 		}
+
+		std::sort(chartData->noteData.begin(), chartData->noteData.end(), [](const auto& lhs, const auto& rhs)
+		{
+			return lhs->timePoint < rhs->timePoint;
+		});
+
 	}
 
 	return &myCharts[aPath];

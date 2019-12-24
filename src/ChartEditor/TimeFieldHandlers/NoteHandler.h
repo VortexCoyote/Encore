@@ -7,6 +7,8 @@
 
 #include "TimeFieldHandlerBase.h"
 
+#include <unordered_map>
+
 class NoteHandler : public TimeFieldHandlerBase<SelectableItem>
 {
 public:
@@ -22,13 +24,11 @@ public:
 	void DrawNoteFieldBackground();
 
 	std::vector<SelectableItem*>& GetVisibleNotes();
-	
-	void ClearLNs();
-	void AddLN(SelectableItem aLN);
 
 private:
 
 	void DrawRoutine(SelectableItem* aTimeObject, float aTimePoint) override;
+	void VisibleHoldDrawRoutine(double aTimePoint);
 
 	ofFbo myPreviewBuffer;
 
@@ -40,8 +40,6 @@ private:
 
 	ofImage myHitLineImage;
 
-	unsigned int myLastLNIndex = 0;
-	double		 myLastLNTimePoint = 0.0;
-
-	std::vector<SelectableItem> myLNs;
+	std::unordered_map<NoteData*, SelectableItem*> myVisibleHolds;
+	std::vector<std::unordered_map<NoteData*, SelectableItem*>::iterator> myVisibleHoldsToRemove;
 };
