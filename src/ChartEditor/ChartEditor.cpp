@@ -40,7 +40,8 @@ void ChartEditor::Draw()
 	if (mySelectedChart == nullptr)
 		return void();
 
-	mySelectedChart->background.draw((ofGetWindowWidth() - mySelectedChart->background.getWidth()) / 2, 0);
+	float procentualChange = float(ofGetWindowHeight()) / float(mySelectedChart->background.getHeight());	
+	mySelectedChart->background.draw((ofGetWindowWidth() - mySelectedChart->background.getWidth() * procentualChange) / 2, 0, int(float(mySelectedChart->background.getWidth()) * procentualChange), int(float(mySelectedChart->background.getHeight()) * procentualChange));
 
 	TryTimelinePreview(myMouseX, myMouseY);
 
@@ -113,10 +114,6 @@ void ChartEditor::RescaleBackground()
 {
 	if (mySelectedChart == nullptr)
 		return void();
-
-	float procentualChange = float(ofGetWindowHeight()) / float(mySelectedChart->background.getHeight());
-
-	mySelectedChart->background.resize(int(float(mySelectedChart->background.getWidth()) * procentualChange), int(float(mySelectedChart->background.getHeight()) * procentualChange));
 }
 
 void ChartEditor::SetMousePosition(int aX, int aY)

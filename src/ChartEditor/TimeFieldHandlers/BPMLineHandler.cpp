@@ -53,18 +53,28 @@ void BPMLineHandler::DrawRoutine(BPMData* aTimeObject, float aTimePoint)
 	int textX = x + width + 4;
 	int textY = y;
 
+	if (y < 0)
+		return void();
+
 	ImGuiWindowFlags windowFlags = 0;
 	windowFlags |= ImGuiWindowFlags_NoTitleBar;
 	windowFlags |= ImGuiWindowFlags_NoMove;
 	windowFlags |= ImGuiWindowFlags_NoResize;
 	windowFlags |= ImGuiWindowFlags_NoCollapse;
 	windowFlags |= ImGuiWindowFlags_AlwaysAutoResize;
+	windowFlags |= ImGuiWindowFlags_NoScrollbar;
 
 	bool open = true;
 
+	ImGui::SetNextWindowSize({256, 32});
+	ImGui::SetNextWindowPos({ float(textX), float(textY) });
+
 	ImGui::Begin(std::to_string((int)aTimeObject).c_str(), &open, windowFlags);
-	ImGui::SetWindowPos({ float(textX), float(textY) });
+
+	ImGui::Text("BPM");
+	ImGui::SameLine();
 	ImGui::DragFloat("", &aTimeObject->BPM, 0.1, 0.0, 999999999.f);
+
 	ImGui::End();
 }
 
