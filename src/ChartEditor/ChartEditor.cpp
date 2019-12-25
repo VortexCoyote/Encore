@@ -18,7 +18,7 @@ ChartEditor::~ChartEditor()
 
 void ChartEditor::Load()
 {
-
+	myCursorImage.loadImage("images/selected.png");
 }
 
 void ChartEditor::Update()
@@ -31,6 +31,7 @@ void ChartEditor::Update()
 
 	myBPMLineHandler.ShowBeatDivisionControls();
 	mySongTimeHandler.Update();
+
 	TimeLine();
 }
 
@@ -48,6 +49,8 @@ void ChartEditor::Draw()
 	myNoteHandler.DrawNoteFieldBackground();
 	myBPMLineHandler.Draw(mySongTimeHandler.GetCurrentTimeS());
 	myNoteHandler.Draw(mySongTimeHandler.GetCurrentTimeS());
+
+	myCursorImage.draw(GetSnappedCursorPosition());
 }
 
 void ChartEditor::TogglePlaying()
@@ -205,6 +208,7 @@ void ChartEditor::LoadChartFromDirectory()
 		else
 		{
 			mySelectedChart = nullptr;
+			mySongTimeHandler.StopSong();
 		}
 	}
 }
@@ -226,4 +230,32 @@ void ChartEditor::SetSelectedChart(ChartData* aChartData)
 	mySongTimeHandler.Init(mySelectedChart->song);
 	
 	mySongTimeHandler.SetTimeNormalized(0.f);
+}
+
+ofVec2f ChartEditor::GetSnappedCursorPosition()
+{
+	float inputX = myMouseX;// -myCursorImage.getWidth() / 2.f;
+	float x = inputX;
+	float leftBorder = ofGetWindowWidth() / 2 - 64 * 2.f;
+	float rightBorder = ofGetWindowWidth() / 2 + 64 * 2.f;
+
+	if (inputX < leftBorder)
+		x = leftBorder;
+
+	if (inputX > leftBorder)
+		x = leftBorder;
+
+	if (inputX >= leftBorder + 64)
+		x  = leftBorder + 64;
+	
+	if (inputX >= leftBorder + 64 + 64)
+		x  = leftBorder + 64 + 64;
+
+	if (inputX >= leftBorder + 64 + 64 + 64)
+		x  = leftBorder + 64 + 64 + 64;
+
+	if (inputX > rightBorder - myCursorImage.getWidth())
+		x = rightBorder - myCursorImage.getWidth();
+
+	return ofVec2f(x, myBPMLineHandler.GetClosestBeatLinePos(myMouseY) - myCursorImage.getHeight());
 }

@@ -60,6 +60,10 @@ void SongHandler::Update()
 		std::cout << "Playback Speed: " << mySpeed << std::endl;
 	}
 
+	if (myCurrentTime >= GetSongLength())
+		SetPause(true);
+	
+
 	BASS_Update(myStreamHandle);
 
 	//myCurrentTime = BASS_ChannelBytes2Seconds(myStreamHandle, BASS_ChannelGetPosition(myStreamHandle, BASS_POS_BYTE));
@@ -129,6 +133,11 @@ float SongHandler::GetTimeNormalized()
 double SongHandler::GetSongLength()
 {
 	return BASS_ChannelBytes2Seconds(myStreamHandle, BASS_ChannelGetLength(myStreamHandle, BASS_POS_BYTE));
+}
+
+void SongHandler::StopSong()
+{
+	BASS_ChannelStop(myStreamHandle);
 }
 
 void SongHandler::TryTimingSync()

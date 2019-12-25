@@ -36,6 +36,7 @@ private:
 	void TimeLine();
 	void LoadChartFromDirectory();
 	void SetSelectedChart(ChartData* aChartData);
+	ofVec2f GetSnappedCursorPosition();
 
 	ChartResourceImporter myChartImporter;
 	SongHandler mySongTimeHandler;
@@ -54,4 +55,6 @@ private:
 
 	int myMouseX = 0;
 	int myMouseY = 0;
+
+	ofImage myCursorImage;
 };

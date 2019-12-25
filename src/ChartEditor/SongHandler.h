@@ -28,6 +28,8 @@ public:
 	float  GetTimeNormalized();
 	double GetSongLength();
 
+	void StopSong();
+
 private:
 
 	void TryTimingSync();

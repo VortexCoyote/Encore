@@ -81,6 +81,8 @@ void BPMLineHandler::DrawRoutine(BPMData* aTimeObject, float aTimePoint)
 void BPMLineHandler::Draw(double aTimePoint)
 {
 	//TODO: abstractify these into seperate functions (beat division lookup and all of that)
+	myVisibleBeatLines.clear();
+
 	if (myVisibleObjects.size() > 0)
 	{
 		BPMData ghostBPMData;
@@ -113,6 +115,8 @@ void BPMLineHandler::Draw(double aTimePoint)
 			int lineForwardIndex = 1;
 			while (time <= myVisibleObjects[bpmLineIndex + 1]->timePoint)
 			{
+				myVisibleBeatLines.emplace_back(time, lineY);
+				
 				ofSetColor(255, 64, 64, 255);
 				ofDrawRectangle({ x, lineY - height }, width, height);
 
@@ -130,13 +134,29 @@ void BPMLineHandler::Draw(double aTimePoint)
 		myVisibleObjects.pop_back();
 	}
 
+	//std::cout << myVisibleBeatLines.size() << std::endl;
+
 	ofSetColor(255, 255, 255, 255);
 	TimeFieldHandlerBase<BPMData>::Draw(aTimePoint);
+}
+
+float BPMLineHandler::GetClosestBeatLinePos(float aY)
+{
+	for (int beatIndex = myVisibleBeatLines.size() - 1; beatIndex >= 0; beatIndex--)
+	{
+		if (aY <= myVisibleBeatLines[beatIndex].visualTimePoint)
+		{
+			return myVisibleBeatLines[beatIndex].visualTimePoint;
+		}
+	}
+
+	return 0.0f;
 }
 
 BPMLineHandler::BPMLineHandler()
 {
 	mySnapQuotient = 1.f / float(mySnapDivision);
+	myVisibleBeatLines.reserve(100000);
 }
 
 BPMLineHandler::~BPMLineHandler()
