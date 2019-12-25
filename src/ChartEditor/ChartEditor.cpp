@@ -234,28 +234,12 @@ void ChartEditor::SetSelectedChart(ChartData* aChartData)
 
 ofVec2f ChartEditor::GetSnappedCursorPosition()
 {
-	float inputX = myMouseX;// -myCursorImage.getWidth() / 2.f;
+	float inputX = myMouseX;
 	float x = inputX;
 	float leftBorder = ofGetWindowWidth() / 2 - 64 * 2.f;
 	float rightBorder = ofGetWindowWidth() / 2 + 64 * 2.f;
 
-	if (inputX < leftBorder)
-		x = leftBorder;
-
-	if (inputX > leftBorder)
-		x = leftBorder;
-
-	if (inputX >= leftBorder + 64)
-		x  = leftBorder + 64;
-	
-	if (inputX >= leftBorder + 64 + 64)
-		x  = leftBorder + 64 + 64;
-
-	if (inputX >= leftBorder + 64 + 64 + 64)
-		x  = leftBorder + 64 + 64 + 64;
-
-	if (inputX > rightBorder - myCursorImage.getWidth())
-		x = rightBorder - myCursorImage.getWidth();
+	x = floor(ofClamp(inputX, leftBorder, rightBorder - 64.f) / 64.f) * 64.f;
 
 	return ofVec2f(x, myBPMLineHandler.GetClosestBeatLinePos(myMouseY) - myCursorImage.getHeight());
 }
