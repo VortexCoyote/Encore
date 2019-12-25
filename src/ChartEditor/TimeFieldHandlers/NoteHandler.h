@@ -9,25 +9,25 @@
 
 #include <unordered_map>
 
-class NoteHandler : public TimeFieldHandlerBase<SelectableItem>
+class NoteHandler : public TimeFieldHandlerBase<NoteData>
 {
 public:
 
 	NoteHandler();
 	~NoteHandler();
 
-	void Init(std::vector<SelectableItem>* aObjectData) override;
+	void Init(std::vector<NoteData>* aObjectData) override;
 
 	void Draw(double aTimePoint) override;
 
 	void DrawPreviewBox(double aTimePoint, float aMouseY);
 	void DrawNoteFieldBackground();
 
-	std::vector<SelectableItem*>& GetVisibleNotes();
+	std::vector<NoteData*>& GetVisibleNotes();
 
 private:
 
-	void DrawRoutine(SelectableItem* aTimeObject, float aTimePoint) override;
+	void DrawRoutine(NoteData* aTimeObject, float aTimePoint) override;
 	void VisibleHoldDrawRoutine(double aTimePoint);
 
 	ofFbo myPreviewBuffer;
@@ -40,6 +40,6 @@ private:
 
 	ofImage myHitLineImage;
 
-	std::unordered_map<NoteData*, SelectableItem*> myVisibleHolds;
-	std::vector<std::unordered_map<NoteData*, SelectableItem*>::iterator> myVisibleHoldsToRemove;
+	std::unordered_map<NoteData*, NoteData*> myVisibleHolds;
+	std::vector<std::unordered_map<NoteData*, NoteData*>::iterator> myVisibleHoldsToRemove;
 };

@@ -118,10 +118,12 @@ inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 template<class T>
 float TimeFieldHandlerBase<T>::GetScreenTimePoint(int aTimePointMS, double aCurrentTimePointS)
 {
-	float timePoint = float(aTimePointMS) - (aCurrentTimePointS * 1000.f) + 200;
+	float timePoint = float(aTimePointMS) - (aCurrentTimePointS * 1000.f);
 
 	timePoint *= EditorConfig::scale;
-	timePoint += (EditorConfig::hitLinePosition - 64);
+	timePoint += (EditorConfig::hitLinePosition);
+
+	timePoint += 64.f;
 
 	return timePoint;
 }
@@ -129,10 +131,12 @@ float TimeFieldHandlerBase<T>::GetScreenTimePoint(int aTimePointMS, double aCurr
 template<class T>
 inline int TimeFieldHandlerBase<T>::GetTimeFromScreenPoint(float aScreenPoint, double aCurrentTimePointS)
 {
-	aScreenPoint -= (EditorConfig::hitLinePosition - 64);
+	aScreenPoint -= 64.f;
+
+	aScreenPoint -= (EditorConfig::hitLinePosition);
 	aScreenPoint /= EditorConfig::scale;
 
-	int timePointMS = aScreenPoint + (aCurrentTimePointS * 1000.f) - 200;
+	int timePointMS = aScreenPoint + (aCurrentTimePointS * 1000.f);
 
 	return timePointMS;
 }

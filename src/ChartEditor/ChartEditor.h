@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../ChartResourceImporter/ChartResourceImporter.h"
-#include "SongTimeHandler.h"
+#include "SongHandler.h"
 
 #include "TimeFieldHandlers/NoteHandler.h"
 #include "TimeFieldHandlers/BPMLineHandler.h"
@@ -27,7 +27,6 @@ public:
 
 	void TrySelectItem(int aX, int aY);
 	void TryTimelinePreview(int aX, int aY);
-	void RescaleBackground();
 
 	void SetMousePosition(int aX, int aY);
 
@@ -39,15 +38,15 @@ private:
 	void SetSelectedChart(ChartData* aChartData);
 
 	ChartResourceImporter myChartImporter;
-	SongTimeHandler mySongTimeHandler;
+	SongHandler mySongTimeHandler;
 	NoteHandler myNoteHandler;
 	BPMLineHandler myBPMLineHandler;
 
 	ChartSet* mySelectedChartSet = nullptr;
 	ChartData* mySelectedChart	 = nullptr;
 
-	std::vector<SelectableItem> mySelectableItems;
-	std::vector<SelectableItem*> mySelectedItems;
+	std::vector<NoteData*> mySelectedItems;
+	std::vector<NoteData>  myStackChart;
 
 	float myTimeLine		= 0.f;
 	float myPreviewTimeLine = 0.f;

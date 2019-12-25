@@ -1,5 +1,7 @@
 #include "ofApp.h"
 
+#include "BASS\bass.h"
+
 //--------------------------------------------------------------
 void ofApp::setup() 
 {
@@ -94,7 +96,7 @@ void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY) {
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h) {
 
-	myChartEditor.RescaleBackground();
+
 }
 
 //--------------------------------------------------------------

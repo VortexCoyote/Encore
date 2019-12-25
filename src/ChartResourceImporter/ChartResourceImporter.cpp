@@ -68,15 +68,8 @@ ChartSet* ChartResourceImporter::ImportChart(std::string aPath)
 
 					if (meta == "AudioFilename")
 					{
-						chartData->song.load(aPath + "\\" + value);
-
-						chartData->song.play();
-						chartData->song.setPosition(0.9999999f);
-						int ms = chartData->song.getPositionMS();
-						chartData->song.setPosition(0);
-						chartData->song.stop();
-
-						chartData->songLength = ms;
+						std::string songPath = aPath + "\\" + value;
+						chartData->song = songPath;
 					}
 				}
 			}
@@ -206,10 +199,12 @@ ChartSet* ChartResourceImporter::ImportChart(std::string aPath)
 						note->timePoint = timePoint;
 						note->column = column <= 64 ? 0 : (column <= 192 ? 1 : (column <= 320 ? 2 : (column <= 448 ? 3 : 3)));
 						note->noteType = NoteType::HoldBegin;
+						note->self = note;
 
 						holdNote->timePoint = timePointEnd;
 						holdNote->column	= note->column;
 						holdNote->noteType  = NoteType::HoldEnd;
+						holdNote->self = holdNote;
 
 						note->relevantNote = holdNote;
 						holdNote->relevantNote = note;
@@ -224,6 +219,7 @@ ChartSet* ChartResourceImporter::ImportChart(std::string aPath)
 						note->timePoint = timePoint;
 						note->column = column <= 64 ? 0 : (column <= 192 ? 1 : (column <= 320 ? 2 : (column <= 448 ? 3 : 3)));
 						note->noteType = NoteType::Note;
+						note->self = note;
 
 						chartData->noteData.push_back(note);
 					}

@@ -32,12 +32,9 @@ struct NoteData : public TimeFieldObject
 
 	NoteType noteType = NoteType::Note;
 
+	NoteData* self = nullptr;
 	NoteData* relevantNote = nullptr;
-};
 
-struct SelectableItem : public TimeFieldObject
-{
-	NoteData* noteData = nullptr;
 	bool selected = false;
 
 	int x = 0;
@@ -50,7 +47,7 @@ struct ChartData
 	
 	int songLength;
 	
-	ofSoundPlayer song;
+	std::string song;
 	ofImage background;
 
 	std::string difficultyName;

@@ -29,47 +29,45 @@ NoteHandler::~NoteHandler()
 
 }
 
-void NoteHandler::Init(std::vector<SelectableItem>* aObjectData)
+void NoteHandler::Init(std::vector<NoteData>* aObjectData)
 {
-	TimeFieldHandlerBase<SelectableItem>::Init(aObjectData);
+	TimeFieldHandlerBase<NoteData>::Init(aObjectData);
 
 	myVisibleHolds.clear();
 	myVisibleHoldsToRemove.clear();
 }
 
 
-std::vector<SelectableItem*>& NoteHandler::GetVisibleNotes()
+std::vector<NoteData*>& NoteHandler::GetVisibleNotes()
 {
 	return myVisibleObjects;
 }
 
 
-void NoteHandler::DrawRoutine(SelectableItem* aTimeObject, float aTimePoint)
+void NoteHandler::DrawRoutine(NoteData* aTimeObject, float aTimePoint)
 {
-	int column = aTimeObject->noteData->column;
+	int column = aTimeObject->column;
 
 	aTimeObject->x = ofGetWindowWidth() / 2 - myNoteImage[column].getWidth() * 2 + myNoteImage[column].getWidth() * column;
 	aTimeObject->y = ofGetWindowHeight() - aTimePoint;
 
-
-	switch (aTimeObject->noteData->noteType)
+	switch (aTimeObject->noteType)
 	{
 	case NoteType::HoldEnd:
 
-		myHoldBodyImage.draw(aTimeObject->x, aTimeObject->y + myNoteImage[column].getHeight() / 2.f, myHoldBodyImage.getWidth(), abs(GetScreenTimePoint(aTimeObject->noteData->timePoint, 0) - GetScreenTimePoint(aTimeObject->noteData->relevantNote->timePoint, 0)));
-		myHoldCapImage.draw(aTimeObject->x, aTimeObject->y - myHoldCapImage.getHeight() / 2.f);
+		aTimeObject->relevantNote->x = aTimeObject->x;	
+		aTimeObject->relevantNote->y = aTimeObject->y;	
 
-		myNoteImage[column].draw(aTimeObject->x, aTimeObject->y + abs(GetScreenTimePoint(aTimeObject->noteData->timePoint, 0) - GetScreenTimePoint(aTimeObject->noteData->relevantNote->timePoint, 0)));
-
+		myVisibleHolds[aTimeObject->relevantNote] = aTimeObject->relevantNote;
 
 		break;
 
 	case NoteType::HoldBegin:
 
-		//myHoldBodyImage.draw(aTimeObject->x, aTimeObject->y + myNoteImage[column].getHeight() / 2.f, myHoldBodyImage.getWidth(), -abs(GetScreenTimePoint(aTimeObject->noteData->timePoint, 0) - GetScreenTimePoint(aTimeObject->noteData->relevantNote->timePoint, 0)));
-		//myNoteImage[column].draw(aTimeObject->x, aTimeObject->y);
+		aTimeObject->self->x = aTimeObject->x;
+		aTimeObject->self->y = aTimeObject->y;
 
-		myVisibleHolds[aTimeObject->noteData] = aTimeObject;
+		myVisibleHolds[aTimeObject->self] = aTimeObject->self;
 
 	case NoteType::Note:
 
@@ -95,13 +93,13 @@ void NoteHandler::VisibleHoldDrawRoutine(double aTimePoint)
 		float y = ofGetWindowHeight() - GetScreenTimePoint(hold.first->timePoint, aTimePoint);
 		float yParent = ofGetWindowHeight() - GetScreenTimePoint(hold.first->relevantNote->timePoint, aTimePoint);
 
+		myHoldCapImage.draw(hold.first->x, yParent - myHoldCapImage.getHeight() / 2.f);
+		
+		myHoldBodyImage.draw(hold.second->x, y + myNoteImage[hold.first->column].getHeight() / 2.f, myHoldBodyImage.getWidth(), (GetScreenTimePoint(hold.second->timePoint, 0) - GetScreenTimePoint(hold.second->relevantNote->timePoint, 0)));
+		
 		if (yParent > ofGetWindowHeight() || y < 0)
 		{
 			myVisibleHoldsToRemove.push_back(myVisibleHolds.find(hold.first));
-		}
-		else
-		{
-			myHoldBodyImage.draw(hold.second->x, y + myNoteImage[hold.first->column].getHeight() / 2.f, myHoldBodyImage.getWidth(), -abs(GetScreenTimePoint(hold.second->noteData->timePoint, 0) - GetScreenTimePoint(hold.second->noteData->relevantNote->timePoint, 0)));
 		}
 	}
 
@@ -120,7 +118,7 @@ void NoteHandler::Draw(double aTimePoint)
 
 	VisibleHoldDrawRoutine(aTimePoint);
 
-	TimeFieldHandlerBase<SelectableItem>::Draw(aTimePoint);
+	TimeFieldHandlerBase<NoteData>::Draw(aTimePoint);
 	myHitLineImage.draw(ofGetWindowWidth() / 2 - myNoteImage[0].getWidth() * 2, ofGetWindowHeight() - EditorConfig::hitLinePosition /*+ myNoteImage[0].getHeight()*/ );
 }
 

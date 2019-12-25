@@ -8,7 +8,7 @@
 
 ChartEditor::ChartEditor()
 {
-	mySelectableItems.reserve(100000);
+
 }
 
 ChartEditor::~ChartEditor()
@@ -110,12 +110,6 @@ void ChartEditor::TryTimelinePreview(int aX, int aY)
 	}
 }
 
-void ChartEditor::RescaleBackground()
-{
-	if (mySelectedChart == nullptr)
-		return void();
-}
-
 void ChartEditor::SetMousePosition(int aX, int aY)
 {
 	myMouseX = aX;
@@ -187,13 +181,11 @@ void ChartEditor::TimeLine()
 
 	if (ImGui::VSliderFloat("", { 24.f,  float(ofGetWindowHeight()) /* - menuBarHeight * 2.f */ }, &myTimeLine, 0.0f, 1.0f, ""))
 	{
-		mySongTimeHandler.SetPause(true);
-		mySongTimeHandler.SetTimeS(myTimeLine * (float(mySelectedChart->songLength) / 1000.0));
+		mySongTimeHandler.SetTimeNormalized(myTimeLine);
 	}
 	else
 	{
-		mySongTimeHandler.ResetToPreviousPauseState();
-		myTimeLine = mySongTimeHandler.GetCurrentTimeS() / (float(mySelectedChart->songLength) / 1000.0);
+		myTimeLine = mySongTimeHandler.GetCurrentTimeS() / mySongTimeHandler.GetSongLength();
 	}
 
 	ImGui::End();
@@ -219,28 +211,19 @@ void ChartEditor::LoadChartFromDirectory()
 
 void ChartEditor::SetSelectedChart(ChartData* aChartData)
 {
-	if(mySelectedChart)
-		mySelectedChart->song.stop();
-
 	mySelectedChart = aChartData;
 
-	mySelectableItems.clear();
 	mySelectedItems.clear();
+	myStackChart.clear();
 
-	for (auto& note : mySelectedChart->noteData)
+	for (auto& noteData : mySelectedChart->noteData)
 	{
-		SelectableItem selectableNote;
-		selectableNote.noteData = note;
-		selectableNote.selected = false;
-		selectableNote.timePoint = note->timePoint;
-
-		mySelectableItems.push_back(selectableNote);
+		myStackChart.push_back(*noteData);
 	}
 
-	myNoteHandler.Init(&mySelectableItems);
+	myNoteHandler.Init(&myStackChart);
 	myBPMLineHandler.Init(&(mySelectedChart->BPMPoints));
-	mySongTimeHandler.Init(&(mySelectedChart->song), 0 /*-mySelectedChart->BPMPoints[0].timePoint*/ );
+	mySongTimeHandler.Init(mySelectedChart->song);
 	
 	mySongTimeHandler.SetTimeNormalized(0.f);
 }
-

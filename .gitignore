@@ -106,3 +106,6 @@ bin/imgui.ini
 .vs/VSRGEditor/v15/Browse.VC.opendb
 .vs/VSRGEditor/v15/.suo
 .vs/VSRGEditor/v15/ipch/AutoPCH/9a374df888359996/NOTEHANDLER.ipch
+*.ipch
+obj/Win32/Debug/SongHandler.obj
+obj/Win32/Debug/VSRGEditor_debug.Build.CppClean.log
