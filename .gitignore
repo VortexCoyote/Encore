@@ -109,3 +109,4 @@ bin/imgui.ini
 *.ipch
 obj/Win32/Debug/SongHandler.obj
 obj/Win32/Debug/VSRGEditor_debug.Build.CppClean.log
+obj/Win32/Release/SongHandler.obj

@@ -31,6 +31,7 @@ public:
 private:
 
 	void TryTimingSync();
+	double GetRealCurrentTimeS();
 
 	double myCurrentTime = 0.0;
 	double mySongTimeBuffer = 0.f;

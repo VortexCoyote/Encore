@@ -22,7 +22,6 @@ void SongHandler::Init(std::string aPath, double aSyncThreshold)
 {
 	mySyncThreshold = aSyncThreshold;
 
-	
 	BASS_Free();
 	BASS_Init(myDevice, myFreq, 0, 0, NULL);
 
@@ -63,7 +62,8 @@ void SongHandler::Update()
 
 	BASS_Update(myStreamHandle);
 
-	myCurrentTime = BASS_ChannelBytes2Seconds(myStreamHandle, BASS_ChannelGetPosition(myStreamHandle, BASS_POS_BYTE));
+	//myCurrentTime = BASS_ChannelBytes2Seconds(myStreamHandle, BASS_ChannelGetPosition(myStreamHandle, BASS_POS_BYTE));
+	TryTimingSync();
 }
 
 void SongHandler::TogglePause()
@@ -74,6 +74,8 @@ void SongHandler::TogglePause()
 		BASS_ChannelPause(myStreamHandle);
 	else
 		BASS_ChannelPlay(myStreamHandle, FALSE);
+
+	myCurrentTime = GetRealCurrentTimeS();
 }
 
 
@@ -85,6 +87,8 @@ void SongHandler::SetPause(bool aPause)
 		BASS_ChannelPause(myStreamHandle);
 	else
 		BASS_ChannelPlay(myStreamHandle, FALSE);
+
+	myCurrentTime = GetRealCurrentTimeS();
 }
 
 void SongHandler::SetTimeS(double aTimeS)
@@ -96,6 +100,7 @@ void SongHandler::SetTimeS(double aTimeS)
 void SongHandler::SetTimeNormalized(float aNormalizedTime)
 {
 	BASS_ChannelSetPosition(myStreamHandle, BASS_ChannelSeconds2Bytes(myStreamHandle, aNormalizedTime * GetSongLength()), BASS_POS_BYTE);
+	myCurrentTime = GetRealCurrentTimeS();
 }
 
 void SongHandler::SongJumpAmount(float aSongJumpAmount)
@@ -134,25 +139,23 @@ void SongHandler::TryTimingSync()
 	{
 		myCurrentTime += ofGetLastFrameTime() * double(mySpeed);
 
-		double currentSongTime = GetCurrentTimeS();
+		double currentSongTime = GetRealCurrentTimeS();
 
-		//std::cout << myCurrentTime << " : " << currentSongTime << std::endl;
+		double syncAdjustment = (currentSongTime - myCurrentTime);
 
-		if (mySongTimeBuffer != currentSongTime)
+		if (abs(syncAdjustment) > mySyncThreshold)
 		{
-			double syncAdjustment = (currentSongTime - myCurrentTime);
-
-			if (abs(syncAdjustment) > mySyncThreshold)
-			{
-				myCurrentTime += syncAdjustment;
-				std::cout << syncAdjustment << " - SYNCED!" << std::endl;
-			}
-			else
-			{
-				//std::cout << syncAdjustment << std::endl;
-			}
-
-			mySongTimeBuffer = currentSongTime;
+			myCurrentTime += syncAdjustment;
+			std::cout << syncAdjustment << " - SYNCED!" << std::endl;
 		}
+		else
+		{
+			//std::cout << syncAdjustment << std::endl;
+		}	
 	}
+}
+
+double SongHandler::GetRealCurrentTimeS()
+{
+	return BASS_ChannelBytes2Seconds(myStreamHandle, BASS_ChannelGetPosition(myStreamHandle, BASS_POS_BYTE));
 }
