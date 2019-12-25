@@ -145,7 +145,7 @@ ChartSet* ChartResourceImporter::ImportChart(std::string aPath)
 				std::string timePointLine;
 				while (chartFile >> line)
 				{
-					if (line == "[HitObjects]")
+					if (line == "[HitObjects]" || line == "[Colours]")
 						break;
 
 					std::stringstream timePointStream(line);
@@ -163,7 +163,7 @@ ChartSet* ChartResourceImporter::ImportChart(std::string aPath)
 					PARSE_COMMA_VALUE(timePointStream, filler6);
 
 					if (bpm < 0)
-						continue;					
+						continue;	
 
 					bpm = 60000.0 / bpm;
 
