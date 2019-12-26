@@ -25,7 +25,12 @@ void SongHandler::Init(std::string aPath, double aSyncThreshold)
 	BASS_Free();
 	BASS_Init(myDevice, myFreq, 0, 0, NULL);
 
+	BASS_StreamCreateFile(FALSE, aPath.c_str(), 0, 0, BASS_STREAM_DECODE);
+	std::cout << BASS_ErrorGetCode() << std::endl;
+
 	myStreamHandle = BASS_FX_TempoCreate(BASS_StreamCreateFile(FALSE, aPath.c_str(), 0, 0, BASS_STREAM_DECODE), BASS_FX_FREESOURCE);
+
+
 	BASS_ChannelPlay(myStreamHandle, FALSE);
 	BASS_ChannelPause(myStreamHandle);
 
