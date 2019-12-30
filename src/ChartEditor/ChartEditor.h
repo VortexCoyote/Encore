@@ -2,6 +2,7 @@
 
 #include "../ChartResourceImporter/ChartResourceImporter.h"
 #include "SongHandler.h"
+#include "NoteSelectionHandler.h"
 
 #include "TimeFieldHandlers/NoteHandler.h"
 #include "TimeFieldHandlers/BPMLineHandler.h"
@@ -36,17 +37,16 @@ private:
 	void TimeLine();
 	void LoadChartFromDirectory();
 	void SetSelectedChart(ChartData* aChartData);
-	ofVec2f GetSnappedCursorPosition();
 
 	ChartResourceImporter myChartImporter;
 	SongHandler mySongTimeHandler;
 	NoteHandler myNoteHandler;
 	BPMLineHandler myBPMLineHandler;
+	NoteSelectionHandler myNoteSelectionHandler;
 
 	ChartSet* mySelectedChartSet = nullptr;
 	ChartData* mySelectedChart	 = nullptr;
 
-	std::vector<NoteData*> mySelectedItems;
 	std::vector<NoteData>  myStackChart;
 
 	float myTimeLine		= 0.f;
@@ -55,6 +55,4 @@ private:
 
 	int myMouseX = 0;
 	int myMouseY = 0;
-
-	ofImage myCursorImage;
 };

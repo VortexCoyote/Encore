@@ -111,3 +111,6 @@ obj/Win32/Debug/SongHandler.obj
 obj/Win32/Debug/VSRGEditor_debug.Build.CppClean.log
 obj/Win32/Release/SongHandler.obj
 obj/Win32/Debug/VSRGEditor.vcxproj.FileListAbsolute.txt
+obj/Win32/Debug/VSRGEditor.tlog/link.15884.delete.1.tlog
+obj/Win32/Debug/VSRGEditor.tlog/link.32824.delete.1.tlog
+obj/Win32/Debug/NoteSelectionHandler.obj

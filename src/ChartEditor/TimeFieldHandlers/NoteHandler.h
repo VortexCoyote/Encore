@@ -30,6 +30,9 @@ private:
 	void DrawRoutine(NoteData* aTimeObject, float aTimePoint) override;
 	void VisibleHoldDrawRoutine(double aTimePoint);
 
+	std::unordered_map<NoteData*, NoteData*> myVisibleHolds;
+	std::vector<std::unordered_map<NoteData*, NoteData*>::iterator> myVisibleHoldsToRemove;
+
 	ofFbo myPreviewBuffer;
 
 	ofImage myNoteImage[4];
@@ -39,7 +42,4 @@ private:
 	ofImage myHoldCapImage;
 
 	ofImage myHitLineImage;
-
-	std::unordered_map<NoteData*, NoteData*> myVisibleHolds;
-	std::vector<std::unordered_map<NoteData*, NoteData*>::iterator> myVisibleHoldsToRemove;
 };

@@ -18,7 +18,7 @@ ChartEditor::~ChartEditor()
 
 void ChartEditor::Load()
 {
-	myCursorImage.loadImage("images/selected.png");
+
 }
 
 void ChartEditor::Update()
@@ -31,6 +31,8 @@ void ChartEditor::Update()
 
 	myBPMLineHandler.ShowBeatDivisionControls();
 	mySongTimeHandler.Update();
+	myNoteSelectionHandler.SetCursorInput({ float(myMouseX), float(myMouseY) });
+	myNoteSelectionHandler.SetVisibleItems(&(myNoteHandler.GetVisibleNotes()));
 
 	TimeLine();
 }
@@ -49,8 +51,7 @@ void ChartEditor::Draw()
 	myNoteHandler.DrawNoteFieldBackground();
 	myBPMLineHandler.Draw(mySongTimeHandler.GetCurrentTimeS());
 	myNoteHandler.Draw(mySongTimeHandler.GetCurrentTimeS());
-
-	myCursorImage.draw(GetSnappedCursorPosition());
+	myNoteSelectionHandler.Draw();
 }
 
 void ChartEditor::TogglePlaying()
@@ -87,21 +88,7 @@ void ChartEditor::ScrollDown()
 
 void ChartEditor::TrySelectItem(int aX, int aY)
 {
-	for (auto& item : myNoteHandler.GetVisibleNotes())
-	{
-		if (aX >= item->x && aX <= item->x + 64 &&
-			aY >= item->y && aY <= item->y + 64)
-		{
-			item->selected = !item->selected;
-			mySelectedItems.push_back(item);
-			return void();
-		}
-	}
-
-	for (auto& item : mySelectedItems)
-		item->selected = false;	
-
-	mySelectedItems.clear();
+	myNoteSelectionHandler.TrySelectItem(aX, aY);
 }
 
 void ChartEditor::TryTimelinePreview(int aX, int aY)
@@ -217,7 +204,7 @@ void ChartEditor::SetSelectedChart(ChartData* aChartData)
 {
 	mySelectedChart = aChartData;
 
-	mySelectedItems.clear();
+	myNoteSelectionHandler.ClearSelectedItems();
 	myStackChart.clear();
 
 	for (auto& noteData : mySelectedChart->noteData)
@@ -228,18 +215,7 @@ void ChartEditor::SetSelectedChart(ChartData* aChartData)
 	myNoteHandler.Init(&myStackChart);
 	myBPMLineHandler.Init(&(mySelectedChart->BPMPoints));
 	mySongTimeHandler.Init(mySelectedChart->song);
+	myNoteSelectionHandler.Init(&myBPMLineHandler);
 	
 	mySongTimeHandler.SetTimeNormalized(0.f);
-}
-
-ofVec2f ChartEditor::GetSnappedCursorPosition()
-{
-	float inputX = myMouseX;
-	float x = inputX;
-	float leftBorder = ofGetWindowWidth() / 2 - 64 * 2.f;
-	float rightBorder = ofGetWindowWidth() / 2 + 64 * 2.f;
-
-	x = floor(ofClamp(inputX, leftBorder, rightBorder - 64.f) / 64.f) * 64.f;
-
-	return ofVec2f(x, myBPMLineHandler.GetClosestBeatLinePos(myMouseY) - myCursorImage.getHeight());
 }
