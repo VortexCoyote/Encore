@@ -4,6 +4,8 @@
 #include "ofSoundUtils.h"
 #include "ofMain.h"
 
+#include "imgui.h"
+
 #include <Windows.h>
 
 #include "EditorConfig.h"
@@ -56,6 +58,8 @@ void SongHandler::Update()
 	if (myCurrentTime >= GetSongLength())
 		SetPause(true);
 	
+
+	ImGuiController();
 
 	BASS_Update(myStreamHandle);
 
@@ -150,6 +154,9 @@ void SongHandler::DecreaseSpeed()
 {
 	mySpeed -= 0.05f;
 
+	if (mySpeed < 0.05f)
+		mySpeed = 0.05f;
+
 	BASS_CHANNELINFO info;
 	BASS_ChannelGetInfo(myStreamHandle, &info);
 
@@ -157,6 +164,42 @@ void SongHandler::DecreaseSpeed()
 	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, 0);
 
 	std::cout << "Playback Speed: " << mySpeed << std::endl;
+}
+
+void SongHandler::ImGuiController()
+{
+	ImGuiWindowFlags windowFlags = 0;
+	windowFlags |= ImGuiWindowFlags_NoMove;
+	windowFlags |= ImGuiWindowFlags_NoResize;
+	windowFlags |= ImGuiWindowFlags_NoCollapse;
+	windowFlags |= ImGuiWindowFlags_AlwaysAutoResize;
+	windowFlags |= ImGuiWindowFlags_NoTitleBar;
+
+	bool open = true;
+
+	ImGui::Begin("Playback Rate", &open, windowFlags);
+
+	ImGui::Text("Playback Rate:");
+	ImGui::SameLine();
+
+	std::stringstream stream;
+	stream << std::fixed << std::setprecision(2) << mySpeed << "x";
+	std::string s = stream.str();
+
+	ImGui::Text(s.c_str());
+
+
+	if (ImGui::Button("- 1.05x"))
+		DecreaseSpeed();
+
+	ImGui::SameLine();
+
+	if (ImGui::Button("+ 1.05x"))
+		IncreaseSpeed();
+
+	ImGui::SetWindowPos({ ofGetWindowWidth() - ImGui::GetWindowWidth() - 128, ofGetWindowHeight() - ImGui::GetWindowHeight() - 8 });
+
+	ImGui::End();
 }
 
 void SongHandler::TryTimingSync()

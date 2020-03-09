@@ -35,6 +35,8 @@ public:
 
 private:
 
+	void ImGuiController();
+
 	void TryTimingSync();
 	double GetRealCurrentTimeS();
 
