@@ -14,7 +14,7 @@ public:
 	TimeFieldHandlerBase();
 	~TimeFieldHandlerBase();
 
-	virtual void Init(std::vector<T>* aObjectData);
+	virtual void Init(std::vector<T*>* aObjectData);
 	virtual void Draw(double aTimePoint);
 
 protected:
@@ -27,7 +27,7 @@ protected:
 	unsigned int myLastObjectIndex = 0;
 	double		 myLastTimePoint = 0.0;
 
-	std::vector<T>* myObjectData = nullptr;
+	std::vector<T*>* myObjectData = nullptr;
 	std::vector<T*> myVisibleObjects;
 };
 
@@ -44,7 +44,7 @@ TimeFieldHandlerBase<T>::~TimeFieldHandlerBase()
 }
 
 template<class T>
-inline void TimeFieldHandlerBase<T>::Init(std::vector<T>* aObjectData)
+inline void TimeFieldHandlerBase<T>::Init(std::vector<T*>* aObjectData)
 {
 	myObjectData = aObjectData;
 
@@ -62,7 +62,7 @@ inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 
 		for (unsigned int rewindNoteIndex = myLastObjectIndex; rewindNoteIndex >= 0; rewindNoteIndex--)
 		{
-			float rewindNoteTimePoint = GetScreenTimePoint((*myObjectData)[rewindNoteIndex].timePoint, aTimePoint);
+			float rewindNoteTimePoint = GetScreenTimePoint((*myObjectData)[rewindNoteIndex]->timePoint, aTimePoint);
 
 			if (rewindNoteTimePoint < 0 || rewindNoteIndex == 0)
 			{
@@ -74,7 +74,7 @@ inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 
 	for (unsigned int noteIndex = myLastObjectIndex; noteIndex < myObjectData->size(); noteIndex++)
 	{
-		float noteTimePoint = GetScreenTimePoint((*myObjectData)[noteIndex].timePoint, aTimePoint);
+		float noteTimePoint = GetScreenTimePoint((*myObjectData)[noteIndex]->timePoint, aTimePoint);
 
 		//render all visible notes
 		if (noteTimePoint >= 0)
@@ -84,17 +84,17 @@ inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 
 			if (noteIndex > 0)
 			{
-				T* itemBack = &(*myObjectData)[noteIndex - 1];
+				T* itemBack = (*myObjectData)[noteIndex - 1];
 				myVisibleObjects.push_back(itemBack);
 			}
 
 			for (unsigned int visibleNoteIndex = noteIndex; visibleNoteIndex < myObjectData->size(); visibleNoteIndex++)
 			{
-				float visibleNoteTimePoint = GetScreenTimePoint((*myObjectData)[visibleNoteIndex].timePoint, aTimePoint);				
+				float visibleNoteTimePoint = GetScreenTimePoint((*myObjectData)[visibleNoteIndex]->timePoint, aTimePoint);				
 
 				if (visibleNoteTimePoint <= ofGetScreenHeight())
 				{
-					T* item = &(*myObjectData)[visibleNoteIndex];
+					T* item = (*myObjectData)[visibleNoteIndex];
 
 					DrawRoutine(item, visibleNoteTimePoint);
 					
@@ -102,7 +102,7 @@ inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 				}
 				else
 				{
-					T* itemFront = &(*myObjectData)[visibleNoteIndex];
+					T* itemFront = (*myObjectData)[visibleNoteIndex];
 					myVisibleObjects.push_back(itemFront);
 
 					break;

@@ -34,14 +34,29 @@ ofVec2f NoteSelectionHandler::GetSnappedCursorPosition()
 
 	float inputX = myCursorPosition.x;
 	float x = inputX;
-	float leftBorder = ofGetWindowWidth() / 2 - 64 * 2.f;
-	float rightBorder = ofGetWindowWidth() / 2 + 64 * 2.f;
+	float leftBorder = ofGetWindowWidth() / 2 - 64 * 2;
+	float rightBorder = ofGetWindowWidth() / 2 + 64 * 2;
+
+	//std::cout << leftBorder << std::endl;
 
 	switch (myCursorState)
 	{
 	case NoteCursorState::Place:
 
-		x = floor(ofClamp(inputX, leftBorder, rightBorder - 64.f) / 64.f) * 64.f;
+		x = ofClamp(inputX, leftBorder, rightBorder - 64.f);
+		
+		if (x > leftBorder && x < leftBorder + 64.f)
+			x = leftBorder;
+
+		if (x > leftBorder + 64.f && x < leftBorder + 128.f)
+			x = leftBorder + 64.f;
+
+		if (x > leftBorder + 128.f && x < leftBorder + 192.f)
+			x = leftBorder + 128.f;
+
+		if (x > leftBorder + 192.f && x < leftBorder + 256.f)
+			x = leftBorder + 192.f;
+
 		return ofVec2f(x, myBPMLineHandler->GetClosestBeatLinePos(myCursorPosition.y) - myCursorImage.getHeight());
 
 		break;
@@ -97,4 +112,26 @@ void NoteSelectionHandler::TrySelectItem(int aX, int aY)
 void NoteSelectionHandler::ClearSelectedItems()
 {
 	mySelectedItems.clear();
+}
+
+int NoteSelectionHandler::GetColumn()
+{
+	float inputX = myCursorPosition.x;
+	float x = inputX;
+	float leftBorder = ofGetWindowWidth() / 2 - 64 * 2;
+	float rightBorder = ofGetWindowWidth() / 2 + 64 * 2;
+
+	if (x > leftBorder&& x < leftBorder + 64.f)
+		return 0;
+
+	if (x > leftBorder + 64.f && x < leftBorder + 128.f)
+		return 1;
+
+	if (x > leftBorder + 128.f && x < leftBorder + 192.f)
+		return 2;
+
+	if (x > leftBorder + 192.f && x < leftBorder + 256.f)
+		return 3;
+
+	return -1;
 }

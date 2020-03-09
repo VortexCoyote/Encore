@@ -86,6 +86,45 @@ void ChartEditor::ScrollDown()
 		mySongTimeHandler.SongJumpAmount(-0.1f);
 }
 
+void ChartEditor::IncreaseSpeed()
+{
+	mySongTimeHandler.IncreaseSpeed();
+}
+
+void ChartEditor::DecreaseSpeed()
+{
+	mySongTimeHandler.DecreaseSpeed();
+}
+
+void ChartEditor::TryPlaceNote(int aX, int aY)
+{
+	if (mySelectedChart == nullptr)
+		return void();
+
+	int leftBorder = ofGetWindowWidth() / 2 - 64 * 2;
+	int rightBorder = ofGetWindowWidth() / 2 + 64 * 2;
+
+	bool withinBounds = aX >= leftBorder && aX <= rightBorder;
+
+	if (withinBounds == false)
+		return void();
+
+	NoteData* note = new NoteData();
+
+	note->column = myNoteSelectionHandler.GetColumn();
+
+	note->noteType = NoteType::Note;
+	note->self = note;
+	note->timePoint = myBPMLineHandler.GetClosestTimePoint(myNoteSelectionHandler.GetSnappedCursorPosition().y + 64);
+
+	mySelectedChart->noteData.push_back(note);
+
+	std::sort(mySelectedChart->noteData.begin(), mySelectedChart->noteData.end(), [](const auto& lhs, const auto& rhs)
+	{
+		return lhs->timePoint < rhs->timePoint;
+	});
+}
+
 void ChartEditor::TrySelectItem(int aX, int aY)
 {
 	myNoteSelectionHandler.TrySelectItem(aX, aY);
@@ -138,8 +177,8 @@ void ChartEditor::MenuBar()
 			ImGui::EndMenu();
 		}
 
-		std::string selectedDifficulty = mySelectedChart == nullptr ? " | Difficulty: No Difficulty Selected" 
-																	: " | Difficulty: " + mySelectedChart->difficultyName;	
+		std::string selectedDifficulty = mySelectedChart == nullptr ? " --> Difficulty: No Difficulty Selected" 
+																	: " --> Difficulty: " + mySelectedChart->difficultyName;	
 
 		if (ImGui::BeginMenu(selectedDifficulty.c_str()))
 		{
@@ -205,14 +244,8 @@ void ChartEditor::SetSelectedChart(ChartData* aChartData)
 	mySelectedChart = aChartData;
 
 	myNoteSelectionHandler.ClearSelectedItems();
-	myStackChart.clear();
 
-	for (auto& noteData : mySelectedChart->noteData)
-	{
-		myStackChart.push_back(*noteData);
-	}
-
-	myNoteHandler.Init(&myStackChart);
+	myNoteHandler.Init(&(mySelectedChart->noteData));
 	myBPMLineHandler.Init(&(mySelectedChart->BPMPoints));
 	mySongTimeHandler.Init(mySelectedChart->song);
 	myNoteSelectionHandler.Init(&myBPMLineHandler);

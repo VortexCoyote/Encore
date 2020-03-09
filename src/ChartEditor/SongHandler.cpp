@@ -52,18 +52,6 @@ void SongHandler::Update()
 		SetTimeS(myCurrentTime);
 	}
 
-	if (bool(GetAsyncKeyState(VK_RIGHT)) || bool(GetAsyncKeyState(VK_LEFT)))
-	{
-		mySpeed += 0.001f * (bool(GetAsyncKeyState(VK_RIGHT)) - bool(GetAsyncKeyState(VK_LEFT)));
-
-		BASS_CHANNELINFO info;
-		BASS_ChannelGetInfo(myStreamHandle, &info);
-
-		BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_FREQ, float(info.freq) * mySpeed);
-		BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, 0);
-
-		std::cout << "Playback Speed: " << mySpeed << std::endl;
-	}
 
 	if (myCurrentTime >= GetSongLength())
 		SetPause(true);
@@ -143,6 +131,32 @@ double SongHandler::GetSongLength()
 void SongHandler::StopSong()
 {
 	BASS_ChannelStop(myStreamHandle);
+}
+
+void SongHandler::IncreaseSpeed()
+{
+	mySpeed += 0.05f;
+	
+	BASS_CHANNELINFO info;
+	BASS_ChannelGetInfo(myStreamHandle, &info);
+	
+	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_FREQ, float(info.freq) * mySpeed);
+	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, 0);
+	
+	std::cout << "Playback Speed: " << mySpeed << std::endl;	
+}
+
+void SongHandler::DecreaseSpeed()
+{
+	mySpeed -= 0.05f;
+
+	BASS_CHANNELINFO info;
+	BASS_ChannelGetInfo(myStreamHandle, &info);
+
+	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_FREQ, float(info.freq) * mySpeed);
+	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, 0);
+
+	std::cout << "Playback Speed: " << mySpeed << std::endl;
 }
 
 void SongHandler::TryTimingSync()

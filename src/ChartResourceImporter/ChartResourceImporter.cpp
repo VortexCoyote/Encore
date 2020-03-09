@@ -167,9 +167,9 @@ ChartSet* ChartResourceImporter::ImportChart(std::string aPath)
 
 					bpm = 60000.0 / bpm;
 
-					BPMData bpmData;
-					bpmData.BPM = bpm;
-					bpmData.timePoint = int(timePoint);
+					BPMData* bpmData = new BPMData();
+					bpmData->BPM = bpm;
+					bpmData->timePoint = int(timePoint);
 
 					chartData->BPMPoints.push_back(bpmData);
 				}

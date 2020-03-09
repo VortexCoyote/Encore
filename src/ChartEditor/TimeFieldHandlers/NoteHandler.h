@@ -16,7 +16,7 @@ public:
 	NoteHandler();
 	~NoteHandler();
 
-	void Init(std::vector<NoteData>* aObjectData) override;
+	void Init(std::vector<NoteData*>* aObjectData) override;
 
 	void Draw(double aTimePoint) override;
 

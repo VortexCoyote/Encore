@@ -52,7 +52,7 @@ struct ChartData
 
 	std::string difficultyName;
 
-	std::vector<BPMData> BPMPoints;
+	std::vector<BPMData*> BPMPoints;
 };
 
 struct ChartSet

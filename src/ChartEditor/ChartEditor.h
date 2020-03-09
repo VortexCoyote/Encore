@@ -26,6 +26,11 @@ public:
 	void ScrollUp();
 	void ScrollDown();
 
+	void IncreaseSpeed();
+	void DecreaseSpeed();
+
+	void TryPlaceNote(int aX, int aY);
+
 	void TrySelectItem(int aX, int aY);
 	void TryTimelinePreview(int aX, int aY);
 
@@ -46,8 +51,6 @@ private:
 
 	ChartSet* mySelectedChartSet = nullptr;
 	ChartData* mySelectedChart	 = nullptr;
-
-	std::vector<NoteData>  myStackChart;
 
 	float myTimeLine		= 0.f;
 	float myPreviewTimeLine = 0.f;

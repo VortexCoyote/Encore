@@ -33,6 +33,8 @@ public:
 
 	void ClearSelectedItems();
 
+	int GetColumn();
+
 private:
 
 	ofImage myCursorImage;

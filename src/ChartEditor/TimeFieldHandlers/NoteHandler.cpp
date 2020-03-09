@@ -29,7 +29,7 @@ NoteHandler::~NoteHandler()
 
 }
 
-void NoteHandler::Init(std::vector<NoteData>* aObjectData)
+void NoteHandler::Init(std::vector<NoteData*>* aObjectData)
 {
 	TimeFieldHandlerBase<NoteData>::Init(aObjectData);
 

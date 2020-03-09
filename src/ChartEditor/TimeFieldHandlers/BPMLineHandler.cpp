@@ -107,7 +107,7 @@ void BPMLineHandler::Draw(double aTimePoint)
 			//oh god lol
 			if (ofGetWindowHeight() - GetScreenTimePoint(time, aTimePoint) > ofGetWindowHeight())
 			{
-				int timeJumps = float(int(float(GetTimeFromScreenPoint(0, aTimePoint) - time) / (60000.f / myVisibleObjects[bpmLineIndex]->BPM)));
+				int timeJumps = int(float(GetTimeFromScreenPoint(0, aTimePoint) - time) / (60000.f / myVisibleObjects[bpmLineIndex]->BPM));
 				timeOffset = (60000.f / myVisibleObjects[bpmLineIndex]->BPM) * float(timeJumps);
 				time += timeOffset;
 			}
@@ -134,8 +134,6 @@ void BPMLineHandler::Draw(double aTimePoint)
 		myVisibleObjects.pop_back();
 	}
 
-	//std::cout << myVisibleBeatLines.size() << std::endl;
-
 	ofSetColor(255, 255, 255, 255);
 	TimeFieldHandlerBase<BPMData>::Draw(aTimePoint);
 }
@@ -151,6 +149,19 @@ float BPMLineHandler::GetClosestBeatLinePos(float aY)
 	}
 
 	return 0.0f;
+}
+
+int BPMLineHandler::GetClosestTimePoint(float aY)
+{
+	for (int beatIndex = myVisibleBeatLines.size() - 1; beatIndex >= 0; beatIndex--)
+	{
+		if (aY <= myVisibleBeatLines[beatIndex].visualTimePoint)
+		{
+			return myVisibleBeatLines[beatIndex].timePoint;
+		}
+	}
+
+	return -1;
 }
 
 BPMLineHandler::BPMLineHandler()

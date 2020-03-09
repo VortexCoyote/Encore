@@ -30,6 +30,9 @@ public:
 
 	void StopSong();
 
+	void IncreaseSpeed();
+	void DecreaseSpeed();
+
 private:
 
 	void TryTimingSync();

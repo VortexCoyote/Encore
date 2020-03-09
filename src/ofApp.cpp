@@ -44,6 +44,12 @@ void ofApp::keyPressed(int key) {
 
 	if (key == '-')
 		myChartEditor.ZoomOut();
+
+	if (key == OF_KEY_RIGHT)
+		myChartEditor.IncreaseSpeed();
+
+	if (key == OF_KEY_LEFT)
+		myChartEditor.DecreaseSpeed();
 }
 
 //--------------------------------------------------------------
@@ -66,7 +72,8 @@ void ofApp::mousePressed(int x, int y, int button) {
 	
 	if (button == 0)
 	{
-		myChartEditor.TrySelectItem(x, y);
+		//myChartEditor.TrySelectItem(x, y);
+		myChartEditor.TryPlaceNote(x, y);
 	}
 }
 

@@ -17,6 +17,7 @@ public:
 	void Draw(double aTimePoint) override;
 
 	float GetClosestBeatLinePos(float aY);
+	int GetClosestTimePoint(float aY);
 
 private:
 
