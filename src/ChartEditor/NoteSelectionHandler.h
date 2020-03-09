@@ -7,7 +7,7 @@
 
 enum class NoteCursorState
 {
-	Place,
+	Edit,
 	Select,
 
 	Count
@@ -33,7 +33,7 @@ public:
 
 	void ClearSelectedItems();
 
-	int GetColumn();
+	int GetColumn(int aX);
 
 private:
 
@@ -42,7 +42,7 @@ private:
 
 	BPMLineHandler* myBPMLineHandler;
 
-	NoteCursorState myCursorState = NoteCursorState::Place;
+	NoteCursorState myCursorState = NoteCursorState::Edit;
 
 	std::vector<NoteData*>* myVisibleItems = nullptr;
 	std::vector<NoteData*> mySelectedItems;

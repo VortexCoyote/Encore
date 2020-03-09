@@ -41,20 +41,20 @@ ofVec2f NoteSelectionHandler::GetSnappedCursorPosition()
 
 	switch (myCursorState)
 	{
-	case NoteCursorState::Place:
+	case NoteCursorState::Edit:
 
 		x = ofClamp(inputX, leftBorder, rightBorder - 64.f);
 		
-		if (x > leftBorder && x < leftBorder + 64.f)
+		if (x >= leftBorder && x < leftBorder + 64.f)
 			x = leftBorder;
 
-		if (x > leftBorder + 64.f && x < leftBorder + 128.f)
+		if (x >= leftBorder + 64.f && x < leftBorder + 128.f)
 			x = leftBorder + 64.f;
 
-		if (x > leftBorder + 128.f && x < leftBorder + 192.f)
+		if (x >= leftBorder + 128.f && x < leftBorder + 192.f)
 			x = leftBorder + 128.f;
 
-		if (x > leftBorder + 192.f && x < leftBorder + 256.f)
+		if (x >= leftBorder + 192.f && x < leftBorder + 256.f)
 			x = leftBorder + 192.f;
 
 		return ofVec2f(x, myBPMLineHandler->GetClosestBeatLinePos(myCursorPosition.y) - myCursorImage.getHeight());
@@ -114,24 +114,25 @@ void NoteSelectionHandler::ClearSelectedItems()
 	mySelectedItems.clear();
 }
 
-int NoteSelectionHandler::GetColumn()
+int NoteSelectionHandler::GetColumn(int aX)
 {
-	float inputX = myCursorPosition.x;
+	float inputX = aX;
 	float x = inputX;
 	float leftBorder = ofGetWindowWidth() / 2 - 64 * 2;
 	float rightBorder = ofGetWindowWidth() / 2 + 64 * 2;
 
-	if (x > leftBorder&& x < leftBorder + 64.f)
+	if (x >= leftBorder&& x < leftBorder + 64.f)
 		return 0;
 
-	if (x > leftBorder + 64.f && x < leftBorder + 128.f)
+	if (x >= leftBorder + 64.f && x < leftBorder + 128.f)
 		return 1;
 
-	if (x > leftBorder + 128.f && x < leftBorder + 192.f)
+	if (x >= leftBorder + 128.f && x < leftBorder + 192.f)
 		return 2;
 
-	if (x > leftBorder + 192.f && x < leftBorder + 256.f)
+	if (x >= leftBorder + 192.f && x < leftBorder + 256.f)
 		return 3;
 
-	return -1;
+
+	assert(false && "bad input coordinate");
 }

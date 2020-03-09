@@ -70,11 +70,11 @@ void ofApp::mouseDragged(int x, int y, int button) {
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
 	
-	if (button == 0)
-	{
-		//myChartEditor.TrySelectItem(x, y);
+	if (button == OF_MOUSE_BUTTON_LEFT)
 		myChartEditor.TryPlaceNote(x, y);
-	}
+
+	if (button == OF_MOUSE_BUTTON_RIGHT)
+		myChartEditor.TryDeleteNote(x, y);
 }
 
 //--------------------------------------------------------------
