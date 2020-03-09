@@ -166,3 +166,4 @@ obj/Win32/Release/untitled_chart_editor.log
 obj/Win32/Release/vc142.pdb
 obj/Win32/Debug/untitled.7FD42DF7.tlog/link.17316.delete.1.tlog
 obj/Win32/Debug/untitled.7FD42DF7.tlog/link.20464.delete.1.tlog
+bin/imgui.ini
