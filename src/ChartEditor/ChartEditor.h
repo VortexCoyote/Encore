@@ -29,6 +29,9 @@ public:
 	void IncreaseSpeed();
 	void DecreaseSpeed();
 
+	void MoveDown();
+	void MoveUp();
+
 	void TryPlaceNote(int aX, int aY);
 	void TryDeleteNote(int aX, int aY);
 	

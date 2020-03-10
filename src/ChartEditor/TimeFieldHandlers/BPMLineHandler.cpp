@@ -115,7 +115,7 @@ void BPMLineHandler::Draw(double aTimePoint)
 			int lineForwardIndex = 1;
 			while (time <= myVisibleObjects[bpmLineIndex + 1]->timePoint)
 			{
-				myVisibleBeatLines.emplace_back(time, lineY);
+				myVisibleBeatLines.emplace_back(time, lineY, myVisibleObjects[bpmLineIndex]->BPM);
 				
 				ofSetColor(255, 64, 64, 255);
 				ofDrawRectangle({ x, lineY - height }, width, height);
@@ -149,6 +149,69 @@ float BPMLineHandler::GetClosestBeatLinePos(float aY)
 	}
 
 	return 0.0f;
+}
+
+float BPMLineHandler::GetClosestBeatLineSec(float aY)
+{
+	for (int beatIndex = myVisibleBeatLines.size() - 1; beatIndex >= 0; beatIndex--)
+	{
+		if (aY <= myVisibleBeatLines[beatIndex].visualTimePoint)
+		{
+			return float(myVisibleBeatLines[beatIndex].timePoint) / 1000.f;
+		}
+	}
+
+	return 0.0f;
+}
+
+float BPMLineHandler::GetBiasedClosestBeatLineMS(int aTime, bool aDown)
+{
+	//:(
+
+	BeatLine beatLine = { 0, 0, 0 };
+
+	for (int beatIndex = myVisibleBeatLines.size() - 1; beatIndex >= 0; beatIndex--)
+	{
+		if (aTime <= myVisibleBeatLines[beatIndex].timePoint)
+		{
+			beatLine = myVisibleBeatLines[beatIndex];
+			break;
+		}
+	}
+
+	int time = aTime;
+
+	double timeOffset = ((60000 / beatLine.BPM * mySnapQuotient));
+
+	if (aDown == true)
+	{
+		for (int beatIndex = myVisibleBeatLines.size() - 1; beatIndex >= 0; beatIndex--)
+		{
+			if (time > myVisibleBeatLines[beatIndex].timePoint)
+			{
+				time = myVisibleBeatLines[beatIndex].timePoint + 3;
+				break;
+			}
+		}
+
+		time -= (timeOffset);
+
+	}
+	else
+	{
+		time += timeOffset;
+
+		for (int beatIndex = myVisibleBeatLines.size() - 1; beatIndex >= 0; beatIndex--)
+		{
+			if (time > myVisibleBeatLines[beatIndex].timePoint)
+			{
+				time = myVisibleBeatLines[beatIndex].timePoint + 3;
+				break;
+			}
+		}
+	}
+
+	return time;
 }
 
 int BPMLineHandler::GetClosestTimePoint(float aY)

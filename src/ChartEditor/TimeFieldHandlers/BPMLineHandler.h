@@ -17,6 +17,10 @@ public:
 	void Draw(double aTimePoint) override;
 
 	float GetClosestBeatLinePos(float aY);
+	float GetClosestBeatLineSec(float aY);
+
+	float GetBiasedClosestBeatLineMS(int aTime, bool aDown);
+
 	int GetClosestTimePoint(float aY);
 
 private:
@@ -26,15 +30,19 @@ private:
 
 	struct BeatLine
 	{
-		BeatLine(int aTimePoint, float aVisualTimePoint)
+		BeatLine(int aTimePoint, float aVisualTimePoint, float aBPM)
 		{
 			timePoint = aTimePoint;
 			visualTimePoint = aVisualTimePoint;
+			BPM = aBPM;
 		};
 
 		int   timePoint;
 		float visualTimePoint;
+		float BPM;
 	};
 
 	std::vector<BeatLine> myVisibleBeatLines;
+
+
 };

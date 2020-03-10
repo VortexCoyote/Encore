@@ -21,6 +21,8 @@ public:
 	void SetTimeS(double aTimeS);
 	void SetTimeNormalized(float aNormalizedTime);
 
+	void ResetSpeed();
+
 	void SongJumpAmount(float aSongJumpAmount);
 
 	double GetCurrentTimeS();

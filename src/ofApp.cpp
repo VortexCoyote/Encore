@@ -50,6 +50,12 @@ void ofApp::keyPressed(int key) {
 
 	if (key == OF_KEY_LEFT)
 		myChartEditor.DecreaseSpeed();
+
+	if (key == OF_KEY_UP)
+		myChartEditor.MoveUp();
+
+	if (key == OF_KEY_DOWN)
+		myChartEditor.MoveDown();
 }
 
 //--------------------------------------------------------------

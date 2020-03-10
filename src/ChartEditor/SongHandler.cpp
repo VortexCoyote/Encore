@@ -42,7 +42,7 @@ void SongHandler::Init(std::string aPath, double aSyncThreshold)
 void SongHandler::Update()
 {
 
-	if (GetAsyncKeyState(VK_DOWN))
+	/*if (GetAsyncKeyState(VK_DOWN))
 	{
 		myCurrentTime -= 0.01;
 		SetTimeS(myCurrentTime);
@@ -52,7 +52,7 @@ void SongHandler::Update()
 	{
 		myCurrentTime += 0.01;
 		SetTimeS(myCurrentTime);
-	}
+	}*/
 
 
 	if (myCurrentTime >= GetSongLength())
@@ -102,6 +102,17 @@ void SongHandler::SetTimeNormalized(float aNormalizedTime)
 {
 	BASS_ChannelSetPosition(myStreamHandle, BASS_ChannelSeconds2Bytes(myStreamHandle, aNormalizedTime * GetSongLength()), BASS_POS_BYTE);
 	myCurrentTime = GetRealCurrentTimeS();
+}
+
+void SongHandler::ResetSpeed()
+{
+	mySpeed = 1.f;
+
+	BASS_CHANNELINFO info;
+	BASS_ChannelGetInfo(myStreamHandle, &info);
+
+	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_FREQ, float(info.freq) * mySpeed);
+	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, 0);
 }
 
 void SongHandler::SongJumpAmount(float aSongJumpAmount)

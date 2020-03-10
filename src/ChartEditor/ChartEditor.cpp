@@ -74,16 +74,12 @@ void ChartEditor::ZoomOut()
 
 void ChartEditor::ScrollUp()
 {
-	//TODO: Scroll should move with snapamount
-	if (mySelectedChart != nullptr)
-		mySongTimeHandler.SongJumpAmount(0.1f);
+	MoveUp();
 }
 
 void ChartEditor::ScrollDown()
 {
-	//TODO: Scroll should move with snapamount
-	if (mySelectedChart != nullptr)
-		mySongTimeHandler.SongJumpAmount(-0.1f);
+	MoveDown();
 }
 
 void ChartEditor::IncreaseSpeed()
@@ -94,6 +90,18 @@ void ChartEditor::IncreaseSpeed()
 void ChartEditor::DecreaseSpeed()
 {
 	mySongTimeHandler.DecreaseSpeed();
+}
+
+void ChartEditor::MoveDown()
+{
+	if (mySelectedChart != nullptr)
+		mySongTimeHandler.SetTimeS(float(myBPMLineHandler.GetBiasedClosestBeatLineMS(mySongTimeHandler.GetCurrentTimeMS(), true)) / 1000.f);
+}
+
+void ChartEditor::MoveUp()
+{
+	if (mySelectedChart != nullptr)
+		mySongTimeHandler.SetTimeS(float(myBPMLineHandler.GetBiasedClosestBeatLineMS(mySongTimeHandler.GetCurrentTimeMS(), false)) / 1000.f);
 }
 
 void ChartEditor::TryPlaceNote(int aX, int aY)
@@ -253,12 +261,14 @@ void ChartEditor::TimeLine()
 	windowFlags |= ImGuiWindowFlags_NoMove;
 	windowFlags |= ImGuiWindowFlags_NoResize;
 	windowFlags |= ImGuiWindowFlags_NoCollapse;
+	windowFlags |= ImGuiWindowFlags_NoBackground;
+	windowFlags |= ImGuiWindowFlags_NoScrollbar;
 
 	bool open = true;
 	ImGui::Begin("TL", &open, windowFlags);
 
 	ImGui::SetWindowSize({24.f, float(ofGetWindowHeight()) + 8 });
-	ImGui::SetWindowPos({ float(ofGetWindowWidth()) - 40,  - 8 });
+	ImGui::SetWindowPos({ float(ofGetWindowWidth() - 40),  - 8 });
 
 	if (ImGui::VSliderFloat("", { 24.f,  float(ofGetWindowHeight()) /* - menuBarHeight * 2.f */ }, &myTimeLine, 0.0f, 1.0f, ""))
 	{
@@ -303,4 +313,5 @@ void ChartEditor::SetSelectedChart(ChartData* aChartData)
 	myNoteSelectionHandler.Init(&myBPMLineHandler);
 	
 	mySongTimeHandler.SetTimeNormalized(0.f);
+	mySongTimeHandler.ResetSpeed();
 }
