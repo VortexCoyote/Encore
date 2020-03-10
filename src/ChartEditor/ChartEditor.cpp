@@ -111,7 +111,7 @@ void ChartEditor::TryPlaceNote(int aX, int aY)
 
 	NoteData* note = new NoteData();
 
-	note->column = myNoteSelectionHandler.GetColumn();
+	note->column = myNoteSelectionHandler.GetColumn(aX);
 
 	note->noteType = NoteType::Note;
 	note->self = note;
@@ -123,6 +123,31 @@ void ChartEditor::TryPlaceNote(int aX, int aY)
 	{
 		return lhs->timePoint < rhs->timePoint;
 	});
+}
+
+void ChartEditor::TryDeleteNote(int aX, int aY)
+{
+	if (mySelectedChart == nullptr)
+		return void();
+
+	int leftBorder = ofGetWindowWidth() / 2 - 64 * 2;
+	int rightBorder = ofGetWindowWidth() / 2 + 64 * 2;
+
+	bool withinBounds = aX >= leftBorder && aX <= rightBorder;
+
+	if (withinBounds == false)
+		return void();
+
+	NoteData* note = myNoteHandler.GetHoveredNote(aX, aY);
+	if (note == nullptr)
+		return void();
+
+	auto noteToDelete = std::find(mySelectedChart->noteData.begin(), mySelectedChart->noteData.end(), note);
+
+	if (noteToDelete != mySelectedChart->noteData.end())
+	{
+		mySelectedChart->noteData.erase(noteToDelete);
+	}
 }
 
 void ChartEditor::TrySelectItem(int aX, int aY)

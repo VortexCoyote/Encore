@@ -43,6 +43,23 @@ std::vector<NoteData*>& NoteHandler::GetVisibleNotes()
 	return myVisibleObjects;
 }
 
+NoteData* NoteHandler::GetHoveredNote(int aX, int aY)
+{
+	auto& visibleNotes = GetVisibleNotes();
+
+
+	for (auto note : visibleNotes)
+	{
+		if (aX > note->x && aX < note->x + 64 && 
+			aY > note->y && aY < note->y + 64 )
+		{
+			return note;
+		}
+	}
+
+	return nullptr;
+}
+
 
 void NoteHandler::DrawRoutine(NoteData* aTimeObject, float aTimePoint)
 {

@@ -25,6 +25,8 @@ public:
 
 	std::vector<NoteData*>& GetVisibleNotes();
 
+	NoteData* GetHoveredNote(int aX, int aY);
+
 private:
 
 	void DrawRoutine(NoteData* aTimeObject, float aTimePoint) override;

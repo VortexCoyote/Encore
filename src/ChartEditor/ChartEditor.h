@@ -30,7 +30,8 @@ public:
 	void DecreaseSpeed();
 
 	void TryPlaceNote(int aX, int aY);
-
+	void TryDeleteNote(int aX, int aY);
+	
 	void TrySelectItem(int aX, int aY);
 	void TryTimelinePreview(int aX, int aY);
 
