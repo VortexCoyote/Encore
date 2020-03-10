@@ -19,6 +19,7 @@ struct TimeFieldObject
 {
 	int timePoint = 0;
 	int cullTimeOffset = -1;
+	float visibleTimePoint = -1.f;
 };
 
 struct BPMData : public TimeFieldObject
@@ -32,7 +33,6 @@ struct NoteData : public TimeFieldObject
 
 	NoteType noteType = NoteType::Note;
 
-	NoteData* self = nullptr;
 	NoteData* relevantNote = nullptr;
 
 	bool selected = false;

@@ -27,6 +27,8 @@ public:
 
 	NoteData* GetHoveredNote(int aX, int aY);
 
+	void RemoveVisibleHold(NoteData* aNote);
+
 private:
 
 	void DrawRoutine(NoteData* aTimeObject, float aTimePoint) override;

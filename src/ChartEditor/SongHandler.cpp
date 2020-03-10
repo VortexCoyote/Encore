@@ -147,7 +147,7 @@ void SongHandler::IncreaseSpeed()
 	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_FREQ, float(info.freq) * mySpeed);
 	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, 0);
 	
-	std::cout << "Playback Speed: " << mySpeed << std::endl;	
+	std::cout << "Playback Speed: " << mySpeed << std::endl;
 }
 
 void SongHandler::DecreaseSpeed()

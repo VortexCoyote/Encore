@@ -76,7 +76,7 @@ inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 	{
 		float noteTimePoint = GetScreenTimePoint((*myObjectData)[noteIndex]->timePoint, aTimePoint);
 
-		//render all visible notes
+		//render all visible notesb
 		if (noteTimePoint >= 0)
 		{
 			myLastObjectIndex = noteIndex;
@@ -96,6 +96,7 @@ inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 				{
 					T* item = (*myObjectData)[visibleNoteIndex];
 
+					item->visibleTimePoint = visibleNoteTimePoint;
 					DrawRoutine(item, visibleNoteTimePoint);
 					
 					myVisibleObjects.push_back(item);

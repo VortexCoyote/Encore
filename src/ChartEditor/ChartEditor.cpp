@@ -114,7 +114,6 @@ void ChartEditor::TryPlaceNote(int aX, int aY)
 	note->column = myNoteSelectionHandler.GetColumn(aX);
 
 	note->noteType = NoteType::Note;
-	note->self = note;
 	note->timePoint = myBPMLineHandler.GetClosestTimePoint(myNoteSelectionHandler.GetSnappedCursorPosition().y + 64);
 
 	mySelectedChart->noteData.push_back(note);
@@ -146,7 +145,35 @@ void ChartEditor::TryDeleteNote(int aX, int aY)
 
 	if (noteToDelete != mySelectedChart->noteData.end())
 	{
-		mySelectedChart->noteData.erase(noteToDelete);
+		switch (note->noteType)
+		{
+		case NoteType::HoldBegin:
+		case NoteType::HoldEnd:
+
+			myNoteHandler.RemoveVisibleHold(note);
+			myNoteHandler.RemoveVisibleHold(note->relevantNote);
+
+			mySelectedChart->noteData.erase(noteToDelete);
+			mySelectedChart->noteData.erase(std::find(mySelectedChart->noteData.begin(), mySelectedChart->noteData.end(), note->relevantNote));
+			
+			delete note->relevantNote;
+			delete note;
+
+			break;
+
+		case NoteType::Note:
+
+			mySelectedChart->noteData.erase(noteToDelete);
+			delete note;
+
+			break;
+
+		default:
+
+			std::cout << "invalid notetype" << std::endl;
+
+			break;
+		}
 	}
 }
 

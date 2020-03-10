@@ -47,17 +47,52 @@ NoteData* NoteHandler::GetHoveredNote(int aX, int aY)
 {
 	auto& visibleNotes = GetVisibleNotes();
 
-
 	for (auto note : visibleNotes)
 	{
-		if (aX > note->x && aX < note->x + 64 && 
-			aY > note->y && aY < note->y + 64 )
+		switch (note->noteType)
 		{
-			return note;
+		case NoteType::HoldBegin:
+		{
+			int column = note->column;
+			float x = ofGetWindowWidth() / 2 - myNoteImage[column].getWidth() * 2 + myNoteImage[column].getWidth() * column;
+			float y = ofGetWindowHeight() - note->visibleTimePoint;
+
+			if (aX > x && aX < x + 64 &&
+				aY > y && aY < y + 64)
+			{
+				return note;
+			}
+		}
+			break;
+
+		case NoteType::HoldEnd:
+		case NoteType::Note:
+
+			if (aX > note->x && aX < note->x + 64 &&
+				aY > note->y && aY < note->y + 64)
+			{
+				return note;
+			}
+		
+			break;
+
+		default:
+
+			std::cout << "invalid notetype" << std::endl;
+
+			break;
 		}
 	}
 
 	return nullptr;
+}
+
+void NoteHandler::RemoveVisibleHold(NoteData* aNote)
+{
+	auto note = myVisibleHolds.find(aNote);
+
+	if (note != myVisibleHolds.end())
+		myVisibleHolds.erase(note);
 }
 
 
@@ -81,10 +116,10 @@ void NoteHandler::DrawRoutine(NoteData* aTimeObject, float aTimePoint)
 
 	case NoteType::HoldBegin:
 
-		aTimeObject->self->x = aTimeObject->x;
-		aTimeObject->self->y = aTimeObject->y;
+		//aTimeObject->relevantNote->x = aTimeObject->x;
+		//aTimeObject->relevantNote->y = aTimeObject->y;
 
-		myVisibleHolds[aTimeObject->self] = aTimeObject->self;
+		myVisibleHolds[aTimeObject] = aTimeObject;
 
 	case NoteType::Note:
 
