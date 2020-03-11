@@ -27,16 +27,15 @@ void SongHandler::Init(std::string aPath, double aSyncThreshold)
 	BASS_Free();
 	BASS_Init(myDevice, myFreq, 0, 0, NULL);
 
-	myStreamHandle = BASS_FX_TempoCreate(BASS_StreamCreateFile(FALSE, aPath.c_str(), 0, 0, BASS_STREAM_DECODE | BASS_ASYNCFILE), BASS_FX_FREESOURCE);
+	myStreamHandle = BASS_FX_TempoCreate(BASS_StreamCreateFile(FALSE, aPath.c_str(), 0, 0, BASS_STREAM_DECODE | BASS_STREAM_PRESCAN), BASS_FX_FREESOURCE);
 	
-	/*auto lol = BASS_SampleLoad(FALSE, aPath.c_str(), 0, 0, 0 , BASS_SAMPLE_OVER_POS);
+	/*auto lol = BASS_SampleLoad(FALSE, aPath.c_str(), 0, 0, 1 , BASS_SAMPLE_OVER_POS);
 	
 	std::cout << BASS_ErrorGetCode() << std::endl;
 
-	myStreamHandle = BASS_FX_TempoCreate(lol, BASS_FX_FREESOURCE);
+	myStreamHandle = BASS_FX_TempoCreate(lol, BASS_FX_FREESOURCE);	
 
-	std::cout << BASS_ErrorGetCode() << std::endl;
-	*/
+	std::cout << BASS_ErrorGetCode() << std::endl;*/
 
 	auto error = BASS_ErrorGetCode();
 	if (error != 0)
@@ -70,7 +69,7 @@ void SongHandler::Update()
 		SetPause(true);
 	
 
-	ImGuiController();
+	ShowPlaybackRateControls();
 
 	BASS_Update(myStreamHandle);
 
@@ -140,7 +139,7 @@ double SongHandler::GetCurrentTimeS()
 
 int SongHandler::GetCurrentTimeMS()
 {
-	return int(myCurrentTime * 1000.0 + 0.5);
+	return int(myCurrentTime * 1000.0);
 }
 
 double SongHandler::GetTimeNormalized()
@@ -187,7 +186,7 @@ void SongHandler::DecreaseSpeed()
 	std::cout << "Playback Speed: " << mySpeed << std::endl;
 }
 
-void SongHandler::ImGuiController()
+void SongHandler::ShowPlaybackRateControls()
 {
 	ImGuiWindowFlags windowFlags = 0;
 	windowFlags |= ImGuiWindowFlags_NoMove;
@@ -251,5 +250,4 @@ void SongHandler::TryTimingSync()
 double SongHandler::GetRealCurrentTimeS()
 {
 	return BASS_ChannelBytes2Seconds(myStreamHandle, BASS_ChannelGetPosition(myStreamHandle, BASS_POS_BYTE));
-
 }

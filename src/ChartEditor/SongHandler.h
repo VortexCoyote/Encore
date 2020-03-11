@@ -37,7 +37,7 @@ public:
 
 private:
 
-	void ImGuiController();
+	void ShowPlaybackRateControls();
 
 	void TryTimingSync();
 	double GetRealCurrentTimeS();
@@ -54,5 +54,6 @@ private:
 	//relevant BASS variables
 	int myDevice = -1; // Default Sounddevice
 	int myFreq = 44100; // Sample rate (Hz)
-	HSTREAM myStreamHandle; // Handle for open stream
+	//HSTREAM myStreamHandle; // Handle for open stream
+	HSAMPLE myStreamHandle; // Handle for open stream
 };

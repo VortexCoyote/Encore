@@ -126,7 +126,7 @@ double TimeFieldHandlerBase<T>::GetScreenTimePoint(int aTimePointMS, double aCur
 
 	timePoint += 64.f;
 
-	return timePoint;
+	return timePoint; 
 }
 
 template<class T>
