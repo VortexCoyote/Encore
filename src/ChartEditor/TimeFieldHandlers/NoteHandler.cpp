@@ -101,7 +101,7 @@ void NoteHandler::DrawRoutine(NoteData* aTimeObject, float aTimePoint)
 	int column = aTimeObject->column;
 
 	aTimeObject->x = ofGetWindowWidth() / 2 - myNoteImage[column].getWidth() * 2 + myNoteImage[column].getWidth() * column;
-	aTimeObject->y = ofGetWindowHeight() - aTimePoint;
+	aTimeObject->y = ofGetWindowHeight() - int(aTimePoint + 0.5f);
 
 	switch (aTimeObject->noteType)
 	{
@@ -115,9 +115,6 @@ void NoteHandler::DrawRoutine(NoteData* aTimeObject, float aTimePoint)
 		break;
 
 	case NoteType::HoldBegin:
-
-		//aTimeObject->relevantNote->x = aTimeObject->x;
-		//aTimeObject->relevantNote->y = aTimeObject->y;
 
 		myVisibleHolds[aTimeObject] = aTimeObject;
 

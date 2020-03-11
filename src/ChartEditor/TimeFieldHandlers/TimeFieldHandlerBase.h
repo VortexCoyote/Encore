@@ -21,7 +21,7 @@ protected:
 
 	virtual void DrawRoutine(T* aTimeObject, float aTimePoint) = 0;
 
-	float GetScreenTimePoint(int aTimePointMS, double aCurrentTimePointS);
+	double GetScreenTimePoint(int aTimePointMS, double aCurrentTimePointS);
 	int GetTimeFromScreenPoint(float aScreenPoint, double aCurrentTimePointS);
 
 	unsigned int myLastObjectIndex = 0;
@@ -62,7 +62,7 @@ inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 
 		for (unsigned int rewindNoteIndex = myLastObjectIndex; rewindNoteIndex >= 0; rewindNoteIndex--)
 		{
-			float rewindNoteTimePoint = GetScreenTimePoint((*myObjectData)[rewindNoteIndex]->timePoint, aTimePoint);
+			double rewindNoteTimePoint = GetScreenTimePoint((*myObjectData)[rewindNoteIndex]->timePoint, aTimePoint);
 
 			if (rewindNoteTimePoint < 0 || rewindNoteIndex == 0)
 			{
@@ -74,7 +74,7 @@ inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 
 	for (unsigned int noteIndex = myLastObjectIndex; noteIndex < myObjectData->size(); noteIndex++)
 	{
-		float noteTimePoint = GetScreenTimePoint((*myObjectData)[noteIndex]->timePoint, aTimePoint);
+		double noteTimePoint = GetScreenTimePoint((*myObjectData)[noteIndex]->timePoint, aTimePoint);
 
 		//render all visible notesb
 		if (noteTimePoint >= 0)
@@ -90,7 +90,7 @@ inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 
 			for (unsigned int visibleNoteIndex = noteIndex; visibleNoteIndex < myObjectData->size(); visibleNoteIndex++)
 			{
-				float visibleNoteTimePoint = GetScreenTimePoint((*myObjectData)[visibleNoteIndex]->timePoint, aTimePoint);				
+				double visibleNoteTimePoint = GetScreenTimePoint((*myObjectData)[visibleNoteIndex]->timePoint, aTimePoint);
 
 				if (visibleNoteTimePoint <= ofGetScreenHeight())
 				{
@@ -117,9 +117,9 @@ inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 }
 
 template<class T>
-float TimeFieldHandlerBase<T>::GetScreenTimePoint(int aTimePointMS, double aCurrentTimePointS)
+double TimeFieldHandlerBase<T>::GetScreenTimePoint(int aTimePointMS, double aCurrentTimePointS)
 {
-	float timePoint = float(aTimePointMS) - (aCurrentTimePointS * 1000.f);
+	double timePoint = double(aTimePointMS) - (aCurrentTimePointS * 1000.0);
 
 	timePoint *= EditorConfig::scale;
 	timePoint += (EditorConfig::hitLinePosition);
@@ -137,7 +137,7 @@ inline int TimeFieldHandlerBase<T>::GetTimeFromScreenPoint(float aScreenPoint, d
 	aScreenPoint -= (EditorConfig::hitLinePosition);
 	aScreenPoint /= EditorConfig::scale;
 
-	int timePointMS = aScreenPoint + (aCurrentTimePointS * 1000.f);
+	int timePointMS = aScreenPoint + (aCurrentTimePointS * 1000.0);
 
 	return timePointMS;
 }

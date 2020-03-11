@@ -172,7 +172,7 @@ float BPMLineHandler::GetBiasedClosestBeatLineMS(int aTime, bool aDown)
 
 	for (int beatIndex = myVisibleBeatLines.size() - 1; beatIndex >= 0; beatIndex--)
 	{
-		if (aTime <= myVisibleBeatLines[beatIndex].timePoint)
+		if (aTime + 4 > myVisibleBeatLines[beatIndex].timePoint)
 		{
 			beatLine = myVisibleBeatLines[beatIndex];
 			break;
@@ -187,14 +187,14 @@ float BPMLineHandler::GetBiasedClosestBeatLineMS(int aTime, bool aDown)
 	{
 		for (int beatIndex = myVisibleBeatLines.size() - 1; beatIndex >= 0; beatIndex--)
 		{
-			if (time > myVisibleBeatLines[beatIndex].timePoint)
+			if (time + 4 > myVisibleBeatLines[beatIndex].timePoint)
 			{
-				time = myVisibleBeatLines[beatIndex].timePoint + 3;
+				time = myVisibleBeatLines[beatIndex].timePoint;
 				break;
 			}
 		}
 
-		time -= (timeOffset);
+		time -= timeOffset;
 
 	}
 	else
@@ -203,9 +203,9 @@ float BPMLineHandler::GetBiasedClosestBeatLineMS(int aTime, bool aDown)
 
 		for (int beatIndex = myVisibleBeatLines.size() - 1; beatIndex >= 0; beatIndex--)
 		{
-			if (time > myVisibleBeatLines[beatIndex].timePoint)
+			if (time + 4 > myVisibleBeatLines[beatIndex].timePoint)
 			{
-				time = myVisibleBeatLines[beatIndex].timePoint + 3;
+				time = myVisibleBeatLines[beatIndex].timePoint;
 				break;
 			}
 		}

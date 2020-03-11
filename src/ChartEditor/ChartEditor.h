@@ -47,7 +47,7 @@ private:
 	void LoadChartFromDirectory();
 	void SetSelectedChart(ChartData* aChartData);
 
-	ChartResourceImporter myChartImporter;
+	ChartResourceHandler myChartResourceHandler;
 	SongHandler mySongTimeHandler;
 	NoteHandler myNoteHandler;
 	BPMLineHandler myBPMLineHandler;

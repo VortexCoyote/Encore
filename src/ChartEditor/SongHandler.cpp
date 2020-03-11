@@ -27,11 +27,22 @@ void SongHandler::Init(std::string aPath, double aSyncThreshold)
 	BASS_Free();
 	BASS_Init(myDevice, myFreq, 0, 0, NULL);
 
-	BASS_StreamCreateFile(FALSE, aPath.c_str(), 0, 0, BASS_STREAM_DECODE);
+	myStreamHandle = BASS_FX_TempoCreate(BASS_StreamCreateFile(FALSE, aPath.c_str(), 0, 0, BASS_STREAM_DECODE | BASS_ASYNCFILE), BASS_FX_FREESOURCE);
+	
+	/*auto lol = BASS_SampleLoad(FALSE, aPath.c_str(), 0, 0, 0 , BASS_SAMPLE_OVER_POS);
+	
 	std::cout << BASS_ErrorGetCode() << std::endl;
 
-	myStreamHandle = BASS_FX_TempoCreate(BASS_StreamCreateFile(FALSE, aPath.c_str(), 0, 0, BASS_STREAM_DECODE), BASS_FX_FREESOURCE);
+	myStreamHandle = BASS_FX_TempoCreate(lol, BASS_FX_FREESOURCE);
 
+	std::cout << BASS_ErrorGetCode() << std::endl;
+	*/
+
+	auto error = BASS_ErrorGetCode();
+	if (error != 0)
+	{
+		std::cout << BASS_ErrorGetCode() << std::endl;
+	}
 
 	BASS_ChannelPlay(myStreamHandle, FALSE);
 	BASS_ChannelPause(myStreamHandle);
@@ -115,12 +126,11 @@ void SongHandler::ResetSpeed()
 	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, 0);
 }
 
-void SongHandler::SongJumpAmount(float aSongJumpAmount)
+void SongHandler::SongJumpAmount(double aSongJumpAmount)
 {
 	myCurrentTime += aSongJumpAmount;
 	
 	BASS_ChannelSetPosition(myStreamHandle, BASS_ChannelSeconds2Bytes(myStreamHandle, myCurrentTime), BASS_POS_BYTE);
-
 }
 
 double SongHandler::GetCurrentTimeS()
@@ -130,10 +140,10 @@ double SongHandler::GetCurrentTimeS()
 
 int SongHandler::GetCurrentTimeMS()
 {
-	return int(myCurrentTime * 1000);
+	return int(myCurrentTime * 1000.0 + 0.5);
 }
 
-float SongHandler::GetTimeNormalized()
+double SongHandler::GetTimeNormalized()
 {
 	return myCurrentTime / GetSongLength();
 }
@@ -228,6 +238,7 @@ void SongHandler::TryTimingSync()
 		if (abs(syncAdjustment) > mySyncThreshold)
 		{
 			myCurrentTime += syncAdjustment;
+			
 			std::cout << syncAdjustment << " - SYNCED!" << std::endl;
 		}
 		else
@@ -240,4 +251,5 @@ void SongHandler::TryTimingSync()
 double SongHandler::GetRealCurrentTimeS()
 {
 	return BASS_ChannelBytes2Seconds(myStreamHandle, BASS_ChannelGetPosition(myStreamHandle, BASS_POS_BYTE));
+
 }

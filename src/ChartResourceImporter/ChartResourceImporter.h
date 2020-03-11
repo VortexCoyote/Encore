@@ -7,12 +7,12 @@
 
 #define PARSE_COMMA_VALUE(stringstream, target) stringstream >> target; if (stringstream.peek() == ',') stringstream.ignore()
 
-class ChartResourceImporter
+class ChartResourceHandler
 {
 public:
 
-	ChartResourceImporter();
-	~ChartResourceImporter();
+	ChartResourceHandler();
+	~ChartResourceHandler();
 
 	ChartSet* ImportChart(std::string aPath);
 

@@ -287,7 +287,7 @@ void ChartEditor::LoadChartFromDirectory()
 	ofFileDialogResult result = ofSystemLoadDialog("select chart folder", true);
 	if (result.bSuccess)
 	{
-		mySelectedChartSet = myChartImporter.ImportChart(result.getPath());
+		mySelectedChartSet = myChartResourceHandler.ImportChart(result.getPath());
 		
 		if (mySelectedChartSet->charts.size() == 1)
 		{

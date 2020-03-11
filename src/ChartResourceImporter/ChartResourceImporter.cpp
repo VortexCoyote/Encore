@@ -8,19 +8,19 @@
 #include <sstream>
 #include <algorithm>
 
-ChartResourceImporter::ChartResourceImporter()
+ChartResourceHandler::ChartResourceHandler()
 {
 
 }
 
-ChartResourceImporter::~ChartResourceImporter()
+ChartResourceHandler::~ChartResourceHandler()
 {
 	for (auto& entry : myCharts)
 		for (auto& chart : entry.second.charts)
 			delete chart;
 }
 
-ChartSet* ChartResourceImporter::ImportChart(std::string aPath)
+ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 {
 	if (myCharts.find(aPath) != myCharts.end())
 		return &myCharts[aPath];

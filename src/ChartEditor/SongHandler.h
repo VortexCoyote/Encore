@@ -13,7 +13,7 @@ public:
 	SongHandler();
 	~SongHandler();
 
-	void Init(std::string aPath,double aSyncThreshold = 0.02);
+	void Init(std::string aPath, double aSyncThreshold = 0.02);
 	void Update();
 
 	void TogglePause();
@@ -23,11 +23,11 @@ public:
 
 	void ResetSpeed();
 
-	void SongJumpAmount(float aSongJumpAmount);
+	void SongJumpAmount(double aSongJumpAmount);
 
 	double GetCurrentTimeS();
 	int	   GetCurrentTimeMS();
-	float  GetTimeNormalized();
+	double GetTimeNormalized();
 	double GetSongLength();
 
 	void StopSong();
@@ -55,5 +55,4 @@ private:
 	int myDevice = -1; // Default Sounddevice
 	int myFreq = 44100; // Sample rate (Hz)
 	HSTREAM myStreamHandle; // Handle for open stream
-
 };
