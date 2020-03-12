@@ -5,6 +5,8 @@
 #include "TimeFieldHandlers/BPMLineHandler.h"
 #include "ofMain.h"
 
+#include "NotificationSystem.h"
+
 EditHandler::EditHandler()
 {
 	myCursorImage.loadImage("images/selected.png");
@@ -98,16 +100,18 @@ void EditHandler::SetEditActionState(EditActionState aCursorState)
 	switch (aCursorState)
 	{
 	case EditActionState::EditNotes:
-		std::cout << "Edit Note Mode" << std::endl;
+		PUSH_NOTIFICATION("Edit Note Mode");
 		break;
 	case EditActionState::EditHolds:
-		std::cout << "Edit Hold Mode" << std::endl;
+		PUSH_NOTIFICATION("Edit Hold Mode");
 		break;
 	case EditActionState::Select:
-		std::cout << "Select Mode" << std::endl;
+		PUSH_NOTIFICATION("Select Mode");
 		break;
+
 	default:
-		std::cout << "Invalid Mode Input" << std::endl;
+		PUSH_NOTIFICATION("Invalid Mode Input");
+
 		return void();
 		break;
 	}

@@ -7,6 +7,8 @@
 #include "TimeFieldHandlers/NoteHandler.h"
 #include "TimeFieldHandlers/BPMLineHandler.h"
 
+#include "NotificationSystem.h"
+
 class ChartEditor
 {
 public:
@@ -85,5 +87,4 @@ private:
 
 	bool myHoldDrag = false;
 	NoteData* myDraggableHoldEnd = nullptr;
-
 };

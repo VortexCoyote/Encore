@@ -34,6 +34,8 @@ void ChartEditor::Update()
 	myEditHandler.SetCursorInput({ float(myMouseX), float(myMouseY) });
 	myEditHandler.SetVisibleItems(&(myNoteHandler.GetVisibleNotes()));
 
+	NotificationSystem::GetInstance()->Update();
+
 	TimeLine();
 }
 
@@ -52,6 +54,8 @@ void ChartEditor::Draw()
 	myBPMLineHandler.Draw(mySongTimeHandler.GetCurrentTimeS());
 	myNoteHandler.Draw(mySongTimeHandler.GetCurrentTimeS());
 	myEditHandler.Draw();
+
+	NotificationSystem::GetInstance()->Draw();
 }
 
 void ChartEditor::TogglePlaying()
@@ -60,16 +64,19 @@ void ChartEditor::TogglePlaying()
 	{
 		mySongTimeHandler.TogglePause();
 	}
+
 }
 
 void ChartEditor::ZoomIn()
 {
 	EditorConfig::scale += 0.05f;
+	PUSH_NOTIFICATION(std::string("Zoomed In: ") + std::to_string(EditorConfig::scale));
 }
 
 void ChartEditor::ZoomOut()
 {
 	EditorConfig::scale -= EditorConfig::scale >= 0.f ? 0.05f : 0.f;
+	PUSH_NOTIFICATION(std::string("Zoomed Out: ") + std::to_string(EditorConfig::scale));
 }
 
 void ChartEditor::ScrollUp()
@@ -355,7 +362,7 @@ void ChartEditor::TimeLine()
 	windowFlags |= ImGuiWindowFlags_NoMove;
 	windowFlags |= ImGuiWindowFlags_NoResize;
 	windowFlags |= ImGuiWindowFlags_NoCollapse;
-	windowFlags |= ImGuiWindowFlags_NoBackground;
+    //windowFlags |= ImGuiWindowFlags_NoBackground;
 	windowFlags |= ImGuiWindowFlags_NoScrollbar;
 
 	bool open = true;

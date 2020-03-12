@@ -9,6 +9,7 @@
 #include <Windows.h>
 
 #include "EditorConfig.h"
+#include "NotificationSystem.h"
 
 SongHandler::SongHandler()
 {
@@ -159,7 +160,7 @@ void SongHandler::IncreaseSpeed()
 	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_FREQ, float(info.freq) * mySpeed);
 	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, 0);
 	
-	std::cout << "Playback Speed: " << mySpeed << std::endl;
+	PUSH_NOTIFICATION(std::string("Playback Speed: ") + std::to_string(mySpeed));
 }
 
 void SongHandler::DecreaseSpeed()
@@ -175,7 +176,7 @@ void SongHandler::DecreaseSpeed()
 	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_FREQ, float(info.freq) * mySpeed);
 	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, 0);
 
-	std::cout << "Playback Speed: " << mySpeed << std::endl;
+	PUSH_NOTIFICATION(std::string("Playback Speed: ") + std::to_string(mySpeed));
 }
 
 void SongHandler::ShowPlaybackRateControls()
@@ -201,12 +202,12 @@ void SongHandler::ShowPlaybackRateControls()
 	ImGui::Text(s.c_str());
 
 
-	if (ImGui::Button("- 1.05x"))
+	if (ImGui::Button("- 0.05x"))
 		DecreaseSpeed();
 
 	ImGui::SameLine();
 
-	if (ImGui::Button("+ 1.05x"))
+	if (ImGui::Button("+ 0.05x"))
 		IncreaseSpeed();
 
 	ImGui::SetWindowPos({ ofGetWindowWidth() - ImGui::GetWindowWidth() - 128, ofGetWindowHeight() - ImGui::GetWindowHeight() - 8 });
@@ -230,7 +231,7 @@ void SongHandler::TryTimingSync()
 		{
 			myCurrentTime += syncAdjustment;
 			
-			std::cout << syncAdjustment << " - SYNCED!" << std::endl;
+			PUSH_NOTIFICATION_DEBUG(std::to_string(int(syncAdjustment * 1000.0 + 0.5)) + "ms SYNCED!");
 		}
 		else
 		{
