@@ -1,4 +1,4 @@
-#include "ChartResourceImporter.h"
+#include "ChartResourceHandler.h"
 #include "ofFileUtils.h"
 #include "ofWindowSettings.h"
 #include "ofMain.h"
@@ -39,6 +39,7 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 		ChartData* chartData = myCharts[aPath].charts.back();
 
 		chartData->noteData.reserve(100000);
+		chartData->filePath = directory.getPath(i);
 
 		std::string line;
 		while (std::getline(chartFile, line))
@@ -70,6 +71,7 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 					{
 						std::string songPath = aPath + "\\" + value;
 						chartData->song = songPath;
+						chartData->audioFilename = value;
 					}
 				}
 			}
@@ -130,6 +132,7 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 					
 					std::string backgroundPath = aPath + "\\" + background;
 
+					chartData->backgroundFilename = background;
 					chartData->background.load(backgroundPath);
 
 					float procentualChange = float(ofGetWindowHeight()) / float(chartData->background.getHeight());
@@ -151,25 +154,29 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 					std::stringstream timePointStream(line);
 
 					float timePoint, bpm;
-					int filler1, filler2, filler3, filler4, filler5, filler6;
+					int meter, sampleSet, sampleIndex, volume, uninherited, effects;
 
 					PARSE_COMMA_VALUE(timePointStream, timePoint);
 					PARSE_COMMA_VALUE(timePointStream, bpm);
-					PARSE_COMMA_VALUE(timePointStream, filler1);
-					PARSE_COMMA_VALUE(timePointStream, filler2);
-					PARSE_COMMA_VALUE(timePointStream, filler3);
-					PARSE_COMMA_VALUE(timePointStream, filler4);
-					PARSE_COMMA_VALUE(timePointStream, filler5);
-					PARSE_COMMA_VALUE(timePointStream, filler6);
+					PARSE_COMMA_VALUE(timePointStream, meter);
+					PARSE_COMMA_VALUE(timePointStream, sampleSet);
+					PARSE_COMMA_VALUE(timePointStream, sampleIndex);
+					PARSE_COMMA_VALUE(timePointStream, volume);
+					PARSE_COMMA_VALUE(timePointStream, uninherited);
+					PARSE_COMMA_VALUE(timePointStream, effects);
+
+					BPMData* bpmData = new BPMData();
+					bpmData->BPMSaved = bpm;
 
 					if (bpm < 0)
 						continue;	
 
 					bpm = 60000.0 / bpm;
 
-					BPMData* bpmData = new BPMData();
 					bpmData->BPM = bpm;
 					bpmData->timePoint = int(timePoint);
+					bpmData->meter = meter;
+					bpmData->uninherited = uninherited;
 
 					chartData->BPMPoints.push_back(bpmData);
 				}
@@ -181,28 +188,31 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 				while (chartFile >> noteLine)
 				{
 					std::stringstream noteStream(noteLine);
-					int column, filler, timePoint, isLN, filler2, timePointEnd;
+					int column, y, timePoint, isLN, hitSound, timePointEnd;
 
 					PARSE_COMMA_VALUE(noteStream, column);
-					PARSE_COMMA_VALUE(noteStream, filler);
+					PARSE_COMMA_VALUE(noteStream, y);
 					PARSE_COMMA_VALUE(noteStream, timePoint);
 					PARSE_COMMA_VALUE(noteStream, isLN);
-					PARSE_COMMA_VALUE(noteStream, filler2);
+					PARSE_COMMA_VALUE(noteStream, hitSound);
 					PARSE_COMMA_VALUE(noteStream, timePointEnd);
 	
-
 					if (isLN == 128)
 					{
 						NoteData* note = new NoteData();
 						NoteData* holdNote = new NoteData();
 
 						note->timePoint = timePoint;
-						note->column = column <= 64 ? 0 : (column <= 192 ? 1 : (column <= 320 ? 2 : (column <= 448 ? 3 : 3)));
+						note->column = floor(float(column) * (4.f / 512.f));
 						note->noteType = NoteType::HoldBegin;
+						note->type = isLN;
+						note->hitSound = hitSound;
 
 						holdNote->timePoint = timePointEnd;
 						holdNote->column	= note->column;
 						holdNote->noteType  = NoteType::HoldEnd;
+						holdNote->type = isLN;
+						holdNote->hitSound = hitSound;
 
 						note->relevantNote = holdNote;
 						holdNote->relevantNote = note;
@@ -215,8 +225,10 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 						NoteData* note = new NoteData();
 
 						note->timePoint = timePoint;
-						note->column = column <= 64 ? 0 : (column <= 192 ? 1 : (column <= 320 ? 2 : (column <= 448 ? 3 : 3)));
+						note->column = floor(float(column) * (4.f / 512.f));
 						note->noteType = NoteType::Note;
+						note->type = isLN;
+						note->hitSound = hitSound;
 
 						chartData->noteData.push_back(note);
 					}
@@ -231,5 +243,102 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 
 	}
 
-	return &myCharts[aPath];
+ 	return &myCharts[aPath];
+}
+
+void ChartResourceHandler::SaveChart(std::string aPath, ChartData* aChart)
+{
+	ChartSet& chartSet = myCharts[aPath];
+	ChartData* chart = aChart;
+
+	std::stringstream chartData;
+	chartData << "osu file format v14" << std::endl;
+	
+	chartData << std::endl;
+	chartData << "[General]" << std::endl;
+
+	chartData << "AudioFilename: " << chart->audioFilename << std::endl;
+	chartData << "AudioLeadIn: 0" << std::endl;
+	chartData << "PreviewTime: 0" << std::endl;
+	chartData << "Countdown: 0" << std::endl;
+	chartData << "SampleSet: None" << std::endl;
+	chartData << "StackLeniency: 0.7" << std::endl;
+	chartData << "Mode: 3" << std::endl;
+	chartData << "LetterboxInBreaks: 0" << std::endl;
+	chartData << "SpecialStyle: 0" << std::endl;
+	chartData << "WidescreenStoryboard: 0" << std::endl;
+
+	chartData << std::endl;
+	chartData << "[Editor]" << std::endl;
+
+	chartData << "DistanceSpacing: 1" << std::endl;
+	chartData << "BeatDivisor: 4" << std::endl;
+	chartData << "GridSize: 16" << std::endl;
+	chartData << "TimelineZoom: 1" << std::endl;
+	
+	chartData << std::endl;
+	chartData << "[Metadata]" << std::endl;
+	
+	chartData << "Title:" << chartSet.songName << std::endl;
+	chartData << "TitleUnicode:" << chartSet.songName << std::endl;
+	chartData << "Artist:" << chartSet.artist << std::endl;
+	chartData << "ArtistUnicode:" << chartSet.artist << std::endl;
+	chartData << "Creator:untitled_chart_editor" << std::endl;
+	chartData << "Version:insane" << std::endl;
+	chartData << "Source:" << std::endl;
+	chartData << "Tags:created by untitled_chart_editor" << std::endl;
+	chartData << "BeatmapID:-1" << std::endl;
+	chartData << "BeatmapSetID:-1" << std::endl;
+
+	chartData << std::endl;
+	chartData << "[Difficulty]" << std::endl;
+
+	chartData << "HPDrainRate:8" << std::endl;
+	chartData << "CircleSize:4" << std::endl;
+	chartData << "OverallDifficulty:8" << std::endl;
+	chartData << "ApproachRate:9" << std::endl;
+	chartData << "SliderMultiplier:1.4" << std::endl;
+	chartData << "SliderTickRate:1" << std::endl;
+
+	chartData << std::endl;
+	chartData << "[Events]" << std::endl;
+
+	chartData << "0,0,\"" << chart->backgroundFilename << "\",0,0" << std::endl;
+
+	chartData << std::endl;
+	chartData << "[TimingPoints]" << std::endl;
+
+	for (auto timingPoint : chart->BPMPoints)
+	{
+		chartData << timingPoint->timePoint << "," << timingPoint->BPMSaved << "," << timingPoint->meter << ",0,0,50," << timingPoint->uninherited << ",0" << std::endl;
+	}
+
+	chartData << std::endl;
+	chartData << "[HitObjects]" << std::endl;
+
+	for (auto note : chart->noteData)
+	{
+		int column = note->column == 0 ? 64 : note->column == 1 ? 192 : note->column == 2 ? 320 : note->column == 3 ? 448 : 0;
+
+		switch (note->noteType)
+		{
+		case NoteType::Note:
+			chartData << column << ",192," << note->timePoint << ",1," << "0,1:0:0:0" << std::endl;
+			break;
+		case NoteType::HoldBegin:
+			chartData << column << ",192," << note->timePoint << ",128,1," << note->relevantNote->timePoint << ":0:0:0:0" << std::endl;
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	std::ofstream chartFile(chart->filePath);
+	if (chartFile.good())
+	{
+		chartFile.clear();
+		chartFile << chartData.str();
+		chartFile.close();
+	}
 }

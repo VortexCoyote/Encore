@@ -110,12 +110,76 @@ void ChartEditor::SetEditMode(int aMode)
 		myEditHandler.SetEditActionState((EditActionState)(aMode));
 }
 
-void ChartEditor::DoLeftClickAction(int aX, int aY)
+void ChartEditor::DoLeftClickPressedAction(int aX, int aY)
 {
+	if (mySelectedChart == nullptr)
+		return void();
+
 	switch (myEditHandler.GetEditActionState())
 	{
 	case EditActionState::EditNotes:
 		TryPlaceNote(aX, aY);
+		break;
+	case EditActionState::EditHolds:
+		TryPlaceHold(aX, aY);
+		break;
+	case EditActionState::Select:
+		break;
+
+	default:
+		break;
+	}
+}
+
+void ChartEditor::DoRightClickPressedAction(int aX, int aY)
+{
+	if (mySelectedChart == nullptr)
+		return void();
+
+	switch (myEditHandler.GetEditActionState())
+	{
+	case EditActionState::EditNotes:
+		TryDeleteNote(aX, aY);
+		break;
+	case EditActionState::EditHolds:
+		TryDeleteNote(aX, aY);
+		break;
+	case EditActionState::Select:
+		break;
+
+	default:
+		break;
+	}
+}
+
+void ChartEditor::DoLeftClickReleaseAction(int aX, int aY)
+{
+	if (mySelectedChart == nullptr)
+		return void();
+
+	switch (myEditHandler.GetEditActionState())
+	{
+	case EditActionState::EditNotes:
+		break;
+	case EditActionState::EditHolds:
+		TryReleaseHold(aX, aY);
+		break;
+	case EditActionState::Select:
+		break;
+
+	default:
+		break;
+	}
+}
+
+void ChartEditor::DoRightClickReleaseAction(int aX, int aY)
+{
+	if (mySelectedChart == nullptr)
+		return void();
+
+	switch (myEditHandler.GetEditActionState())
+	{
+	case EditActionState::EditNotes:
 		break;
 	case EditActionState::EditHolds:
 		break;
@@ -127,12 +191,34 @@ void ChartEditor::DoLeftClickAction(int aX, int aY)
 	}
 }
 
-void ChartEditor::DoRightClickAction(int aX, int aY)
+void ChartEditor::DoLeftClickDragAction(int aX, int aY)
 {
+	if (mySelectedChart == nullptr)
+		return void();
+
 	switch (myEditHandler.GetEditActionState())
 	{
 	case EditActionState::EditNotes:
-		TryDeleteNote(aX, aY);
+		break;
+	case EditActionState::EditHolds:
+		TryDragHold(aX, aY);
+		break;
+	case EditActionState::Select:
+		break;
+
+	default:
+		break;
+	}
+}
+
+void ChartEditor::DoRightClickDragAction(int aX, int aY)
+{
+	if (mySelectedChart == nullptr)
+		return void();
+
+	switch (myEditHandler.GetEditActionState())
+	{
+	case EditActionState::EditNotes:
 		break;
 	case EditActionState::EditHolds:
 		break;
@@ -146,83 +232,47 @@ void ChartEditor::DoRightClickAction(int aX, int aY)
 
 void ChartEditor::TryPlaceNote(int aX, int aY)
 {
-	if (mySelectedChart == nullptr)
+	if (IsCursorWithinBounds(aX, aY) == false)
 		return void();
 
-	int leftBorder = ofGetWindowWidth() / 2 - 64 * 2;
-	int rightBorder = ofGetWindowWidth() / 2 + 64 * 2;
+	myNoteHandler.PlaceNote(myEditHandler.GetColumn(aX), myBPMLineHandler.GetClosestTimePoint(myEditHandler.GetSnappedCursorPosition().y + 64));
+}
 
-	bool withinBounds = aX >= leftBorder && aX <= rightBorder;
-
-	if (withinBounds == false)
+void ChartEditor::TryDeleteNote(int aX, int aY)
+{
+	if (IsCursorWithinBounds(aX, aY) == false)
 		return void();
 
-	NoteData* note = new NoteData();
+	myNoteHandler.DeleteNote(aX, aY);
+}
 
-	note->column = myEditHandler.GetColumn(aX);
+void ChartEditor::TryPlaceHold(int aX, int aY)
+{
+	if (IsCursorWithinBounds(aX, aY) == false)
+		return void();
 
-	note->noteType = NoteType::Note;
-	note->timePoint = myBPMLineHandler.GetClosestTimePoint(myEditHandler.GetSnappedCursorPosition().y + 64);
+	myNoteHandler.PlaceHold(myEditHandler.GetColumn(aX), myBPMLineHandler.GetClosestTimePoint(myEditHandler.GetSnappedCursorPosition().y + 64), myDraggableHoldEnd);
+	
+	myHoldDrag = true;
+}
 
-	mySelectedChart->noteData.push_back(note);
+void ChartEditor::TryDragHold(int aX, int aY)
+{
+	if (myHoldDrag == true && myDraggableHoldEnd != nullptr)
+	{
+		myDraggableHoldEnd->timePoint = myBPMLineHandler.GetClosestTimePoint(myEditHandler.GetSnappedCursorPosition().y + 64);
+	}
+}
+
+void ChartEditor::TryReleaseHold(int aX, int aY)
+{
+	myHoldDrag = false;
+	myDraggableHoldEnd = nullptr;
 
 	std::sort(mySelectedChart->noteData.begin(), mySelectedChart->noteData.end(), [](const auto& lhs, const auto& rhs)
 	{
 		return lhs->timePoint < rhs->timePoint;
 	});
-}
-
-void ChartEditor::TryDeleteNote(int aX, int aY)
-{
-	if (mySelectedChart == nullptr)
-		return void();
-
-	int leftBorder = ofGetWindowWidth() / 2 - 64 * 2;
-	int rightBorder = ofGetWindowWidth() / 2 + 64 * 2;
-
-	bool withinBounds = aX >= leftBorder && aX <= rightBorder;
-
-	if (withinBounds == false)
-		return void();
-
-	NoteData* note = myNoteHandler.GetHoveredNote(aX, aY);
-	if (note == nullptr)
-		return void();
-
-	auto noteToDelete = std::find(mySelectedChart->noteData.begin(), mySelectedChart->noteData.end(), note);
-
-	if (noteToDelete != mySelectedChart->noteData.end())
-	{
-		switch (note->noteType)
-		{
-		case NoteType::HoldBegin:
-		case NoteType::HoldEnd:
-
-			myNoteHandler.RemoveVisibleHold(note);
-			myNoteHandler.RemoveVisibleHold(note->relevantNote);
-
-			mySelectedChart->noteData.erase(noteToDelete);
-			mySelectedChart->noteData.erase(std::find(mySelectedChart->noteData.begin(), mySelectedChart->noteData.end(), note->relevantNote));
-			
-			delete note->relevantNote;
-			delete note;
-
-			break;
-
-		case NoteType::Note:
-
-			mySelectedChart->noteData.erase(noteToDelete);
-			delete note;
-
-			break;
-
-		default:
-
-			std::cout << "invalid notetype" << std::endl;
-
-			break;
-		}
-	}
 }
 
 void ChartEditor::TrySelectItem(int aX, int aY)
@@ -256,7 +306,11 @@ void ChartEditor::MenuBar()
 			if (ImGui::MenuItem("Open"))
 				LoadChartFromDirectory();
 		
-			if (ImGui::MenuItem("Save"));
+			if (ImGui::MenuItem("Save"))
+			{
+				if(mySelectedChart != nullptr)
+					myChartResourceHandler.SaveChart(myLoadedChartDirectory, mySelectedChart);
+			}
 			
 			if (ImGui::MenuItem("Export"));
 
@@ -328,7 +382,8 @@ void ChartEditor::LoadChartFromDirectory()
 	if (result.bSuccess)
 	{
 		mySelectedChartSet = myChartResourceHandler.ImportChart(result.getPath());
-		
+		myLoadedChartDirectory = result.getPath();
+
 		if (mySelectedChartSet->charts.size() == 1)
 		{
 			SetSelectedChart(mySelectedChartSet->charts[0]);
@@ -354,4 +409,14 @@ void ChartEditor::SetSelectedChart(ChartData* aChartData)
 	
 	mySongTimeHandler.SetTimeNormalized(0.f);
 	mySongTimeHandler.ResetSpeed();
+}
+
+bool ChartEditor::IsCursorWithinBounds(int aX, int aY)
+{
+	int leftBorder = ofGetWindowWidth() / 2 - 64 * 2;
+	int rightBorder = ofGetWindowWidth() / 2 + 64 * 2;
+
+	bool withinBounds = aX >= leftBorder && aX <= rightBorder;
+
+	return withinBounds;
 }

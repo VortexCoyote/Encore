@@ -36,7 +36,6 @@ void EditHandler::Draw()
 
 ofVec2f EditHandler::GetSnappedCursorPosition()
 {
-
 	float inputX = myCursorPosition.x;
 	float x = inputX;
 	float leftBorder = ofGetWindowWidth() / 2 - 64 * 2;
@@ -46,6 +45,7 @@ ofVec2f EditHandler::GetSnappedCursorPosition()
 
 	switch (myCursorState)
 	{
+	case EditActionState::EditHolds:
 	case EditActionState::EditNotes:
 
 		x = ofClamp(inputX, leftBorder, rightBorder - 64.f);
@@ -65,9 +65,6 @@ ofVec2f EditHandler::GetSnappedCursorPosition()
 		return ofVec2f(x, myBPMLineHandler->GetClosestBeatLinePos(myCursorPosition.y) - myCursorImage.getHeight());
 
 		break;
-
-	case EditActionState::EditHolds:
-
 
 
 	case EditActionState::Select:

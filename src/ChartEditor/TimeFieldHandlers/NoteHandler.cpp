@@ -95,6 +95,92 @@ void NoteHandler::RemoveVisibleHold(NoteData* aNote)
 		myVisibleHolds.erase(note);
 }
 
+void NoteHandler::PlaceNote(int aColumn, int aTimePoint)
+{
+	NoteData* note = new NoteData();
+
+	note->column = aColumn;
+
+	note->noteType = NoteType::Note;
+	note->timePoint = aTimePoint;
+
+	myObjectData->push_back(note);
+
+	std::sort(myObjectData->begin(), myObjectData->end(), [](const auto& lhs, const auto& rhs)
+	{
+		return lhs->timePoint < rhs->timePoint;
+	});
+}
+
+void NoteHandler::DeleteNote(int aX, int aY)
+{
+	NoteData* note = GetHoveredNote(aX, aY);
+	if (note == nullptr)
+		return void();
+
+	auto noteToDelete = std::find(myObjectData->begin(), myObjectData->end(), note);
+
+	if (noteToDelete != myObjectData->end())
+	{
+		switch (note->noteType)
+		{
+		case NoteType::HoldBegin:
+		case NoteType::HoldEnd:
+
+			RemoveVisibleHold(note);
+			RemoveVisibleHold(note->relevantNote);
+
+			myObjectData->erase(noteToDelete);
+			myObjectData->erase(std::find(myObjectData->begin(), myObjectData->end(), note->relevantNote));
+
+			delete note->relevantNote;
+			delete note;
+
+			break;
+
+		case NoteType::Note:
+
+			myObjectData->erase(noteToDelete);
+			delete note;
+
+			break;
+
+		default:
+
+			std::cout << "invalid notetype" << std::endl;
+
+			break;
+		}
+	}
+}
+
+void NoteHandler::PlaceHold(int acolumn, int aTimePoint, NoteData*& aHoldEndOut)
+{
+	NoteData* note = new NoteData();
+	NoteData* holdNote = new NoteData();
+
+	note->timePoint = aTimePoint;
+	note->column = acolumn;
+	note->noteType = NoteType::HoldBegin;
+
+	holdNote->timePoint = note->timePoint;
+	holdNote->column = note->column;
+	holdNote->noteType = NoteType::HoldEnd;
+
+	note->relevantNote = holdNote;
+	holdNote->relevantNote = note;
+
+	aHoldEndOut = holdNote;
+
+	myObjectData->push_back(note);
+	myObjectData->push_back(holdNote);
+
+	std::sort(myObjectData->begin(), myObjectData->end(), [](const auto& lhs, const auto& rhs)
+	{
+		return lhs->timePoint < rhs->timePoint;
+	});
+}
+
 
 void NoteHandler::DrawRoutine(NoteData* aTimeObject, float aTimePoint)
 {

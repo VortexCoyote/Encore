@@ -15,6 +15,7 @@ public:
 	~ChartResourceHandler();
 
 	ChartSet* ImportChart(std::string aPath);
+	void SaveChart(std::string aPath, ChartData* aChart);
 
 private:
 

@@ -29,6 +29,11 @@ public:
 
 	void RemoveVisibleHold(NoteData* aNote);
 
+	void PlaceNote(int aColumn, int aTimePoint);
+	void DeleteNote(int aX, int aY);
+
+	void PlaceHold(int acolumn, int aTimePoint, NoteData*& aHoldEndOut);
+
 private:
 
 	void DrawRoutine(NoteData* aTimeObject, float aTimePoint) override;

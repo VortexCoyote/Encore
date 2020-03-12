@@ -25,6 +25,10 @@ struct TimeFieldObject
 struct BPMData : public TimeFieldObject
 {
 	float BPM = 0.f;
+	int BPMSaved = -1;
+	float beatLength = 0.f;
+	int meter = -1;
+	int uninherited = -1;
 };
 
 struct NoteData : public TimeFieldObject
@@ -39,6 +43,9 @@ struct NoteData : public TimeFieldObject
 
 	int x = 0;
 	int y = 0;
+
+	int type = -1;
+	int hitSound = 0;
 };
 
 struct ChartData
@@ -48,6 +55,10 @@ struct ChartData
 	int songLength;
 	
 	std::string song;
+	std::string audioFilename;
+	std::string backgroundFilename;
+	std::string filePath;
+
 	ofImage background;
 
 	std::string difficultyName;
@@ -62,4 +73,5 @@ struct ChartSet
 	std::string artist;
 	std::string songName;
 	std::string charter;
+
 };

@@ -83,24 +83,30 @@ void ofApp::mouseMoved(int x, int y) {
 void ofApp::mouseDragged(int x, int y, int button) {
 
 	if (button == OF_MOUSE_BUTTON_LEFT)
-	{
-		std::cout << x << " - " << y << std::endl;
-	}
+		myChartEditor.DoLeftClickDragAction(x, y);
+
+	if (button == OF_MOUSE_BUTTON_RIGHT)
+		myChartEditor.DoRightClickDragAction(x, y);
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
 	
 	if (button == OF_MOUSE_BUTTON_LEFT)
-		myChartEditor.DoLeftClickAction(x, y);
+		myChartEditor.DoLeftClickPressedAction(x, y);
 
 	if (button == OF_MOUSE_BUTTON_RIGHT)
-		myChartEditor.DoRightClickAction(x, y);
+		myChartEditor.DoRightClickPressedAction(x, y);
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button) {
 
+	if (button == OF_MOUSE_BUTTON_LEFT)
+		myChartEditor.DoLeftClickReleaseAction(x, y);
+
+	if (button == OF_MOUSE_BUTTON_RIGHT)
+		myChartEditor.DoRightClickReleaseAction(x, y);
 }
 
 //--------------------------------------------------------------
