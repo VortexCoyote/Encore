@@ -2,7 +2,7 @@
 
 #include "../ChartResourceImporter/ChartResourceImporter.h"
 #include "SongHandler.h"
-#include "NoteSelectionHandler.h"
+#include "EditHandler.h"
 
 #include "TimeFieldHandlers/NoteHandler.h"
 #include "TimeFieldHandlers/BPMLineHandler.h"
@@ -32,6 +32,11 @@ public:
 	void MoveDown();
 	void MoveUp();
 
+	void SetEditMode(int aMode);
+
+	void DoLeftClickAction(int aX, int aY);
+	void DoRightClickAction(int aX, int aY);
+
 	void TryPlaceNote(int aX, int aY);
 	void TryDeleteNote(int aX, int aY);
 	
@@ -51,7 +56,7 @@ private:
 	SongHandler mySongTimeHandler;
 	NoteHandler myNoteHandler;
 	BPMLineHandler myBPMLineHandler;
-	NoteSelectionHandler myNoteSelectionHandler;
+	EditHandler myEditHandler;
 
 	ChartSet* mySelectedChartSet = nullptr;
 	ChartData* mySelectedChart	 = nullptr;

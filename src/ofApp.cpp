@@ -45,6 +45,7 @@ void ofApp::keyPressed(int key) {
 	if (key == '-')
 		myChartEditor.ZoomOut();
 
+	
 	if (key == OF_KEY_RIGHT)
 		myChartEditor.IncreaseSpeed();
 
@@ -56,6 +57,16 @@ void ofApp::keyPressed(int key) {
 
 	if (key == OF_KEY_DOWN)
 		myChartEditor.MoveDown();
+	
+	
+	if (key == '1')
+		myChartEditor.SetEditMode(0);
+
+	if (key == '2')
+		myChartEditor.SetEditMode(1);
+
+	if (key == '3')
+		myChartEditor.SetEditMode(2);
 }
 
 //--------------------------------------------------------------
@@ -71,16 +82,20 @@ void ofApp::mouseMoved(int x, int y) {
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button) {
 
+	if (button == OF_MOUSE_BUTTON_LEFT)
+	{
+		std::cout << x << " - " << y << std::endl;
+	}
 }
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
 	
 	if (button == OF_MOUSE_BUTTON_LEFT)
-		myChartEditor.TryPlaceNote(x, y);
+		myChartEditor.DoLeftClickAction(x, y);
 
 	if (button == OF_MOUSE_BUTTON_RIGHT)
-		myChartEditor.TryDeleteNote(x, y);
+		myChartEditor.DoRightClickAction(x, y);
 }
 
 //--------------------------------------------------------------

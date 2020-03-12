@@ -31,8 +31,8 @@ void ChartEditor::Update()
 
 	myBPMLineHandler.ShowBeatDivisionControls();
 	mySongTimeHandler.Update();
-	myNoteSelectionHandler.SetCursorInput({ float(myMouseX), float(myMouseY) });
-	myNoteSelectionHandler.SetVisibleItems(&(myNoteHandler.GetVisibleNotes()));
+	myEditHandler.SetCursorInput({ float(myMouseX), float(myMouseY) });
+	myEditHandler.SetVisibleItems(&(myNoteHandler.GetVisibleNotes()));
 
 	TimeLine();
 }
@@ -51,7 +51,7 @@ void ChartEditor::Draw()
 	myNoteHandler.DrawNoteFieldBackground();
 	myBPMLineHandler.Draw(mySongTimeHandler.GetCurrentTimeS());
 	myNoteHandler.Draw(mySongTimeHandler.GetCurrentTimeS());
-	myNoteSelectionHandler.Draw();
+	myEditHandler.Draw();
 }
 
 void ChartEditor::TogglePlaying()
@@ -95,13 +95,53 @@ void ChartEditor::DecreaseSpeed()
 void ChartEditor::MoveDown()
 {
 	if (mySelectedChart != nullptr)
-		mySongTimeHandler.SetTimeS(float(myBPMLineHandler.GetBiasedClosestBeatLineMS(mySongTimeHandler.GetCurrentTimeMS(), true)) / 1000.f);
+		mySongTimeHandler.SetTimeS(float(myBPMLineHandler.GetBiasedClosestBeatLineMS(mySongTimeHandler.GetCurrentTimeMS(), true)) / 1000.0);
 }
 
 void ChartEditor::MoveUp()
 {
 	if (mySelectedChart != nullptr)
-		mySongTimeHandler.SetTimeS(float(myBPMLineHandler.GetBiasedClosestBeatLineMS(mySongTimeHandler.GetCurrentTimeMS(), false)) / 1000.f);
+		mySongTimeHandler.SetTimeS(float(myBPMLineHandler.GetBiasedClosestBeatLineMS(mySongTimeHandler.GetCurrentTimeMS(), false)) / 1000.0);
+}
+
+void ChartEditor::SetEditMode(int aMode)
+{
+	if (mySelectedChart != nullptr)
+		myEditHandler.SetEditActionState((EditActionState)(aMode));
+}
+
+void ChartEditor::DoLeftClickAction(int aX, int aY)
+{
+	switch (myEditHandler.GetEditActionState())
+	{
+	case EditActionState::EditNotes:
+		TryPlaceNote(aX, aY);
+		break;
+	case EditActionState::EditHolds:
+		break;
+	case EditActionState::Select:
+		break;
+
+	default:
+		break;
+	}
+}
+
+void ChartEditor::DoRightClickAction(int aX, int aY)
+{
+	switch (myEditHandler.GetEditActionState())
+	{
+	case EditActionState::EditNotes:
+		TryDeleteNote(aX, aY);
+		break;
+	case EditActionState::EditHolds:
+		break;
+	case EditActionState::Select:
+		break;
+
+	default:
+		break;
+	}
 }
 
 void ChartEditor::TryPlaceNote(int aX, int aY)
@@ -119,10 +159,10 @@ void ChartEditor::TryPlaceNote(int aX, int aY)
 
 	NoteData* note = new NoteData();
 
-	note->column = myNoteSelectionHandler.GetColumn(aX);
+	note->column = myEditHandler.GetColumn(aX);
 
 	note->noteType = NoteType::Note;
-	note->timePoint = myBPMLineHandler.GetClosestTimePoint(myNoteSelectionHandler.GetSnappedCursorPosition().y + 64);
+	note->timePoint = myBPMLineHandler.GetClosestTimePoint(myEditHandler.GetSnappedCursorPosition().y + 64);
 
 	mySelectedChart->noteData.push_back(note);
 
@@ -187,7 +227,7 @@ void ChartEditor::TryDeleteNote(int aX, int aY)
 
 void ChartEditor::TrySelectItem(int aX, int aY)
 {
-	myNoteSelectionHandler.TrySelectItem(aX, aY);
+	myEditHandler.TrySelectItem(aX, aY);
 }
 
 void ChartEditor::TryTimelinePreview(int aX, int aY)
@@ -305,12 +345,12 @@ void ChartEditor::SetSelectedChart(ChartData* aChartData)
 {
 	mySelectedChart = aChartData;
 
-	myNoteSelectionHandler.ClearSelectedItems();
+	myEditHandler.ClearSelectedItems();
 
 	myNoteHandler.Init(&(mySelectedChart->noteData));
 	myBPMLineHandler.Init(&(mySelectedChart->BPMPoints));
 	mySongTimeHandler.Init(mySelectedChart->song);
-	myNoteSelectionHandler.Init(&myBPMLineHandler);
+	myEditHandler.Init(&myBPMLineHandler);
 	
 	mySongTimeHandler.SetTimeNormalized(0.f);
 	mySongTimeHandler.ResetSpeed();

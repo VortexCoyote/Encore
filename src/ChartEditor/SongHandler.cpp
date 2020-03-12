@@ -28,14 +28,6 @@ void SongHandler::Init(std::string aPath, double aSyncThreshold)
 	BASS_Init(myDevice, myFreq, 0, 0, NULL);
 
 	myStreamHandle = BASS_FX_TempoCreate(BASS_StreamCreateFile(FALSE, aPath.c_str(), 0, 0, BASS_STREAM_DECODE | BASS_STREAM_PRESCAN), BASS_FX_FREESOURCE);
-	
-	/*auto lol = BASS_SampleLoad(FALSE, aPath.c_str(), 0, 0, 1 , BASS_SAMPLE_OVER_POS);
-	
-	std::cout << BASS_ErrorGetCode() << std::endl;
-
-	myStreamHandle = BASS_FX_TempoCreate(lol, BASS_FX_FREESOURCE);	
-
-	std::cout << BASS_ErrorGetCode() << std::endl;*/
 
 	auto error = BASS_ErrorGetCode();
 	if (error != 0)

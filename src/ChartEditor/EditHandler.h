@@ -5,9 +5,10 @@
 #include "ofImage.h"
 #include "ofVec2f.h"
 
-enum class NoteCursorState
+enum class EditActionState
 {
-	Edit,
+	EditNotes,
+	EditHolds,
 	Select,
 
 	Count
@@ -15,21 +16,25 @@ enum class NoteCursorState
 
 struct NoteData;
 class BPMLineHandler;
-class NoteSelectionHandler
+class EditHandler
 {
 public:
 
-	NoteSelectionHandler();
-	~NoteSelectionHandler();
+	EditHandler();
+	~EditHandler();
 
 	void Init(BPMLineHandler* aBPMLineHandler);
+	void Update();
 	void Draw();
 
 	ofVec2f GetSnappedCursorPosition();
 	
 	void SetCursorInput(ofVec2f aPosition);
 	void SetVisibleItems(std::vector<NoteData*>* aVisibleItems);
+	void SetEditActionState(EditActionState aCursorState);
 	void TrySelectItem(int aX, int aY);
+
+	EditActionState GetEditActionState();
 
 	void ClearSelectedItems();
 
@@ -37,14 +42,15 @@ public:
 
 private:
 
+	void ShowModeSelect();
+
 	ofImage myCursorImage;
 	ofVec2f myCursorPosition;
 
 	BPMLineHandler* myBPMLineHandler;
 
-	NoteCursorState myCursorState = NoteCursorState::Edit;
+	EditActionState myCursorState = EditActionState::EditNotes;
 
 	std::vector<NoteData*>* myVisibleItems = nullptr;
 	std::vector<NoteData*> mySelectedItems;
-
 };

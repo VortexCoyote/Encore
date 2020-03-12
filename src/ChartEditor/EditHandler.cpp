@@ -1,26 +1,31 @@
-#include "NoteSelectionHandler.h"
+#include "EditHandler.h"
 
 #include "../ChartData/ChartData.h"
 
 #include "TimeFieldHandlers/BPMLineHandler.h"
 #include "ofMain.h"
 
-NoteSelectionHandler::NoteSelectionHandler()
+EditHandler::EditHandler()
 {
 	myCursorImage.loadImage("images/selected.png");
 }
 
-NoteSelectionHandler::~NoteSelectionHandler()
+EditHandler::~EditHandler()
 {
 
 }
 
-void NoteSelectionHandler::Init(BPMLineHandler* aBPMLineHandler)
+void EditHandler::Init(BPMLineHandler* aBPMLineHandler)
 {
 	myBPMLineHandler = aBPMLineHandler;
 }
 
-void NoteSelectionHandler::Draw()
+void EditHandler::Update()
+{
+	ShowModeSelect();
+}
+
+void EditHandler::Draw()
 {
 	for (auto& note : mySelectedItems)	
 		if (note->selected == true && note->y < ofGetWindowHeight())
@@ -29,7 +34,7 @@ void NoteSelectionHandler::Draw()
 	myCursorImage.draw(GetSnappedCursorPosition());
 }
 
-ofVec2f NoteSelectionHandler::GetSnappedCursorPosition()
+ofVec2f EditHandler::GetSnappedCursorPosition()
 {
 
 	float inputX = myCursorPosition.x;
@@ -41,7 +46,7 @@ ofVec2f NoteSelectionHandler::GetSnappedCursorPosition()
 
 	switch (myCursorState)
 	{
-	case NoteCursorState::Edit:
+	case EditActionState::EditNotes:
 
 		x = ofClamp(inputX, leftBorder, rightBorder - 64.f);
 		
@@ -61,11 +66,15 @@ ofVec2f NoteSelectionHandler::GetSnappedCursorPosition()
 
 		break;
 
-	case NoteCursorState::Select:
+	case EditActionState::EditHolds:
+
+
+
+	case EditActionState::Select:
 	
 		break;
 		
-	case NoteCursorState::Count:
+	case EditActionState::Count:
 	
 		break;
 	
@@ -77,17 +86,39 @@ ofVec2f NoteSelectionHandler::GetSnappedCursorPosition()
 	return { 0, 0 };
 }
 
-void NoteSelectionHandler::SetCursorInput(ofVec2f aPosition)
+void EditHandler::SetCursorInput(ofVec2f aPosition)
 {
 	myCursorPosition = aPosition;
 }
 
-void NoteSelectionHandler::SetVisibleItems(std::vector<NoteData*>* aVisibleItems)
+void EditHandler::SetVisibleItems(std::vector<NoteData*>* aVisibleItems)
 {
 	myVisibleItems = aVisibleItems;
 }
 
-void NoteSelectionHandler::TrySelectItem(int aX, int aY)
+void EditHandler::SetEditActionState(EditActionState aCursorState)
+{
+	switch (aCursorState)
+	{
+	case EditActionState::EditNotes:
+		std::cout << "Edit Note Mode" << std::endl;
+		break;
+	case EditActionState::EditHolds:
+		std::cout << "Edit Hold Mode" << std::endl;
+		break;
+	case EditActionState::Select:
+		std::cout << "Select Mode" << std::endl;
+		break;
+	default:
+		std::cout << "Invalid Mode Input" << std::endl;
+		return void();
+		break;
+	}
+
+	myCursorState = aCursorState;
+}
+
+void EditHandler::TrySelectItem(int aX, int aY)
 {
 	if (myVisibleItems == nullptr)
 		return void();
@@ -109,12 +140,17 @@ void NoteSelectionHandler::TrySelectItem(int aX, int aY)
 	mySelectedItems.clear();
 }
 
-void NoteSelectionHandler::ClearSelectedItems()
+EditActionState EditHandler::GetEditActionState()
+{
+	return myCursorState;
+}
+
+void EditHandler::ClearSelectedItems()
 {
 	mySelectedItems.clear();
 }
 
-int NoteSelectionHandler::GetColumn(int aX)
+int EditHandler::GetColumn(int aX)
 {
 	float inputX = aX;
 	float x = inputX;
@@ -135,4 +171,9 @@ int NoteSelectionHandler::GetColumn(int aX)
 
 
 	assert(false && "bad input coordinate");
+}
+
+void EditHandler::ShowModeSelect()
+{
+
 }
