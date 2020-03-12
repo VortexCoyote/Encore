@@ -50,7 +50,7 @@ void NotificationSystem::Update()
 void NotificationSystem::Draw()
 {
 	//for (int i = mySubmittedMessages.size() - 1; i >= 0; i--)
-	for (int i =0; i < mySubmittedMessages.size(); i++)
+	for (int i = 0; i < mySubmittedMessages.size(); i++)
 	{
 		ofRectangle stringDimension = StringHelpfunctions::getBitmapStringBoundingBox(mySubmittedMessages[i].message);;
 
