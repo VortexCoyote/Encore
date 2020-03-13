@@ -29,15 +29,15 @@ NotificationSystem* NotificationSystem::GetInstance()
 
 void NotificationSystem::SubmitMessage(std::string aMessage)
 {
-	mySubmittedMessages.push_back({ aMessage, myTimeLimit, float(32 + mySubmittedMessages.size() * 18), float(-StringHelpfunctions::getBitmapStringBoundingBox(aMessage).width - 8)});
+	mySubmittedMessages.push_back({ aMessage, myTimeLimit, 32.f, float(-StringHelpfunctions::getBitmapStringBoundingBox(aMessage).width - 8)});
 }
 
 void NotificationSystem::Update()
 {
 	for (int i = mySubmittedMessages.size() - 1; i >= 0; i--)
 	{
-		mySubmittedMessages[i].LerpX = ofLerp(mySubmittedMessages[i].LerpX, 8,				    15.f * ofGetLastFrameTime());
-		mySubmittedMessages[i].LerpY = ofLerp(mySubmittedMessages[i].LerpY, float(32 + i * 18), 5.f  * ofGetLastFrameTime());
+		mySubmittedMessages[i].LerpX = ofLerp(mySubmittedMessages[i].LerpX, 8, 15.f * ofGetLastFrameTime());
+		mySubmittedMessages[i].LerpY = ofLerp(mySubmittedMessages[i].LerpY, float(34 + (mySubmittedMessages.size() - 1 - i) * 24), 5.f  * ofGetLastFrameTime());
 
 		mySubmittedMessages[i].timer -= ofGetLastFrameTime();
 		if (mySubmittedMessages[i].timer <= 0.f)

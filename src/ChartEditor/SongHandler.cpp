@@ -30,6 +30,7 @@ void SongHandler::Init(std::string aPath, double aSyncThreshold)
 
 	myStreamHandle = BASS_FX_TempoCreate(BASS_StreamCreateFile(FALSE, aPath.c_str(), 0, 0, BASS_STREAM_DECODE | BASS_STREAM_PRESCAN), BASS_FX_FREESOURCE);
 
+
 	auto error = BASS_ErrorGetCode();
 	if (error != 0)
 	{

@@ -1,5 +1,7 @@
 #include "NoteHandler.h"
 
+#include "../NotificationSystem.h"
+
 #include "ofWindowSettings.h"
 #include "ofMain.h"
 
@@ -110,6 +112,14 @@ void NoteHandler::PlaceNote(int aColumn, int aTimePoint)
 	{
 		return lhs->timePoint < rhs->timePoint;
 	});
+
+	std::string message = "Placed Note [";
+	message += std::to_string(note->column + 1);
+	message += "] ";
+	message += std::to_string(note->timePoint);
+	message += "ms";
+
+	PUSH_NOTIFICATION(message);
 }
 
 void NoteHandler::DeleteNote(int aX, int aY)
@@ -126,6 +136,14 @@ void NoteHandler::DeleteNote(int aX, int aY)
 		{
 		case NoteType::HoldBegin:
 		case NoteType::HoldEnd:
+		{
+			std::string message = "Deleted Hold [";
+			message += std::to_string(note->column + 1);
+			message += "] ";
+			message += std::to_string(note->relevantNote->timePoint);
+			message += "ms";
+
+			PUSH_NOTIFICATION(message);
 
 			RemoveVisibleHold(note);
 			RemoveVisibleHold(note->relevantNote);
@@ -135,14 +153,22 @@ void NoteHandler::DeleteNote(int aX, int aY)
 
 			delete note->relevantNote;
 			delete note;
-
+		}
 			break;
 
 		case NoteType::Note:
+		{
+			std::string message = "Deleted Note [";
+			message += std::to_string(note->column + 1);
+			message += "] ";
+			message += std::to_string(note->timePoint);
+			message += "ms";
+
+			PUSH_NOTIFICATION(message);
 
 			myObjectData->erase(noteToDelete);
 			delete note;
-
+		}
 			break;
 
 		default:
@@ -179,6 +205,14 @@ void NoteHandler::PlaceHold(int acolumn, int aTimePoint, NoteData*& aHoldEndOut)
 	{
 		return lhs->timePoint < rhs->timePoint;
 	});
+
+	std::string message = "Placed Hold [";
+	message += std::to_string(note->column + 1);
+	message += "] ";
+	message += std::to_string(note->timePoint);
+	message += "ms";
+
+	PUSH_NOTIFICATION(message);
 }
 
 
