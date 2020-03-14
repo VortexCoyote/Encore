@@ -288,6 +288,7 @@ void NoteHandler::Draw(double aTimePoint)
 	VisibleHoldDrawRoutine(aTimePoint);
 
 	TimeFieldHandlerBase<NoteData>::Draw(aTimePoint);
+
 	myHitLineImage.draw(ofGetWindowWidth() / 2 - myNoteImage[0].getWidth() * 2, ofGetWindowHeight() - EditorConfig::hitLinePosition /*+ myNoteImage[0].getHeight()*/ );
 }
 
@@ -318,6 +319,6 @@ void NoteHandler::DrawPreviewBox(double aTimePoint, float aMouseY)
 void NoteHandler::DrawNoteFieldBackground()
 {
 	ofSetColor(0, 0, 0, 216);
-	ofDrawRectangle(ofGetWindowWidth() / 2 - myNoteImage[0].getWidth() * 2 - 16, 0.f, 1.f, myNoteImage[0].getWidth() * 4 + 32, ofGetWindowHeight());
+	ofDrawRectangle(ofGetWindowWidth() / 2 - myNoteImage[0].getWidth() * 2 - 32, 0.f, 1.f, myNoteImage[0].getWidth() * 4 + 64, ofGetWindowHeight());
 	ofSetColor(255, 255, 255, 255);
 }

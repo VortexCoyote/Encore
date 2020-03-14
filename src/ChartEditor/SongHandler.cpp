@@ -92,11 +92,11 @@ void SongHandler::DrawWaveForm()
 				float width2 = myWaveFormData[index + 1];
 
 				float color = abs(width1) * 255;
-				ofSetColor(255 - color, 255, color, 180);
+				ofSetColor(255 - color, 255, color, 128);
 				ofDrawLine(ofGetWindowWidth() / 2, ofGetWindowHeight() - y, ofGetWindowWidth() / 2 + width1 * 128.f, ofGetWindowHeight() - y);
 
 				color = abs(width2) * 255;
-				ofSetColor(255 - color, 255, color, 180);
+				ofSetColor(255 - color, 255, color, 128);
 				ofDrawLine(ofGetWindowWidth() / 2, ofGetWindowHeight() - y, ofGetWindowWidth() / 2 - width2 * 128.f, ofGetWindowHeight() - y);
 
 				ofSetColor(255, 255, 255, 255);
