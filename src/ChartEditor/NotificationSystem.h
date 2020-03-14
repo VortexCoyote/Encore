@@ -48,5 +48,5 @@ private:
 
 	std::vector<Notification> mySubmittedMessages;
 
-	float myTimeLimit = 3.5f;
+	float myTimeLimit = 3.0f;
 };

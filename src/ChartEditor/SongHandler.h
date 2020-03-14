@@ -4,6 +4,10 @@
 #include "../BASS/bass_fx.h"
 
 #include <string>
+#include <vector>
+
+#include "ofImage.h"
+#include "ofFbo.h"
 
 class ofSoundPlayer;
 class SongHandler
@@ -15,6 +19,7 @@ public:
 
 	void Init(std::string aPath, double aSyncThreshold = 0.02);
 	void Update();
+	void DrawWaveForm();
 
 	void TogglePause();
 	void SetPause(bool aPause);
@@ -37,6 +42,7 @@ public:
 
 private:
 
+	void GenerateWaveForm(std::string aPath);
 	void ShowPlaybackRateControls();
 
 	void TryTimingSync();
@@ -50,6 +56,11 @@ private:
 	float mySpeed = 1.0f;
 
 	bool myIsPausing = true;
+
+	float* myWaveFormData = nullptr;
+	DWORD mySongByteLength;
+
+	ofFbo myWaveForm;
 
 	//relevant BASS variables
 	int myDevice = -1; // Default Sounddevice

@@ -51,6 +51,7 @@ void ChartEditor::Draw()
 	TryTimelinePreview(myMouseX, myMouseY);
 
 	myNoteHandler.DrawNoteFieldBackground();
+	mySongTimeHandler.DrawWaveForm();
 	myBPMLineHandler.Draw(mySongTimeHandler.GetCurrentTimeS());
 	myNoteHandler.Draw(mySongTimeHandler.GetCurrentTimeS());
 	myEditHandler.Draw();

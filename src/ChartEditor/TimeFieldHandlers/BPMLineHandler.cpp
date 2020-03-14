@@ -48,7 +48,7 @@ void BPMLineHandler::DrawRoutine(BPMData* aTimeObject, float aTimePoint)
 	int height = 2;
 
 	ofSetColor(255, 255, 255, 255);
-	ofDrawRectangle({ x, y - height}, width, height);
+	ofDrawRectangle({ x - 16, y - height}, width + 32, height);
 
 	int textX = x + width + 4;
 	int textY = y;
@@ -118,7 +118,7 @@ void BPMLineHandler::Draw(double aTimePoint)
 				myVisibleBeatLines.emplace_back(time, lineY, myVisibleObjects[bpmLineIndex]->BPM);
 				
 				ofSetColor(255, 64, 64, 255);
-				ofDrawRectangle({ x, lineY - height }, width, height);
+				ofDrawRectangle({ x - 16, lineY - height }, width + 32, height);
 
 				time = timeOffset + (myVisibleObjects[bpmLineIndex]->timePoint + (60000.f / myVisibleObjects[bpmLineIndex]->BPM * mySnapQuotient) * float(lineForwardIndex));
 

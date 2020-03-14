@@ -318,6 +318,6 @@ void NoteHandler::DrawPreviewBox(double aTimePoint, float aMouseY)
 void NoteHandler::DrawNoteFieldBackground()
 {
 	ofSetColor(0, 0, 0, 216);
-	ofDrawRectangle(ofGetWindowWidth() / 2 - myNoteImage[0].getWidth() * 2, 0.f, 1.f, myNoteImage[0].getWidth() * 4, ofGetWindowHeight());
+	ofDrawRectangle(ofGetWindowWidth() / 2 - myNoteImage[0].getWidth() * 2 - 16, 0.f, 1.f, myNoteImage[0].getWidth() * 4 + 32, ofGetWindowHeight());
 	ofSetColor(255, 255, 255, 255);
 }
