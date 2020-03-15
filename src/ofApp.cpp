@@ -13,13 +13,15 @@ void ofApp::setup()
 
 	myGui.setup();
 	myChartEditor.Load();
+
+	ImGui::GetIO().IniFilename = nullptr;
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
 	myGui.begin();
-
+	
 	myChartEditor.Update();
 
 	myChartEditor.SetMousePosition(mouseX, mouseY);

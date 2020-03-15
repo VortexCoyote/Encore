@@ -69,7 +69,7 @@ private:
 	float* myWaveFormData = nullptr;
 	std::vector<WaveFormSlice> myWaveFormStructure;
 	
-	int myWaveFormSliceSize = 768;
+	int myWaveFormSliceSize = 1080;
 
 	DWORD mySongByteLength;
 

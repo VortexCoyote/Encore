@@ -29,6 +29,8 @@ struct BPMData : public TimeFieldObject
 	float beatLength = 0.f;
 	int meter = -1;
 	int uninherited = -1;
+
+	bool pinControl = false;
 };
 
 struct NoteData : public TimeFieldObject
