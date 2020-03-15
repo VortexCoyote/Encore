@@ -35,5 +35,7 @@ private:
 	
 	ofxImGui::Gui myGui;
 
+	bool myIsControlDown = false;
+
 	ChartEditor myChartEditor;
 };
