@@ -64,7 +64,6 @@ void ChartEditor::TogglePlaying()
 	{
 		mySongTimeHandler.TogglePause();
 	}
-
 }
 
 void ChartEditor::ZoomIn()
@@ -392,16 +391,17 @@ void ChartEditor::TimeLine()
 	windowFlags |= ImGuiWindowFlags_NoMove;
 	windowFlags |= ImGuiWindowFlags_NoResize;
 	windowFlags |= ImGuiWindowFlags_NoCollapse;
-    //windowFlags |= ImGuiWindowFlags_NoBackground;
+    windowFlags |= ImGuiWindowFlags_NoBackground;
 	windowFlags |= ImGuiWindowFlags_NoScrollbar;
 
 	bool open = true;
 	ImGui::Begin("TL", &open, windowFlags);
 
-	ImGui::SetWindowSize({24.f, float(ofGetWindowHeight()) + 8 });
-	ImGui::SetWindowPos({ float(ofGetWindowWidth() - 40),  - 8 });
+	ImGui::SetWindowSize({0, float(ofGetWindowHeight()) - 16 });
 
-	if (ImGui::VSliderFloat("", { 24.f,  float(ofGetWindowHeight()) /* - menuBarHeight * 2.f */ }, &myTimeLine, 0.0f, 1.0f, ""))
+	ImGui::SetWindowPos({ float(ofGetWindowWidth() - 32.f - 16.f - 4.f),  20 });
+
+	if (ImGui::VSliderFloat("", { 32.f,  float(ofGetWindowHeight() - 40) /* - menuBarHeight * 2.f */ }, &myTimeLine, 0.0f, 1.0f, ""))
 	{
 		mySongTimeHandler.SetTimeNormalized(myTimeLine);
 	}

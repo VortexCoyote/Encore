@@ -85,7 +85,7 @@ void BPMLineHandler::DrawRoutine(BPMData* aTimeObject, float aTimePoint)
 	ofSetColor(255, 255, 255, 255);
 	ofDrawRectangle({ x - 32, y - height}, width + 64, height);
 
-	int textX = x + width + 4;
+	int textX = x + width + 32;
 	int textY = y;
 
 	if (y < 0)
@@ -102,7 +102,7 @@ void BPMLineHandler::DrawRoutine(BPMData* aTimeObject, float aTimePoint)
 	bool open = true;
 
 	ImGui::SetNextWindowSize({256, 32});
-	ImGui::SetNextWindowPos({ float(textX), float(textY) });
+	ImGui::SetNextWindowPos({ float(textX), float(textY) - 16 });
 
 	ImGui::Begin(std::to_string((int)aTimeObject).c_str(), &open, windowFlags);
 
