@@ -50,7 +50,6 @@ void SongHandler::Update()
 	if (myCurrentTime >= GetSongLength())
 		SetPause(true);
 
-	ShowPlaybackRateControls();
 
 	BASS_Update(myStreamHandle);
 

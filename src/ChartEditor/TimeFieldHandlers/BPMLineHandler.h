@@ -13,6 +13,9 @@ public:
 
 	void ShowBeatDivisionControls();
 	
+	void IncreaseBeatSnap();
+	void DecreaseBeatSnap();
+
 	void DrawRoutine(BPMData* aTimeObject, float aTimePoint) override;
 	void Draw(double aTimePoint) override;
 

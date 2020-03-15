@@ -1,6 +1,7 @@
 #include "ofApp.h"
 
 #include "BASS\bass.h"
+#include "GLFW/glfw3.h"
 
 //--------------------------------------------------------------
 void ofApp::setup() 
@@ -36,41 +37,11 @@ void ofApp::draw() {
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
 
-	if (key == ' ')
-		myChartEditor.TogglePlaying();
-
-	if (key == '+')
-		myChartEditor.ZoomIn();
-
-	if (key == '-')
-		myChartEditor.ZoomOut();
-
-	
-	if (key == OF_KEY_RIGHT)
-		myChartEditor.IncreaseSpeed();
-
-	if (key == OF_KEY_LEFT)
-		myChartEditor.DecreaseSpeed();
-
-	if (key == OF_KEY_UP)
-		myChartEditor.MoveUp();
-
-	if (key == OF_KEY_DOWN)
-		myChartEditor.MoveDown();
-	
-	
-	if (key == '1')
-		myChartEditor.SetEditMode(0);
-
-	if (key == '2')
-		myChartEditor.SetEditMode(1);
-
-	if (key == '3')
-		myChartEditor.SetEditMode(2);
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key) {
+	
 
 }
 
@@ -136,6 +107,66 @@ void ofApp::windowResized(int w, int h) {
 
 //--------------------------------------------------------------
 void ofApp::gotMessage(ofMessage msg) {
+
+}
+
+void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
+{
+	int key = keyEvent.keycode;
+
+#define KEY_PLUS 45
+#define KEY_MINUS 47
+
+	if (key == GLFW_KEY_SPACE)
+		myChartEditor.TogglePlaying();
+
+
+	if (keyEvent.hasModifier(OF_KEY_CONTROL))
+	{
+
+		if (key == KEY_PLUS)
+			myChartEditor.IncreaseSnapDivision();
+
+		if (key == KEY_MINUS)
+			myChartEditor.DecreaseSnapDivision();
+	}
+	else
+	{
+
+		if (key == KEY_PLUS)
+			myChartEditor.ZoomIn();
+
+		if (key == KEY_MINUS)
+			myChartEditor.ZoomOut();
+	}
+
+
+	if (key == GLFW_KEY_RIGHT)
+		myChartEditor.IncreaseSpeed();
+
+	if (key == GLFW_KEY_LEFT)
+		myChartEditor.DecreaseSpeed();
+
+	if (key == GLFW_KEY_UP)
+		myChartEditor.MoveUp();
+
+	if (key == GLFW_KEY_DOWN)
+		myChartEditor.MoveDown();
+
+
+	if (key == GLFW_KEY_1)
+		myChartEditor.SetEditMode(0);
+
+	if (key == GLFW_KEY_2)
+		myChartEditor.SetEditMode(1);
+
+	if (key == GLFW_KEY_3)
+		myChartEditor.SetEditMode(2);
+
+}
+
+void ofApp::keyReleased(ofKeyEventArgs& keyEvent)
+{
 
 }
 

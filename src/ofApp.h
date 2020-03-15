@@ -5,6 +5,8 @@
 
 #include "ChartEditor/ChartEditor.h"
 
+
+
 class ofApp : public ofBaseApp
 {
 public:
@@ -25,6 +27,9 @@ public:
 	void windowResized(int w, int h);
 	void dragEvent(ofDragInfo dragInfo);
 	void gotMessage(ofMessage msg);
+
+	virtual void keyPressed(ofKeyEventArgs& keyEvent) override;
+	virtual void keyReleased(ofKeyEventArgs& keyEvent) override;
 
 private:
 	

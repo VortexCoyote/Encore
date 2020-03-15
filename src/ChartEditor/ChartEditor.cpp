@@ -29,7 +29,6 @@ void ChartEditor::Update()
 	if (mySelectedChart == nullptr)
 		return void();
 
-	myBPMLineHandler.ShowBeatDivisionControls();
 	mySongTimeHandler.Update();
 	myEditHandler.SetCursorInput({ float(myMouseX), float(myMouseY) });
 	myEditHandler.SetVisibleItems(&(myNoteHandler.GetVisibleNotes()));
@@ -70,8 +69,9 @@ void ChartEditor::TogglePlaying()
 
 void ChartEditor::ZoomIn()
 {
+
 	EditorConfig::scale += 0.05f;
-	if (EditorConfig::scale >= 1.5f)
+	if (EditorConfig::scale > 1.5f)
 	{
 		EditorConfig::scale = 1.5f;
 		PUSH_NOTIFICATION(std::string("Zoom Limit Reached! (1.5x)"));
@@ -86,7 +86,7 @@ void ChartEditor::ZoomIn()
 void ChartEditor::ZoomOut()
 {
 	EditorConfig::scale -= 0.05f;
-	if (EditorConfig::scale <= 0.05f)
+	if (EditorConfig::scale < 0.05f)
 	{
 		EditorConfig::scale = 0.05f;
 		PUSH_NOTIFICATION(std::string("Zoom Limit Reached! (0.05x)"));
@@ -115,6 +115,16 @@ void ChartEditor::IncreaseSpeed()
 void ChartEditor::DecreaseSpeed()
 {
 	mySongTimeHandler.DecreaseSpeed();
+}
+
+void ChartEditor::IncreaseSnapDivision()
+{
+	myBPMLineHandler.IncreaseBeatSnap();
+}
+
+void ChartEditor::DecreaseSnapDivision()
+{
+	myBPMLineHandler.DecreaseBeatSnap();
 }
 
 void ChartEditor::MoveDown()
@@ -319,6 +329,8 @@ void ChartEditor::SetMousePosition(int aX, int aY)
 	myMouseX = aX;
 	myMouseY = aY;
 }
+
+
 
 void ChartEditor::MenuBar()
 {

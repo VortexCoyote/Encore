@@ -1,7 +1,7 @@
 #include "BPMLineHandler.h"
 #include "imgui.h"
 
-
+#include "../NotificationSystem.h"
 
 void BPMLineHandler::ShowBeatDivisionControls()
 {
@@ -37,6 +37,41 @@ void BPMLineHandler::ShowBeatDivisionControls()
 
 	ImGui::End();
 }
+
+void BPMLineHandler::IncreaseBeatSnap()
+{
+	mySnapDivision++;
+	if (mySnapDivision > 192)
+	{
+		mySnapDivision = 192;
+		PUSH_NOTIFICATION("Snap Division Limit Reached (1/192)");
+	}
+	else
+	{
+		PUSH_NOTIFICATION("Snap Division: 1/" + std::to_string(mySnapDivision));
+	}
+
+	mySnapQuotient = 1.f / float(mySnapDivision);
+
+}
+
+void BPMLineHandler::DecreaseBeatSnap()
+{
+	mySnapDivision--;
+	if (mySnapDivision < 1)
+	{
+		mySnapDivision = 1;
+		PUSH_NOTIFICATION("Snap Division Limit Reached (1/1)");
+	}
+	else
+	{
+		PUSH_NOTIFICATION("Snap Division: 1/" + std::to_string(mySnapDivision));
+	}
+
+	mySnapQuotient = 1.f / float(mySnapDivision);
+
+}
+
 
 void BPMLineHandler::DrawRoutine(BPMData* aTimeObject, float aTimePoint)
 {
@@ -166,7 +201,7 @@ float BPMLineHandler::GetClosestBeatLineSec(float aY)
 
 float BPMLineHandler::GetBiasedClosestBeatLineMS(int aTime, bool aDown)
 {
-	//:(
+	// :(
 
 	BeatLine beatLine = { 0, 0, 0 };
 

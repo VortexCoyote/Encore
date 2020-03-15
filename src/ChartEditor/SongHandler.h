@@ -46,12 +46,13 @@ public:
 	void IncreaseSpeed();
 	void DecreaseSpeed();
 
+	void ShowPlaybackRateControls();
+
 private:
 
 
 	void DrawWaveFormSliceAtIndex(int aIndex);
 	void GenerateWaveForm(std::string aPath);
-	void ShowPlaybackRateControls();
 
 	void TryTimingSync();
 	double GetRealCurrentTimeS();

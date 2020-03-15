@@ -31,6 +31,9 @@ public:
 	void IncreaseSpeed();
 	void DecreaseSpeed();
 
+	void IncreaseSnapDivision();
+	void DecreaseSnapDivision();
+
 	void MoveDown();
 	void MoveUp();
 
@@ -54,7 +57,7 @@ public:
 	void TryPlaceHold(int aX, int aY);
 	void TryDragHold(int aX, int aY);
 	void TryReleaseHold(int aX, int aY);
-
+	
 	void TrySelectItem(int aX, int aY);
 	void TryTimelinePreview(int aX, int aY);
 
