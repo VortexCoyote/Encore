@@ -6,7 +6,7 @@
 void ofApp::setup() 
 {
 	ofSetLogLevel(OF_LOG_VERBOSE);
-	ofSetFrameRate(1000);
+	ofSetFrameRate(500);
 	ofSetVerticalSync(false);
 	ofSetBackgroundColor({0, 0, 0, 255});
 

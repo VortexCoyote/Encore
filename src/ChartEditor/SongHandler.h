@@ -9,6 +9,12 @@
 #include "ofImage.h"
 #include "ofFbo.h"
 
+struct WaveFormSlice
+{
+	ofFbo* surface = nullptr;
+	int timeMS = -1;
+};
+
 class ofSoundPlayer;
 class SongHandler
 {
@@ -42,6 +48,8 @@ public:
 
 private:
 
+
+	void DrawWaveFormSliceAtIndex(int aIndex);
 	void GenerateWaveForm(std::string aPath);
 	void ShowPlaybackRateControls();
 
@@ -58,9 +66,11 @@ private:
 	bool myIsPausing = true;
 
 	float* myWaveFormData = nullptr;
-	DWORD mySongByteLength;
+	std::vector<WaveFormSlice> myWaveFormStructure;
+	
+	int myWaveFormSliceSize = 768;
 
-	ofFbo myWaveForm;
+	DWORD mySongByteLength;
 
 	//relevant BASS variables
 	int myDevice = -1; // Default Sounddevice

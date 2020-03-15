@@ -47,21 +47,8 @@ void SongHandler::Init(std::string aPath, double aSyncThreshold)
 
 void SongHandler::Update()
 {
-	/*if (GetAsyncKeyState(VK_DOWN))
-	{
-		myCurrentTime -= 0.01;
-		SetTimeS(myCurrentTime);
-	}
-
-	if (GetAsyncKeyState(VK_UP))
-	{
-		myCurrentTime += 0.01;
-		SetTimeS(myCurrentTime);
-	}*/
-
 	if (myCurrentTime >= GetSongLength())
 		SetPause(true);
-	
 
 	ShowPlaybackRateControls();
 
@@ -73,35 +60,31 @@ void SongHandler::Update()
 
 void SongHandler::DrawWaveForm()
 {
-	for (int y = 0; y < ofGetWindowHeight(); y += 1)
+	if (myWaveFormData == nullptr)
+		return void();
+
+	int scaledSliceSize = float(myWaveFormSliceSize) * EditorConfig::scale;
+
+	std::vector<int> indexes;
+
+	int previousIndex = -1;
+
+	for (int y = ofGetWindowHeight() * 2; y >= -ofGetWindowHeight(); y -= scaledSliceSize)
 	{
 		int newY = y;
 
 		newY -= (EditorConfig::hitLinePosition);
 		newY = int(float(newY) / EditorConfig::scale);
 
-		int timePointMS = newY + (myCurrentTime * 1000.0);
+		int timePointMS = newY + ((myCurrentTime * 1000.0) + 0.5);
 
-		if (timePointMS <= BASS_ChannelBytes2Seconds(myStreamHandle, mySongByteLength) * 1000 && timePointMS >= 0)
+		int index = (timePointMS / myWaveFormSliceSize);
+		if (index >= 0 && index < myWaveFormStructure.size() && index != previousIndex)
 		{
-			size_t index = BASS_ChannelSeconds2Bytes(myStreamHandle, double(timePointMS) / 1000.0) / 2;
-
-			if (index < mySongByteLength / sizeof(int))
-			{
-				float width1 = myWaveFormData[index];
-				float width2 = myWaveFormData[index + 1];
-
-				float color = abs(width1) * 255;
-				ofSetColor(255 - color, 255, color, 128);
-				ofDrawLine(ofGetWindowWidth() / 2, ofGetWindowHeight() - y, ofGetWindowWidth() / 2 + width1 * 128.f, ofGetWindowHeight() - y);
-
-				color = abs(width2) * 255;
-				ofSetColor(255 - color, 255, color, 128);
-				ofDrawLine(ofGetWindowWidth() / 2, ofGetWindowHeight() - y, ofGetWindowWidth() / 2 - width2 * 128.f, ofGetWindowHeight() - y);
-
-				ofSetColor(255, 255, 255, 255);
-			}
+			DrawWaveFormSliceAtIndex(index);
 		}
+
+		previousIndex = index;
 	}
 }
 
@@ -214,13 +197,100 @@ void SongHandler::DecreaseSpeed()
 	PUSH_NOTIFICATION(std::string("Playback Speed: ") + std::to_string(mySpeed));
 }
 
+void SongHandler::DrawWaveFormSliceAtIndex(int aIndex)
+{
+	int deltaSliceTime = (myWaveFormStructure[aIndex].timeMS + myWaveFormSliceSize) - GetCurrentTimeMS();
+
+	int textureHeight = float(myWaveFormSliceSize) * EditorConfig::scale;
+	int drawY = ofGetWindowHeight() - EditorConfig::hitLinePosition - float(deltaSliceTime) * EditorConfig::scale;
+
+	myWaveFormStructure[aIndex].surface->draw(ofGetWindowWidth() / 2 - 128, drawY, 256, textureHeight);
+}
+
 void SongHandler::GenerateWaveForm(std::string aPath)
 {
 	HSTREAM decoder = BASS_StreamCreateFile(FALSE, aPath.c_str(), 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_DECODE); // create a stream from the file
 
+	if (myWaveFormData != nullptr)
+	{
+		delete myWaveFormData;
+		myWaveFormData = nullptr;
+	}
+
+	for (auto slice : myWaveFormStructure )
+	{
+		delete slice.surface;
+	}
+
+	myWaveFormStructure.clear();
+
 	mySongByteLength = BASS_ChannelGetLength(decoder, BASS_POS_BYTE); // get byte length
-	myWaveFormData = (float*)malloc(mySongByteLength); // allocate a buffer for the data
+	myWaveFormData = (float*)std::malloc(mySongByteLength); // allocate a buffer for the data
 	mySongByteLength = BASS_ChannelGetData(decoder, myWaveFormData, mySongByteLength); // decode the stream into the buffer
+
+	if (myWaveFormData == nullptr)
+		return void();
+	
+	int songLengthMS = BASS_ChannelBytes2Seconds(myStreamHandle, mySongByteLength) * 1000;
+	int size = songLengthMS / myWaveFormSliceSize;
+
+	for (int t = 0; t < songLengthMS; t += myWaveFormSliceSize)
+	{
+		ofFbo* surface = new ofFbo();
+		surface->allocate(256, myWaveFormSliceSize);
+
+		surface->begin();
+		ofClear(255, 255, 255, 0);
+
+
+		bool first = true;
+		int time = -1;
+
+		for (int y = 0; y < myWaveFormSliceSize; y += 1)
+		{
+			int newY = y;
+
+			newY -= (EditorConfig::hitLinePosition);
+			newY = int(float(newY) / EditorConfig::scale);
+
+			int timePointMS = newY + t;
+
+			if (first == true)
+			{
+				time = timePointMS;
+				first = false;
+			}
+
+			if (timePointMS <= BASS_ChannelBytes2Seconds(myStreamHandle, mySongByteLength) * 1000 && timePointMS >= 0)
+			{
+				size_t index = BASS_ChannelSeconds2Bytes(myStreamHandle, double(timePointMS) / 1000.0) / 2;
+
+				if (index < mySongByteLength / sizeof(int))
+				{
+					float width1 = abs(myWaveFormData[index]);
+					float width2 = abs(myWaveFormData[index + 1]);
+
+					ofSetColor(255, 255, 0, 128);
+					ofDrawLine(128, myWaveFormSliceSize - y, 128 + width1 * 128.f, myWaveFormSliceSize - y);
+
+					ofSetColor(255, 255, 0, 128);
+					ofDrawLine(128, myWaveFormSliceSize - y, 128 - width2 * 128.f, myWaveFormSliceSize - y);
+
+					ofSetColor(0, 255, 255, 128);
+					ofDrawLine(128, myWaveFormSliceSize - y, 128 + width1 * 64.f, myWaveFormSliceSize - y);
+
+					ofSetColor(0, 255, 255, 128);
+					ofDrawLine(128, myWaveFormSliceSize - y, 128 - width2 * 64.f, myWaveFormSliceSize - y);
+
+					ofSetColor(255, 255, 255, 255);
+				}
+			}
+		}
+		surface->end();
+
+		myWaveFormStructure.push_back({ surface, time });
+	}
+
 }
 
 void SongHandler::ShowPlaybackRateControls()

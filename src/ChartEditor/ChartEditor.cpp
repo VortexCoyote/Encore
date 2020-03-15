@@ -71,13 +71,30 @@ void ChartEditor::TogglePlaying()
 void ChartEditor::ZoomIn()
 {
 	EditorConfig::scale += 0.05f;
-	PUSH_NOTIFICATION(std::string("Zoomed In: ") + std::to_string(EditorConfig::scale));
+	if (EditorConfig::scale >= 1.5f)
+	{
+		EditorConfig::scale = 1.5f;
+		PUSH_NOTIFICATION(std::string("Zoom Limit Reached! (1.5x)"));
+	}
+	else
+	{
+		PUSH_NOTIFICATION(std::string("Zoomed In: ") + std::to_string(EditorConfig::scale));
+	}
+
 }
 
 void ChartEditor::ZoomOut()
 {
-	EditorConfig::scale -= EditorConfig::scale >= 0.f ? 0.05f : 0.f;
-	PUSH_NOTIFICATION(std::string("Zoomed Out: ") + std::to_string(EditorConfig::scale));
+	EditorConfig::scale -= 0.05f;
+	if (EditorConfig::scale <= 0.05f)
+	{
+		EditorConfig::scale = 0.05f;
+		PUSH_NOTIFICATION(std::string("Zoom Limit Reached! (0.05x)"));
+	}
+	else
+	{
+		PUSH_NOTIFICATION(std::string("Zoomed Out: ") + std::to_string(EditorConfig::scale));
+	}
 }
 
 void ChartEditor::ScrollUp()

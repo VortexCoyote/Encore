@@ -7,8 +7,8 @@
 
 #define PUSH_NOTIFICATION(message) NotificationSystem::GetInstance()->SubmitMessage(message)
 
-#ifdef _DEBUG
 #define PUSH_NOTIFICATION_DEBUG(message) NotificationSystem::GetInstance()->SubmitMessage(std::string("[DEBUG] ") + message)
+#ifdef _DEBUG
 #else
 #define PUSH_NOTIFICATION_DEBUG(message)
 #endif
