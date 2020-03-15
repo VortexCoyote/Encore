@@ -44,8 +44,10 @@ void ChartEditor::Draw()
 	if (mySelectedChart == nullptr)
 		return void();
 
+	ofSetColor(255, 255, 255, 200);
 	float procentualChange = float(ofGetWindowHeight()) / float(mySelectedChart->background.getHeight());	
 	mySelectedChart->background.draw((ofGetWindowWidth() - mySelectedChart->background.getWidth() * procentualChange) / 2, 0, int(float(mySelectedChart->background.getWidth()) * procentualChange), int(float(mySelectedChart->background.getHeight()) * procentualChange));
+	ofSetColor(255, 255, 255, 255);
 
 	TryTimelinePreview(myMouseX, myMouseY);
 

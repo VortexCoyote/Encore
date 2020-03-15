@@ -53,8 +53,8 @@ void SongHandler::Update()
 
 	BASS_Update(myStreamHandle);
 
-	//myCurrentTime = BASS_ChannelBytes2Seconds(myStreamHandle, BASS_ChannelGetPosition(myStreamHandle, BASS_POS_BYTE));
-	TryTimingSync();
+	myCurrentTime = BASS_ChannelBytes2Seconds(myStreamHandle, BASS_ChannelGetPosition(myStreamHandle, BASS_POS_BYTE));
+	//TryTimingSync();
 }
 
 void SongHandler::DrawWaveForm()

@@ -25,7 +25,6 @@ void ofApp::update() {
 	myChartEditor.Update();
 
 	myChartEditor.SetMousePosition(mouseX, mouseY);
-
 }
 
 //--------------------------------------------------------------
