@@ -270,16 +270,16 @@ void SongHandler::GenerateWaveForm(std::string aPath)
 					float width2 = abs(myWaveFormData[index + 1]);
 
 					ofSetColor(255, 255, 0, 128);
-					ofDrawLine(128, myWaveFormSliceSize - y, 128 + width1 * 128.f, myWaveFormSliceSize - y);
+					ofDrawLine(128, myWaveFormSliceSize - y, 128 + width2 * 128.f, myWaveFormSliceSize - y);
 
 					ofSetColor(255, 255, 0, 128);
-					ofDrawLine(128, myWaveFormSliceSize - y, 128 - width2 * 128.f, myWaveFormSliceSize - y);
+					ofDrawLine(128, myWaveFormSliceSize - y, 128 - width1 * 128.f, myWaveFormSliceSize - y);
 
 					ofSetColor(0, 255, 255, 192);
-					ofDrawLine(128, myWaveFormSliceSize - y, 128 + width1 * 64.f, myWaveFormSliceSize - y);
+					ofDrawLine(128, myWaveFormSliceSize - y, 128 + width2 * 64.f, myWaveFormSliceSize - y);
 
 					ofSetColor(0, 255, 255, 192);
-					ofDrawLine(128, myWaveFormSliceSize - y, 128 - width2 * 64.f, myWaveFormSliceSize - y);
+					ofDrawLine(128, myWaveFormSliceSize - y, 128 - width1 * 64.f, myWaveFormSliceSize - y);
 
 					ofSetColor(255, 255, 255, 255);
 				}
