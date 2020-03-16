@@ -91,23 +91,26 @@ void BPMLineHandler::Update()
 
 		ImGui::Begin(std::to_string((int)myPinnedBPMLine).c_str(), &open, windowFlags);
 
-		if (ImGui::Button("X"))
-			myBPMLineToDelete = myPinnedBPMLine;
-		
-		ImGui::SameLine();
-		if (ImGui::Button("Move Up"))
+		if (ImGui::Button("+ 1ms"))
 			myPinnedBPMLine->timePoint += 1;
 
 		ImGui::SameLine();
-		if (ImGui::Button("Move Down"))
+		ImGui::Checkbox("Pin BPM Line     ", &myPinnedBPMLine->pinControl);
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("X"))
+			myBPMLineToDelete = myPinnedBPMLine;
+
+		if (ImGui::Button("- 1ms"))
 			myPinnedBPMLine->timePoint -= 1;
 
 		ImGui::SameLine();
-		ImGui::Checkbox("Pin", &myPinnedBPMLine->pinControl);
 
 		ImGui::Text("BPM");
 		ImGui::SameLine();
-		ImGui::DragFloat("", &myPinnedBPMLine->BPM, 0.01, 0.0, 999999999.f);
+		ImGui::PushItemWidth(174);
+		ImGui::DragFloat("", &myPinnedBPMLine->BPM, myBPMChangeValue, 0.0, 2000.f);
 		ImGui::SameLine();
 
 		ImGui::End();
@@ -129,7 +132,6 @@ void BPMLineHandler::Update()
 
 		myBPMLineToDelete = nullptr;
 	}
-
 }
 
 
@@ -145,7 +147,7 @@ void BPMLineHandler::DrawRoutine(BPMData* aTimeObject, float aTimePoint)
 	ofSetColor(255, 255, 255, 255);
 	ofDrawRectangle({ x - 32, y - height}, width + 64, height);
 
-	int textX = x + width + 64;
+	int textX = x + width + 48;
 	int textY = y;
 
 	if (y < 0)
@@ -171,28 +173,27 @@ void BPMLineHandler::DrawRoutine(BPMData* aTimeObject, float aTimePoint)
 
 		ImGui::Begin(std::to_string((int)aTimeObject).c_str(), &open, windowFlags);
 		
-		if (ImGui::Button("X"))
-			myBPMLineToDelete = aTimeObject;
-
-		ImGui::SameLine();
-		ImGui::Spacing();
-		if (ImGui::Button("Move Up"))
+		if (ImGui::Button("+ 1ms"))
 			aTimeObject->timePoint += 1;
 
 		ImGui::SameLine();
-		if (ImGui::Button("Move Down"))
-			aTimeObject->timePoint -= 1;
-
+		ImGui::Checkbox("Pin BPM Line     ", &aTimeObject->pinControl);
 
 		ImGui::SameLine();
-		ImGui::Spacing();
-		ImGui::Checkbox("Pin", &aTimeObject->pinControl);
 
+		if (ImGui::Button("X"))
+			myBPMLineToDelete = aTimeObject;
+
+		if (ImGui::Button("- 1ms"))
+			aTimeObject->timePoint -= 1;
+
+		ImGui::SameLine();
 
 		ImGui::Text("BPM");
 		ImGui::SameLine();
-		ImGui::DragFloat("", &aTimeObject->BPM, 0.01, 0.0, 999999999.f);
-		ImGui::SameLine();	
+		ImGui::PushItemWidth(174);
+		ImGui::DragFloat("", &aTimeObject->BPM, myBPMChangeValue, 0.0, 2000.f);
+		ImGui::SameLine();
 
 		ImGui::End();
 
@@ -392,6 +393,18 @@ int BPMLineHandler::GetClosestTimePoint(float aY)
 	}
 
 	return -1;
+}
+
+void BPMLineHandler::SetPreciseBPMChange(bool aMode)
+{
+	if (aMode == true)
+	{
+		myBPMChangeValue = 0.0001f;
+	}
+	else
+	{
+		myBPMChangeValue = 0.01f;
+	}
 }
 
 BPMLineHandler::BPMLineHandler()

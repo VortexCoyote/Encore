@@ -160,7 +160,7 @@ void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
 
 	if (keyEvent.hasModifier(OF_KEY_SHIFT))
 	{
-		myChartEditor.SetFreePlace(true);
+		myChartEditor.DoShiftAction(true);
 		myShiftKey = true;
 	}
 
@@ -222,7 +222,7 @@ void ofApp::keyReleased(ofKeyEventArgs& keyEvent)
 
 	if (keyEvent.key == OF_KEY_SHIFT)
 	{
-		myChartEditor.SetFreePlace(false);
+		myChartEditor.DoShiftAction(false);
 		myShiftKey = false;
 	}
 

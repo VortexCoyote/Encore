@@ -344,10 +344,11 @@ void ChartEditor::SetMousePosition(int aX, int aY)
 	myMouseY = aY;
 }
 
-void ChartEditor::SetFreePlace(bool aFreePlace)
+void ChartEditor::DoShiftAction(bool aShiftDown)
 {
-	myFreePlace = aFreePlace;
-	myEditHandler.SetFreePlace(aFreePlace);
+	myFreePlace = aShiftDown;
+	myEditHandler.SetFreePlace(aShiftDown);
+	myBPMLineHandler.SetPreciseBPMChange(aShiftDown);
 }
 
 void ChartEditor::MenuBar()

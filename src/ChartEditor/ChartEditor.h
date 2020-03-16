@@ -39,7 +39,6 @@ public:
 
 	void SetEditMode(int aMode);
 	void SetMousePosition(int aX, int aY);
-	void SetFreePlace(bool aFreePlace);
 
 	//Click Edit Actions
 	void DoLeftClickPressedAction(int aX, int aY);
@@ -50,6 +49,8 @@ public:
 
 	void DoLeftClickDragAction(int aX, int aY);
 	void DoRightClickDragAction(int aX, int aY);
+
+	void DoShiftAction(bool aFreePlace);
 
 	//Edit Actions
 	void TryPlaceNote(int aX, int aY);

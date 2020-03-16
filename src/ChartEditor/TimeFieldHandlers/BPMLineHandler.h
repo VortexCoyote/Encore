@@ -33,6 +33,8 @@ public:
 
 	int GetClosestTimePoint(float aY);
 
+	void SetPreciseBPMChange(bool aMode);
+
 private:
 
 	int	  mySnapDivision = 2;
@@ -54,9 +56,12 @@ private:
 
 	std::vector<BeatLine> myVisibleBeatLines;
 
-	ImVec2 myBPMControllerDimensions = { 246.f, 52.f};
+	ImVec2 myBPMControllerDimensions = { 220.f, 52.f};
 	BPMData* myPinnedBPMLine = nullptr;
 	ImVec2 myPinnedControllerPosition;
 
 	BPMData* myBPMLineToDelete = nullptr;
+
+
+	float myBPMChangeValue = 0.01f;
 };
