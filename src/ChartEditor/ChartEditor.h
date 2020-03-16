@@ -39,6 +39,7 @@ public:
 
 	void SetEditMode(int aMode);
 	void SetMousePosition(int aX, int aY);
+	void SetFreePlace(bool aFreePlace);
 
 	//Click Edit Actions
 	void DoLeftClickPressedAction(int aX, int aY);
@@ -58,6 +59,8 @@ public:
 	void TryDragHold(int aX, int aY);
 	void TryReleaseHold(int aX, int aY);
 	
+	void TryPlaceBPMLine(int aX, int aY);
+
 	void TrySelectItem(int aX, int aY);
 	void TryTimelinePreview(int aX, int aY);
 
@@ -69,6 +72,8 @@ private:
 	void SetSelectedChart(ChartData* aChartData);
 
 	bool IsCursorWithinBounds(int aX, int aY);
+
+	int GetScreenTimePoint(float aY);
 
 	ChartResourceHandler myChartResourceHandler;
 	SongHandler mySongTimeHandler;
@@ -89,5 +94,6 @@ private:
 	int myMouseY = 0;
 
 	bool myHoldDrag = false;
+	bool myFreePlace = false;
 	NoteData* myDraggableHoldEnd = nullptr;
 };

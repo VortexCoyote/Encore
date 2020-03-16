@@ -10,6 +10,7 @@ enum class EditActionState
 	EditNotes,
 	EditHolds,
 	Select,
+	EditBPM,
 
 	Count
 };
@@ -33,6 +34,7 @@ public:
 	void SetVisibleItems(std::vector<NoteData*>* aVisibleItems);
 	void SetEditActionState(EditActionState aCursorState);
 	void TrySelectItem(int aX, int aY);
+	void SetFreePlace(bool aFreePlace);
 
 	EditActionState GetEditActionState();
 
@@ -48,6 +50,8 @@ private:
 	ofVec2f myCursorPosition;
 
 	BPMLineHandler* myBPMLineHandler;
+
+	bool myFreePlace = false;
 
 	EditActionState myCursorState = EditActionState::EditNotes;
 

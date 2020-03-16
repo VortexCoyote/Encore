@@ -310,7 +310,7 @@ void ChartResourceHandler::SaveChart(std::string aPath, ChartData* aChart)
 
 	for (auto timingPoint : chart->BPMPoints)
 	{
-		chartData << timingPoint->timePoint << "," << timingPoint->BPMSaved << "," << timingPoint->meter << ",0,0,50," << timingPoint->uninherited << ",0" << std::endl;
+		chartData << timingPoint->timePoint << "," << 60000.0 / timingPoint->BPM << "," << timingPoint->meter << ",0,0,50," << timingPoint->uninherited << ",0" << std::endl;
 	}
 
 	chartData << std::endl;

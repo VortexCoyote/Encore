@@ -33,7 +33,15 @@ void EditHandler::Draw()
 		if (note->selected == true && note->y < ofGetWindowHeight())
 			myCursorImage.draw(note->x, note->y);	
 
-	myCursorImage.draw(GetSnappedCursorPosition());
+	if (myCursorState == EditActionState::EditBPM)
+	{
+		ofSetColor(255, 255, 255, 255);
+		ofDrawRectangle(ofGetWindowWidth() / 2 - 64 * 2 - 32, GetSnappedCursorPosition().y, 64 * 4 + 32 * 2, 4 );
+
+		return void();
+	}
+
+	myCursorImage.draw(GetSnappedCursorPosition() - ofVec2f(0, 64));
 }
 
 ofVec2f EditHandler::GetSnappedCursorPosition()
@@ -47,6 +55,7 @@ ofVec2f EditHandler::GetSnappedCursorPosition()
 
 	switch (myCursorState)
 	{
+	case EditActionState::EditBPM:
 	case EditActionState::EditHolds:
 	case EditActionState::EditNotes:
 
@@ -64,7 +73,14 @@ ofVec2f EditHandler::GetSnappedCursorPosition()
 		if (x >= leftBorder + 192.f && x < leftBorder + 256.f)
 			x = leftBorder + 192.f;
 
-		return ofVec2f(x, myBPMLineHandler->GetClosestBeatLinePos(myCursorPosition.y) - myCursorImage.getHeight());
+		if (myFreePlace == true)
+		{
+			return ofVec2f(x, myCursorPosition.y);
+		}
+		else
+		{
+			return ofVec2f(x, myBPMLineHandler->GetClosestBeatLinePos(myCursorPosition.y));
+		}
 
 		break;
 
@@ -108,6 +124,9 @@ void EditHandler::SetEditActionState(EditActionState aCursorState)
 	case EditActionState::Select:
 		PUSH_NOTIFICATION("Select Mode");
 		break;
+	case EditActionState::EditBPM:
+		PUSH_NOTIFICATION("Edit BPM Points Mode");
+		break;
 
 	default:
 		PUSH_NOTIFICATION("Invalid Mode Input");
@@ -141,6 +160,11 @@ void EditHandler::TrySelectItem(int aX, int aY)
 	mySelectedItems.clear();
 }
 
+void EditHandler::SetFreePlace(bool aFreePlace)
+{
+	myFreePlace = aFreePlace;
+}
+
 EditActionState EditHandler::GetEditActionState()
 {
 	return myCursorState;
@@ -158,7 +182,7 @@ int EditHandler::GetColumn(int aX)
 	float leftBorder = ofGetWindowWidth() / 2 - 64 * 2;
 	float rightBorder = ofGetWindowWidth() / 2 + 64 * 2;
 
-	if (x >= leftBorder&& x < leftBorder + 64.f)
+	if (x >= 0 && x < leftBorder + 64.f)
 		return 0;
 
 	if (x >= leftBorder + 64.f && x < leftBorder + 128.f)
@@ -167,7 +191,7 @@ int EditHandler::GetColumn(int aX)
 	if (x >= leftBorder + 128.f && x < leftBorder + 192.f)
 		return 2;
 
-	if (x >= leftBorder + 192.f && x < leftBorder + 256.f)
+	if (x >= leftBorder + 192.f && x < ofGetWindowWidth())
 		return 3;
 
 

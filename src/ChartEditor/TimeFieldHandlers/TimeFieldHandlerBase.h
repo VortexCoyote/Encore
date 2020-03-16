@@ -17,12 +17,12 @@ public:
 	virtual void Init(std::vector<T*>* aObjectData);
 	virtual void Draw(double aTimePoint);
 
+	double GetScreenTimePoint(int aTimePointMS, double aCurrentTimePointS);
+	int GetTimeFromScreenPoint(float aScreenPoint, double aCurrentTimePointS);
+
 protected:
 
 	virtual void DrawRoutine(T* aTimeObject, float aTimePoint) = 0;
-
-	double GetScreenTimePoint(int aTimePointMS, double aCurrentTimePointS);
-	int GetTimeFromScreenPoint(float aScreenPoint, double aCurrentTimePointS);
 
 	unsigned int myLastObjectIndex = 0;
 	double		 myLastTimePoint = 0.0;

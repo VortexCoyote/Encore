@@ -72,6 +72,38 @@ void BPMLineHandler::DecreaseBeatSnap()
 
 }
 
+void BPMLineHandler::UpdatePinnedController()
+{
+	if (myPinnedController != nullptr)
+	{
+		ImGuiWindowFlags windowFlags = 0;
+		windowFlags |= ImGuiWindowFlags_NoTitleBar;
+		windowFlags |= ImGuiWindowFlags_NoMove;
+		windowFlags |= ImGuiWindowFlags_NoResize;
+		windowFlags |= ImGuiWindowFlags_NoCollapse;
+		windowFlags |= ImGuiWindowFlags_AlwaysAutoResize;
+		windowFlags |= ImGuiWindowFlags_NoScrollbar;
+
+		bool open = true;
+
+		ImGui::SetNextWindowSize(myPinnedControllerDimensions);
+		ImGui::SetNextWindowPos({float(ofGetWindowWidth() / 2 + 64 * 2 + 32) , ofGetWindowHeight() - EditorConfig::hitLinePosition - 16});
+
+		ImGui::Begin(std::to_string((int)myPinnedController).c_str(), &open, windowFlags);
+
+		ImGui::Text("BPM");
+		ImGui::SameLine();
+		ImGui::DragFloat("", &myPinnedController->BPM, 0.01, 0.0, 999999999.f);
+		ImGui::SameLine();
+		ImGui::Checkbox("Pin", &myPinnedController->pinControl);
+
+		ImGui::End();
+
+		if (myPinnedController->pinControl == false)
+			myPinnedController = nullptr;
+	}
+}
+
 
 void BPMLineHandler::DrawRoutine(BPMData* aTimeObject, float aTimePoint)
 {
@@ -91,26 +123,44 @@ void BPMLineHandler::DrawRoutine(BPMData* aTimeObject, float aTimePoint)
 	if (y < 0)
 		return void();
 
-	ImGuiWindowFlags windowFlags = 0;
-	windowFlags |= ImGuiWindowFlags_NoTitleBar;
-	windowFlags |= ImGuiWindowFlags_NoMove;
-	windowFlags |= ImGuiWindowFlags_NoResize;
-	windowFlags |= ImGuiWindowFlags_NoCollapse;
-	windowFlags |= ImGuiWindowFlags_AlwaysAutoResize;
-	windowFlags |= ImGuiWindowFlags_NoScrollbar;
+	if (aTimeObject->pinControl == false)
+	{
+		//ofSetColor(255, 255, 255, 255);
+		//ofDrawCircle({ float(textX), float(textY) }, 4);
 
-	bool open = true;
+		ImGuiWindowFlags windowFlags = 0;
+		windowFlags |= ImGuiWindowFlags_NoTitleBar;
+		windowFlags |= ImGuiWindowFlags_NoMove;
+		windowFlags |= ImGuiWindowFlags_NoResize;
+		windowFlags |= ImGuiWindowFlags_NoCollapse;
+		windowFlags |= ImGuiWindowFlags_AlwaysAutoResize;
+		windowFlags |= ImGuiWindowFlags_NoScrollbar;
 
-	ImGui::SetNextWindowSize({256, 32});
-	ImGui::SetNextWindowPos({ float(textX), float(textY) - 16 });
+		bool open = true;
 
-	ImGui::Begin(std::to_string((int)aTimeObject).c_str(), &open, windowFlags);
+		ImGui::SetNextWindowSize({ 296, 32 });
+		ImGui::SetNextWindowPos({ float(textX), float(textY) - 16 });
 
-	ImGui::Text("BPM");
-	ImGui::SameLine();
-	ImGui::DragFloat("", &aTimeObject->BPM, 0.1, 0.0, 999999999.f);
+		ImGui::Begin(std::to_string((int)aTimeObject).c_str(), &open, windowFlags);
 
-	ImGui::End();
+		ImGui::Text("BPM");
+		ImGui::SameLine();
+		ImGui::DragFloat("", &aTimeObject->BPM, 0.01, 0.0, 999999999.f);
+		ImGui::SameLine();
+		ImGui::Checkbox("Pin", &aTimeObject->pinControl);
+
+		ImGui::End();
+
+		if (aTimeObject->pinControl == true)
+		{
+			if (myPinnedController != nullptr)
+				myPinnedController->pinControl = false;
+			
+			myPinnedController = aTimeObject;
+			myPinnedControllerPosition = { float(textX), float(textY) - 16 };
+			myPinnedControllerDimensions = { 296, 32 };
+		}
+	}
 }
 
 void BPMLineHandler::Draw(double aTimePoint)
@@ -247,6 +297,31 @@ float BPMLineHandler::GetBiasedClosestBeatLineMS(int aTime, bool aDown)
 	}
 
 	return time;
+}
+
+void BPMLineHandler::PlaceBPMLine(int aTimePoint)
+{
+	BPMData* bpmData = new BPMData();
+
+	bpmData->meter = 4;
+	bpmData->timePoint = aTimePoint;
+	bpmData->BPM = 120.f;
+	bpmData->uninherited = 1;
+	bpmData->pinControl = false;
+
+	myObjectData->push_back(bpmData);
+	
+	std::sort(myObjectData->begin(), myObjectData->end(), [](const auto& lhs, const auto& rhs)
+	{
+		return lhs->timePoint < rhs->timePoint;
+	});
+
+
+	std::string message = "Placed BPM Point: ";
+	message += std::to_string(bpmData->timePoint);
+	message += "ms";
+
+	PUSH_NOTIFICATION(message);
 }
 
 int BPMLineHandler::GetClosestTimePoint(float aY)

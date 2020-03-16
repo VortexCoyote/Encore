@@ -159,7 +159,10 @@ void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
 		myAltKey = true;
 
 	if (keyEvent.hasModifier(OF_KEY_SHIFT))
+	{
+		myChartEditor.SetFreePlace(true);
 		myShiftKey = true;
+	}
 
 	if (keyEvent.hasModifier(OF_KEY_CONTROL))
 	{
@@ -203,18 +206,25 @@ void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
 	if (key == GLFW_KEY_3)
 		myChartEditor.SetEditMode(2);
 
+	if (key == GLFW_KEY_4)
+		myChartEditor.SetEditMode(3);
+
 }
 
 void ofApp::keyReleased(ofKeyEventArgs& keyEvent)
 {
 	if (keyEvent.key == OF_KEY_CONTROL)
 		myControlKey = false;
+	
 
 	if (keyEvent.key == OF_KEY_ALT)
 		myAltKey = false;
 
 	if (keyEvent.key == OF_KEY_SHIFT)
+	{
+		myChartEditor.SetFreePlace(false);
 		myShiftKey = false;
+	}
 
 }
 

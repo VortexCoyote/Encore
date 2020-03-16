@@ -32,6 +32,7 @@ void ChartEditor::Update()
 	mySongTimeHandler.Update();
 	myEditHandler.SetCursorInput({ float(myMouseX), float(myMouseY) });
 	myEditHandler.SetVisibleItems(&(myNoteHandler.GetVisibleNotes()));
+	myBPMLineHandler.UpdatePinnedController();
 
 	NotificationSystem::GetInstance()->Update();
 
@@ -159,6 +160,10 @@ void ChartEditor::DoLeftClickPressedAction(int aX, int aY)
 	case EditActionState::EditHolds:
 		TryPlaceHold(aX, aY);
 		break;
+	case EditActionState::EditBPM:
+		TryPlaceBPMLine(aX, aY);
+		break;
+
 	case EditActionState::Select:
 		break;
 
@@ -271,7 +276,7 @@ void ChartEditor::TryPlaceNote(int aX, int aY)
 	if (IsCursorWithinBounds(aX, aY) == false)
 		return void();
 
-	myNoteHandler.PlaceNote(myEditHandler.GetColumn(aX), myBPMLineHandler.GetClosestTimePoint(myEditHandler.GetSnappedCursorPosition().y + 64));
+	myNoteHandler.PlaceNote(myEditHandler.GetColumn(aX), GetScreenTimePoint(aY));
 }
 
 void ChartEditor::TryDeleteNote(int aX, int aY)
@@ -287,7 +292,7 @@ void ChartEditor::TryPlaceHold(int aX, int aY)
 	if (IsCursorWithinBounds(aX, aY) == false)
 		return void();
 
-	myNoteHandler.PlaceHold(myEditHandler.GetColumn(aX), myBPMLineHandler.GetClosestTimePoint(myEditHandler.GetSnappedCursorPosition().y + 64), myDraggableHoldEnd);
+	myNoteHandler.PlaceHold(myEditHandler.GetColumn(aX), GetScreenTimePoint(aY), myDraggableHoldEnd);
 	
 	myHoldDrag = true;
 }
@@ -296,7 +301,7 @@ void ChartEditor::TryDragHold(int aX, int aY)
 {
 	if (myHoldDrag == true && myDraggableHoldEnd != nullptr)
 	{
-		myDraggableHoldEnd->timePoint = myBPMLineHandler.GetClosestTimePoint(myEditHandler.GetSnappedCursorPosition().y + 64);
+		myDraggableHoldEnd->timePoint = GetScreenTimePoint(aY);
 	}
 }
 
@@ -309,6 +314,14 @@ void ChartEditor::TryReleaseHold(int aX, int aY)
 	{
 		return lhs->timePoint < rhs->timePoint;
 	});
+}
+
+void ChartEditor::TryPlaceBPMLine(int aX, int aY)
+{
+	if (IsCursorWithinBounds(aX, aY) == false)
+		return void();
+
+	myBPMLineHandler.PlaceBPMLine(GetScreenTimePoint(aY));
 }
 
 void ChartEditor::TrySelectItem(int aX, int aY)
@@ -331,7 +344,11 @@ void ChartEditor::SetMousePosition(int aX, int aY)
 	myMouseY = aY;
 }
 
-
+void ChartEditor::SetFreePlace(bool aFreePlace)
+{
+	myFreePlace = aFreePlace;
+	myEditHandler.SetFreePlace(aFreePlace);
+}
 
 void ChartEditor::MenuBar()
 {
@@ -369,8 +386,8 @@ void ChartEditor::MenuBar()
 			ImGui::EndMenu();
 		}
 
-		std::string selectedDifficulty = mySelectedChart == nullptr ? " --> Difficulty: No Difficulty Selected" 
-																	: " --> Difficulty: " + mySelectedChart->difficultyName;	
+		std::string selectedDifficulty = mySelectedChart == nullptr ? "* Difficulty: No Difficulty Selected" 
+																	: "* Difficulty: " + mySelectedChart->difficultyName;	
 
 		if (ImGui::BeginMenu(selectedDifficulty.c_str()))
 		{
@@ -458,4 +475,23 @@ bool ChartEditor::IsCursorWithinBounds(int aX, int aY)
 	bool withinBounds = aX >= leftBorder && aX <= rightBorder;
 
 	return withinBounds;
+}
+
+int ChartEditor::GetScreenTimePoint(float aY)
+{
+	if (myFreePlace == true)
+	{
+		int y = ofGetWindowHeight() - aY;
+
+		y -= (EditorConfig::hitLinePosition);
+		y /= EditorConfig::scale;
+
+		int timePointMS = y + (mySongTimeHandler.GetCurrentTimeS() * 1000.0);
+
+		return timePointMS;
+	}
+	else
+	{
+		return myBPMLineHandler.GetClosestTimePoint(myEditHandler.GetSnappedCursorPosition().y);
+	}
 }
