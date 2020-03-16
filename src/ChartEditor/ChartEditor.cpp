@@ -32,7 +32,7 @@ void ChartEditor::Update()
 	mySongTimeHandler.Update();
 	myEditHandler.SetCursorInput({ float(myMouseX), float(myMouseY) });
 	myEditHandler.SetVisibleItems(&(myNoteHandler.GetVisibleNotes()));
-	myBPMLineHandler.UpdatePinnedController();
+	myBPMLineHandler.Update();
 
 	NotificationSystem::GetInstance()->Update();
 

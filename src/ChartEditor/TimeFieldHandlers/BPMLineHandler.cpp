@@ -72,9 +72,9 @@ void BPMLineHandler::DecreaseBeatSnap()
 
 }
 
-void BPMLineHandler::UpdatePinnedController()
+void BPMLineHandler::Update()
 {
-	if (myPinnedController != nullptr)
+	if (myPinnedBPMLine != nullptr)
 	{
 		ImGuiWindowFlags windowFlags = 0;
 		windowFlags |= ImGuiWindowFlags_NoTitleBar;
@@ -86,22 +86,50 @@ void BPMLineHandler::UpdatePinnedController()
 
 		bool open = true;
 
-		ImGui::SetNextWindowSize(myPinnedControllerDimensions);
-		ImGui::SetNextWindowPos({float(ofGetWindowWidth() / 2 + 64 * 2 + 32) , ofGetWindowHeight() - EditorConfig::hitLinePosition - 16});
+		ImGui::SetNextWindowSize(myBPMControllerDimensions);
+		ImGui::SetNextWindowPos(myPinnedControllerPosition);
 
-		ImGui::Begin(std::to_string((int)myPinnedController).c_str(), &open, windowFlags);
+		ImGui::Begin(std::to_string((int)myPinnedBPMLine).c_str(), &open, windowFlags);
+
+		if (ImGui::Button("X"))
+			myBPMLineToDelete = myPinnedBPMLine;
+		
+		ImGui::SameLine();
+		if (ImGui::Button("Move Up"))
+			myPinnedBPMLine->timePoint += 1;
+
+		ImGui::SameLine();
+		if (ImGui::Button("Move Down"))
+			myPinnedBPMLine->timePoint -= 1;
+
+		ImGui::SameLine();
+		ImGui::Checkbox("Pin", &myPinnedBPMLine->pinControl);
 
 		ImGui::Text("BPM");
 		ImGui::SameLine();
-		ImGui::DragFloat("", &myPinnedController->BPM, 0.01, 0.0, 999999999.f);
+		ImGui::DragFloat("", &myPinnedBPMLine->BPM, 0.01, 0.0, 999999999.f);
 		ImGui::SameLine();
-		ImGui::Checkbox("Pin", &myPinnedController->pinControl);
 
 		ImGui::End();
 
-		if (myPinnedController->pinControl == false)
-			myPinnedController = nullptr;
+		if (myPinnedBPMLine->pinControl == false)
+			myPinnedBPMLine = nullptr;
 	}
+
+	if (myBPMLineToDelete != nullptr)
+	{
+		if (myBPMLineToDelete == myPinnedBPMLine)
+		{
+			myPinnedBPMLine->pinControl = false;
+			myPinnedBPMLine == nullptr;
+		}
+
+		myObjectData->erase(std::remove(myObjectData->begin(), myObjectData->end(), myBPMLineToDelete), myObjectData->end());
+		myVisibleObjects.erase(std::remove(myVisibleObjects.begin(), myVisibleObjects.end(), myBPMLineToDelete), myVisibleObjects.end());
+
+		myBPMLineToDelete = nullptr;
+	}
+
 }
 
 
@@ -117,7 +145,7 @@ void BPMLineHandler::DrawRoutine(BPMData* aTimeObject, float aTimePoint)
 	ofSetColor(255, 255, 255, 255);
 	ofDrawRectangle({ x - 32, y - height}, width + 64, height);
 
-	int textX = x + width + 32;
+	int textX = x + width + 64;
 	int textY = y;
 
 	if (y < 0)
@@ -138,27 +166,43 @@ void BPMLineHandler::DrawRoutine(BPMData* aTimeObject, float aTimePoint)
 
 		bool open = true;
 
-		ImGui::SetNextWindowSize({ 296, 32 });
+		ImGui::SetNextWindowSize(myBPMControllerDimensions);
 		ImGui::SetNextWindowPos({ float(textX), float(textY) - 16 });
 
 		ImGui::Begin(std::to_string((int)aTimeObject).c_str(), &open, windowFlags);
+		
+		if (ImGui::Button("X"))
+			myBPMLineToDelete = aTimeObject;
+
+		ImGui::SameLine();
+		ImGui::Spacing();
+		if (ImGui::Button("Move Up"))
+			aTimeObject->timePoint += 1;
+
+		ImGui::SameLine();
+		if (ImGui::Button("Move Down"))
+			aTimeObject->timePoint -= 1;
+
+
+		ImGui::SameLine();
+		ImGui::Spacing();
+		ImGui::Checkbox("Pin", &aTimeObject->pinControl);
+
 
 		ImGui::Text("BPM");
 		ImGui::SameLine();
 		ImGui::DragFloat("", &aTimeObject->BPM, 0.01, 0.0, 999999999.f);
-		ImGui::SameLine();
-		ImGui::Checkbox("Pin", &aTimeObject->pinControl);
+		ImGui::SameLine();	
 
 		ImGui::End();
 
 		if (aTimeObject->pinControl == true)
 		{
-			if (myPinnedController != nullptr)
-				myPinnedController->pinControl = false;
+			if (myPinnedBPMLine != nullptr)
+				myPinnedBPMLine->pinControl = false;
 			
-			myPinnedController = aTimeObject;
+			myPinnedBPMLine = aTimeObject;
 			myPinnedControllerPosition = { float(textX), float(textY) - 16 };
-			myPinnedControllerDimensions = { 296, 32 };
 		}
 	}
 }
@@ -275,12 +319,12 @@ float BPMLineHandler::GetBiasedClosestBeatLineMS(int aTime, bool aDown)
 			if (time + 4 > myVisibleBeatLines[beatIndex].timePoint)
 			{
 				time = myVisibleBeatLines[beatIndex].timePoint;
-				break;
+				time -= timeOffset;
+				return time;
 			}
 		}
 
-		time -= timeOffset;
-
+		return aTime - 25;
 	}
 	else
 	{
@@ -291,12 +335,12 @@ float BPMLineHandler::GetBiasedClosestBeatLineMS(int aTime, bool aDown)
 			if (time + 4 > myVisibleBeatLines[beatIndex].timePoint)
 			{
 				time = myVisibleBeatLines[beatIndex].timePoint;
-				break;
+				return time;
 			}
 		}
-	}
 
-	return time;
+		return aTime + 25;
+	}
 }
 
 void BPMLineHandler::PlaceBPMLine(int aTimePoint)
@@ -322,6 +366,19 @@ void BPMLineHandler::PlaceBPMLine(int aTimePoint)
 	message += "ms";
 
 	PUSH_NOTIFICATION(message);
+}
+
+void BPMLineHandler::DeleteBPMLine(int aX, int aY)
+{
+	int clickTimePoint = GetTimeFromScreenPoint(aY, myLastTimePoint);
+
+	BPMData* BPMLineToDelete = nullptr;
+
+	for (auto& BPMLine : myVisibleObjects)
+	{
+		int y = ofGetWindowHeight() - GetScreenTimePoint(BPMLine->timePoint, myLastTimePoint) + 64;
+		
+	}
 }
 
 int BPMLineHandler::GetClosestTimePoint(float aY)

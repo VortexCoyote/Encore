@@ -18,7 +18,7 @@ public:
 	void IncreaseBeatSnap();
 	void DecreaseBeatSnap();
 
-	void UpdatePinnedController();
+	void Update();
 
 	void DrawRoutine(BPMData* aTimeObject, float aTimePoint) override;
 	void Draw(double aTimePoint) override;
@@ -29,6 +29,7 @@ public:
 	float GetBiasedClosestBeatLineMS(int aTime, bool aDown);
 
 	void PlaceBPMLine(int aTimePoint);
+	void DeleteBPMLine(int aX, int aY);
 
 	int GetClosestTimePoint(float aY);
 
@@ -53,7 +54,9 @@ private:
 
 	std::vector<BeatLine> myVisibleBeatLines;
 
-	BPMData* myPinnedController = nullptr;
+	ImVec2 myBPMControllerDimensions = { 246.f, 52.f};
+	BPMData* myPinnedBPMLine = nullptr;
 	ImVec2 myPinnedControllerPosition;
-	ImVec2 myPinnedControllerDimensions;
+
+	BPMData* myBPMLineToDelete = nullptr;
 };
