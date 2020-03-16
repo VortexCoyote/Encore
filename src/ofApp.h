@@ -35,7 +35,9 @@ private:
 	
 	ofxImGui::Gui myGui;
 
-	bool myIsControlDown = false;
+	bool myControlKey = false;
+	bool myAltKey = false;
+	bool myShiftKey = false;
 
 	ChartEditor myChartEditor;
 };

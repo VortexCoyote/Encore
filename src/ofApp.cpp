@@ -93,25 +93,45 @@ void ofApp::mouseExited(int x, int y) {
 
 void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY) {
 	
-
-	if (myIsControlDown == true)
+	if (myControlKey == true)
 	{
 		if (scrollY < 0)
 			myChartEditor.ZoomOut();
 
 		if (scrollY > 0)
 			myChartEditor.ZoomIn();
+
+		return void();
 	}
-	else
+
+	if (myAltKey == true)
 	{
 		if (scrollY < 0)
-			myChartEditor.ScrollUp();
+			myChartEditor.DecreaseSnapDivision();
 
 		if (scrollY > 0)
-			myChartEditor.ScrollDown();
+			myChartEditor.IncreaseSnapDivision();
+
+		return void();
+	}
+
+	if (myShiftKey == true)
+	{
+		if (scrollY < 0)
+			myChartEditor.DecreaseSpeed();
+
+		if (scrollY > 0)
+			myChartEditor.IncreaseSpeed();
+
+		return void();
 	}
 
 
+	if (scrollY < 0)
+		myChartEditor.ScrollUp();
+
+	if (scrollY > 0)
+		myChartEditor.ScrollDown();
 }
 
 //--------------------------------------------------------------
@@ -135,9 +155,15 @@ void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
 	if (key == GLFW_KEY_SPACE)
 		myChartEditor.TogglePlaying();
 
+	if (keyEvent.hasModifier(OF_KEY_ALT))
+		myAltKey = true;
+
+	if (keyEvent.hasModifier(OF_KEY_SHIFT))
+		myShiftKey = true;
+
 	if (keyEvent.hasModifier(OF_KEY_CONTROL))
 	{
-		myIsControlDown = true;
+		myControlKey = true;
 
 		if (key == KEY_PLUS)
 			myChartEditor.IncreaseSnapDivision();
@@ -182,9 +208,14 @@ void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
 void ofApp::keyReleased(ofKeyEventArgs& keyEvent)
 {
 	if (keyEvent.key == OF_KEY_CONTROL)
-	{
-		myIsControlDown = false;
-	}
+		myControlKey = false;
+
+	if (keyEvent.key == OF_KEY_ALT)
+		myAltKey = false;
+
+	if (keyEvent.key == OF_KEY_SHIFT)
+		myShiftKey = false;
+
 }
 
 //--------------------------------------------------------------
