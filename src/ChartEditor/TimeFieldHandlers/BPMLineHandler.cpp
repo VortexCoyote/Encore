@@ -95,11 +95,11 @@ void BPMLineHandler::Update()
 			myPinnedBPMLine->timePoint += 1;
 
 		ImGui::SameLine();
-		ImGui::Checkbox("Pin BPM Line     ", &myPinnedBPMLine->pinControl);
+		ImGui::Checkbox("Pin BPM Line", &myPinnedBPMLine->pinControl);
 
 		ImGui::SameLine();
 
-		if (ImGui::Button("X"))
+		if (ImGui::Button("Delete"))
 			myBPMLineToDelete = myPinnedBPMLine;
 
 		if (ImGui::Button("- 1ms"))
@@ -177,11 +177,11 @@ void BPMLineHandler::DrawRoutine(BPMData* aTimeObject, float aTimePoint)
 			aTimeObject->timePoint += 1;
 
 		ImGui::SameLine();
-		ImGui::Checkbox("Pin BPM Line     ", &aTimeObject->pinControl);
+		ImGui::Checkbox("Pin BPM Line", &aTimeObject->pinControl);
 
 		ImGui::SameLine();
 
-		if (ImGui::Button("X"))
+		if (ImGui::Button("Delete"))
 			myBPMLineToDelete = aTimeObject;
 
 		if (ImGui::Button("- 1ms"))

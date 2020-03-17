@@ -56,10 +56,10 @@ struct ChartData
 	
 	int songLength;
 	
-	std::string song;
-	std::string audioFilename;
-	std::string backgroundFilename;
-	std::string filePath;
+	std::string song = "";
+	std::string audioFileName = "";
+	std::string backgroundFileName = "";
+	std::string filePath = "";
 
 	ofImage background;
 
@@ -72,8 +72,10 @@ struct ChartSet
 {
 	std::vector<ChartData*> charts;
 
-	std::string artist;
-	std::string songName;
-	std::string charter;
+	std::string artist = "";
+	std::string songTitle = "";
+	std::string charter = "";
 
+	std::string audioFileName = "";
+	std::string audioFilePath = "";
 };

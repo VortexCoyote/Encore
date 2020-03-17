@@ -24,7 +24,8 @@ void ofApp::update() {
 	
 	myChartEditor.Update();
 
-	myChartEditor.SetMousePosition(mouseX, mouseY);
+	if (myChartEditor.IsCreatingANewChart() == false)
+		myChartEditor.SetMousePosition(mouseX, mouseY);
 }
 
 //--------------------------------------------------------------
@@ -54,6 +55,9 @@ void ofApp::mouseMoved(int x, int y) {
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button) {
 
+	if (myChartEditor.IsCreatingANewChart() == true)
+		return void();
+
 	if (button == OF_MOUSE_BUTTON_LEFT)
 		myChartEditor.DoLeftClickDragAction(x, y);
 
@@ -64,6 +68,9 @@ void ofApp::mouseDragged(int x, int y, int button) {
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
 	
+	if (myChartEditor.IsCreatingANewChart() == true)
+		return void();
+
 	if (button == OF_MOUSE_BUTTON_LEFT)
 		myChartEditor.DoLeftClickPressedAction(x, y);
 
@@ -73,6 +80,9 @@ void ofApp::mousePressed(int x, int y, int button) {
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button) {
+
+	if (myChartEditor.IsCreatingANewChart() == true)
+		return void();
 
 	if (button == OF_MOUSE_BUTTON_LEFT)
 		myChartEditor.DoLeftClickReleaseAction(x, y);
@@ -93,6 +103,9 @@ void ofApp::mouseExited(int x, int y) {
 
 void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY) {
 	
+	if (myChartEditor.IsCreatingANewChart() == true)
+		return void();
+
 	if (myControlKey == true)
 	{
 		if (scrollY < 0)
@@ -147,6 +160,9 @@ void ofApp::gotMessage(ofMessage msg) {
 
 void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
 {
+	if (myChartEditor.IsCreatingANewChart() == true)
+		return void();
+
 	int key = keyEvent.keycode;
 
 #define KEY_PLUS 45
@@ -194,21 +210,20 @@ void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
 		myChartEditor.MoveUp();
 
 	if (key == GLFW_KEY_DOWN)
-		myChartEditor.MoveDown();
+		myChartEditor.MoveDown();  
 
 
 	if (key == GLFW_KEY_1)
-		myChartEditor.SetEditMode(0);
+		myChartEditor.SetEditMode(EditActionState::Select);
 
 	if (key == GLFW_KEY_2)
-		myChartEditor.SetEditMode(1);
+		myChartEditor.SetEditMode(EditActionState::EditNotes);
 
 	if (key == GLFW_KEY_3)
-		myChartEditor.SetEditMode(2);
+		myChartEditor.SetEditMode(EditActionState::EditHolds);
 
 	if (key == GLFW_KEY_4)
-		myChartEditor.SetEditMode(3);
-
+		myChartEditor.SetEditMode(EditActionState::EditBPM);
 }
 
 void ofApp::keyReleased(ofKeyEventArgs& keyEvent)

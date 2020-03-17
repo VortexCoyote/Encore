@@ -27,9 +27,14 @@ NotificationSystem* NotificationSystem::GetInstance()
 	return ourInstance;
 }
 
+void NotificationSystem::SubmitMessage(std::string aMessage, ofColor aColor)
+{
+	mySubmittedMessages.push_back({ aMessage, myTimeLimit, 32.f, float(-StringHelpfunctions::getBitmapStringBoundingBox(aMessage).width - 8), aColor});
+}
+
 void NotificationSystem::SubmitMessage(std::string aMessage)
 {
-	mySubmittedMessages.push_back({ aMessage, myTimeLimit, 32.f, float(-StringHelpfunctions::getBitmapStringBoundingBox(aMessage).width - 8)});
+	mySubmittedMessages.push_back({ aMessage, myTimeLimit, 32.f, float(-StringHelpfunctions::getBitmapStringBoundingBox(aMessage).width - 8), ofColor(255, 255, 255, 255) });
 }
 
 void NotificationSystem::Update()
@@ -57,7 +62,9 @@ void NotificationSystem::Draw()
 		ofSetColor(0, 0, 0, 200 * (float(mySubmittedMessages[i].timer) / myTimeLimit));
 		ofDrawRectangle(mySubmittedMessages[i].LerpX, mySubmittedMessages[i].LerpY - stringDimension.height, 1.f, stringDimension.width, stringDimension.height + 4);
 		
-		ofSetColor(255, 255, 255, 255 * (float(mySubmittedMessages[i].timer) / myTimeLimit));
+		auto color = mySubmittedMessages[i].color;
+
+		ofSetColor(color.r, color.g, color.b, color.a * (float(mySubmittedMessages[i].timer) / myTimeLimit));
 
 		ofDrawBitmapString(mySubmittedMessages[i].message, mySubmittedMessages[i].LerpX, mySubmittedMessages[i].LerpY);
 

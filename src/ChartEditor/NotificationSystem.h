@@ -4,8 +4,10 @@
 #include <vector>
 
 #include "ofRectangle.h"
+#include "ofColor.h"
 
 #define PUSH_NOTIFICATION(message) NotificationSystem::GetInstance()->SubmitMessage(message)
+#define PUSH_NOTIFICATION_COLORED(message, color) NotificationSystem::GetInstance()->SubmitMessage(message, color)
 
 #define PUSH_NOTIFICATION_DEBUG(message) NotificationSystem::GetInstance()->SubmitMessage(std::string("[DEBUG] ") + message)
 #ifdef _DEBUG
@@ -26,6 +28,8 @@ struct Notification
 
 	float LerpY = 0.f;
 	float LerpX = 0.f;
+
+	ofColor color;
 };
 
 class NotificationSystem
@@ -37,6 +41,7 @@ public:
 
 	static NotificationSystem* GetInstance();
 
+	void SubmitMessage(std::string aMessage, ofColor aColor);
 	void SubmitMessage(std::string aMessage);
 
 	void Update();

@@ -250,7 +250,7 @@ void SongHandler::GenerateWaveForm(std::string aPath)
 			int newY = y;
 
 			newY -= (EditorConfig::hitLinePosition);
-			newY = int(float(newY) / EditorConfig::scale);
+			newY = int(float(newY));
 
 			int timePointMS = newY + t;
 

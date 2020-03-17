@@ -16,6 +16,8 @@ public:
 	ChartEditor();
 	~ChartEditor();
 
+	bool IsCreatingANewChart();
+
 	void Load();
 	void Update();
 	void Draw();
@@ -37,7 +39,7 @@ public:
 	void MoveDown();
 	void MoveUp();
 
-	void SetEditMode(int aMode);
+	void SetEditMode(EditActionState aMode);
 	void SetMousePosition(int aX, int aY);
 
 	//Click Edit Actions
@@ -72,6 +74,9 @@ private:
 	void LoadChartFromDirectory();
 	void SetSelectedChart(ChartData* aChartData);
 
+	void DoNewChartSetWindow();
+	void DoNewDifficultyWindow();
+
 	bool IsCursorWithinBounds(int aX, int aY);
 
 	int GetScreenTimePoint(float aY);
@@ -85,6 +90,9 @@ private:
 	ChartSet* mySelectedChartSet = nullptr;
 	ChartData* mySelectedChart	 = nullptr;
 
+	ChartSet* myNewChartSet		 = nullptr;
+	ChartData* myNewChart		 = nullptr;
+
 	std::string myLoadedChartDirectory = "";
 
 	float myTimeLine		= 0.f;
@@ -97,4 +105,7 @@ private:
 	bool myHoldDrag = false;
 	bool myFreePlace = false;
 	NoteData* myDraggableHoldEnd = nullptr;
+
+	bool myNewChartSetPopup = false;
+	bool myNewDifficultyPopup = false;
 };

@@ -71,7 +71,7 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 					{
 						std::string songPath = aPath + "\\" + value;
 						chartData->song = songPath;
-						chartData->audioFilename = value;
+						chartData->audioFileName = value;
 					}
 				}
 			}
@@ -99,7 +99,7 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 						value += metadataLine[pointer++];
 					
 					if (meta == "Title")
-						myCharts[aPath].songName = value;
+						myCharts[aPath].songTitle = value;
 					
 					if (meta == "Artist")
 						myCharts[aPath].artist = value;
@@ -132,7 +132,7 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 					
 					std::string backgroundPath = aPath + "\\" + background;
 
-					chartData->backgroundFilename = background;
+					chartData->backgroundFileName = background;
 					chartData->background.load(backgroundPath);
 
 					float procentualChange = float(ofGetWindowHeight()) / float(chartData->background.getHeight());
@@ -257,7 +257,7 @@ void ChartResourceHandler::SaveChart(std::string aPath, ChartData* aChart)
 	chartData << std::endl;
 	chartData << "[General]" << std::endl;
 
-	chartData << "AudioFilename: " << chart->audioFilename << std::endl;
+	chartData << "AudioFilename: " << chart->audioFileName << std::endl;
 	chartData << "AudioLeadIn: 0" << std::endl;
 	chartData << "PreviewTime: 0" << std::endl;
 	chartData << "Countdown: 0" << std::endl;
@@ -279,8 +279,8 @@ void ChartResourceHandler::SaveChart(std::string aPath, ChartData* aChart)
 	chartData << std::endl;
 	chartData << "[Metadata]" << std::endl;
 	
-	chartData << "Title:" << chartSet.songName << std::endl;
-	chartData << "TitleUnicode:" << chartSet.songName << std::endl;
+	chartData << "Title:" << chartSet.songTitle << std::endl;
+	chartData << "TitleUnicode:" << chartSet.songTitle << std::endl;
 	chartData << "Artist:" << chartSet.artist << std::endl;
 	chartData << "ArtistUnicode:" << chartSet.artist << std::endl;
 	chartData << "Creator:untitled_chart_editor" << std::endl;
@@ -303,7 +303,7 @@ void ChartResourceHandler::SaveChart(std::string aPath, ChartData* aChart)
 	chartData << std::endl;
 	chartData << "[Events]" << std::endl;
 
-	chartData << "0,0,\"" << chart->backgroundFilename << "\",0,0" << std::endl;
+	chartData << "0,0,\"" << chart->backgroundFileName << "\",0,0" << std::endl;
 
 	chartData << std::endl;
 	chartData << "[TimingPoints]" << std::endl;
