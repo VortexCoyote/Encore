@@ -16,7 +16,7 @@ public:
 	ChartEditor();
 	~ChartEditor();
 
-	bool IsCreatingANewChart();
+	bool ShouldBlockInput();
 
 	void Load();
 	void Update();

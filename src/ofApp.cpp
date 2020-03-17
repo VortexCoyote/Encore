@@ -24,7 +24,7 @@ void ofApp::update() {
 	
 	myChartEditor.Update();
 
-	if (myChartEditor.IsCreatingANewChart() == false)
+	if (myChartEditor.ShouldBlockInput() == false)
 		myChartEditor.SetMousePosition(mouseX, mouseY);
 }
 
@@ -55,7 +55,7 @@ void ofApp::mouseMoved(int x, int y) {
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button) {
 
-	if (myChartEditor.IsCreatingANewChart() == true)
+	if (myChartEditor.ShouldBlockInput() == true)
 		return void();
 
 	if (button == OF_MOUSE_BUTTON_LEFT)
@@ -68,7 +68,7 @@ void ofApp::mouseDragged(int x, int y, int button) {
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
 	
-	if (myChartEditor.IsCreatingANewChart() == true)
+	if (myChartEditor.ShouldBlockInput() == true)
 		return void();
 
 	if (button == OF_MOUSE_BUTTON_LEFT)
@@ -81,7 +81,7 @@ void ofApp::mousePressed(int x, int y, int button) {
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button) {
 
-	if (myChartEditor.IsCreatingANewChart() == true)
+	if (myChartEditor.ShouldBlockInput() == true)
 		return void();
 
 	if (button == OF_MOUSE_BUTTON_LEFT)
@@ -103,7 +103,7 @@ void ofApp::mouseExited(int x, int y) {
 
 void ofApp::mouseScrolled(int x, int y, float scrollX, float scrollY) {
 	
-	if (myChartEditor.IsCreatingANewChart() == true)
+	if (myChartEditor.ShouldBlockInput() == true)
 		return void();
 
 	if (myControlKey == true)
@@ -160,7 +160,7 @@ void ofApp::gotMessage(ofMessage msg) {
 
 void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
 {
-	if (myChartEditor.IsCreatingANewChart() == true)
+	if (myChartEditor.ShouldBlockInput() == true)
 		return void();
 
 	int key = keyEvent.keycode;
