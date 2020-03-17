@@ -68,7 +68,7 @@ void SongHandler::DrawWaveForm()
 
 	int previousIndex = -1;
 
-	for (int y = ofGetWindowHeight() * 2; y >= -ofGetWindowHeight(); y -= scaledSliceSize)
+	for (int y = ofGetWindowHeight() * 2; y >= -ofGetWindowHeight() * 2; y -= scaledSliceSize)
 	{
 		int newY = y;
 
