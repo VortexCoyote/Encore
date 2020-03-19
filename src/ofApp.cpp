@@ -246,4 +246,5 @@ void ofApp::keyReleased(ofKeyEventArgs& keyEvent)
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo) {
 
+	myChartEditor.TryDropFilesAction(dragInfo.files[0]);
 }

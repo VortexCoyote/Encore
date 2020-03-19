@@ -56,10 +56,10 @@ struct ChartData
 	
 	int songLength;
 	
-	std::string song = "";
+	std::string songPath = "";
 	std::string audioFileName = "";
 	std::string backgroundFileName = "";
-	std::string filePath = "";
+	std::string chartPath = "";
 
 	ofImage background;
 
@@ -78,4 +78,6 @@ struct ChartSet
 
 	std::string audioFileName = "";
 	std::string audioFilePath = "";
+
+	std::string saveDirectory = "";
 };

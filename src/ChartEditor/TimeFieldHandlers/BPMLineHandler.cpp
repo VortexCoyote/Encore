@@ -407,6 +407,12 @@ void BPMLineHandler::SetPreciseBPMChange(bool aMode)
 	}
 }
 
+void BPMLineHandler::ClearAllCurrentBeatLines()
+{
+	myVisibleObjects.clear();
+	myVisibleBeatLines.clear();
+}
+
 BPMLineHandler::BPMLineHandler()
 {
 	mySnapQuotient = 1.f / float(mySnapDivision);

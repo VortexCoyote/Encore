@@ -42,6 +42,8 @@ public:
 	void SetEditMode(EditActionState aMode);
 	void SetMousePosition(int aX, int aY);
 
+	void TryDropFilesAction(std::string aPath);
+
 	//Click Edit Actions
 	void DoLeftClickPressedAction(int aX, int aY);
 	void DoRightClickPressedAction(int aX, int aY);

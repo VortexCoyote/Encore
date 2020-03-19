@@ -35,6 +35,8 @@ public:
 
 	void SetPreciseBPMChange(bool aMode);
 
+	void ClearAllCurrentBeatLines();
+
 private:
 
 	int	  mySnapDivision = 2;

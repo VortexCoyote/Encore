@@ -1,12 +1,16 @@
 #include "ChartResourceHandler.h"
+
 #include "ofFileUtils.h"
 #include "ofWindowSettings.h"
 #include "ofMain.h"
 
+#include <sys/stat.h>
 
 #include <filesystem>
 #include <sstream>
 #include <algorithm>
+
+#include "../ChartEditor/NotificationSystem.h"
 
 ChartResourceHandler::ChartResourceHandler()
 {
@@ -15,15 +19,15 @@ ChartResourceHandler::ChartResourceHandler()
 
 ChartResourceHandler::~ChartResourceHandler()
 {
-	for (auto& entry : myCharts)
+	for (auto& entry : myChartSets)
 		for (auto& chart : entry.second.charts)
 			delete chart;
 }
 
 ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 {
-	if (myCharts.find(aPath) != myCharts.end())
-		return &myCharts[aPath];
+	if (myChartSets.find(aPath) != myChartSets.end())
+		return &myChartSets[aPath];
 
 	ofDirectory directory(aPath);
 
@@ -35,11 +39,13 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 	{
 		std::ifstream chartFile(directory.getPath(i));
 
-		myCharts[aPath].charts.push_back(new ChartData());
-		ChartData* chartData = myCharts[aPath].charts.back();
+		myChartSets[aPath].charts.push_back(new ChartData());
+		myChartSets[aPath].saveDirectory = aPath;
+
+		ChartData* chartData = myChartSets[aPath].charts.back();
 
 		chartData->noteData.reserve(100000);
-		chartData->filePath = directory.getPath(i);
+		chartData->chartPath = directory.getPath(i);
 
 		std::string line;
 		while (std::getline(chartFile, line))
@@ -70,7 +76,7 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 					if (meta == "AudioFilename")
 					{
 						std::string songPath = aPath + "\\" + value;
-						chartData->song = songPath;
+						chartData->songPath = songPath;
 						chartData->audioFileName = value;
 					}
 				}
@@ -99,16 +105,16 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 						value += metadataLine[pointer++];
 					
 					if (meta == "Title")
-						myCharts[aPath].songTitle = value;
+						myChartSets[aPath].songTitle = value;
 					
 					if (meta == "Artist")
-						myCharts[aPath].artist = value;
+						myChartSets[aPath].artist = value;
 					
 					if (meta == "Version")
 						chartData->difficultyName = value;
 					
 					if (meta == "Creator")
-						myCharts[aPath].charter = value;
+						myChartSets[aPath].charter = value;
 				}
 			}
 
@@ -118,9 +124,18 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 
 				while (std::getline(chartFile, timePointLine))
 				{
+					if (timePointLine == "")
+						continue;
+
+					if (timePointLine == "[TimingPoints]")
+					{
+						line = "[TimingPoints]";
+						break;
+					}
+
 					if (timePointLine[0] == '/' && timePointLine[1] == '/')
 						continue;
-					
+
 					std::string background;
 					int charIndex = 0;
 
@@ -188,16 +203,16 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 				while (chartFile >> noteLine)
 				{
 					std::stringstream noteStream(noteLine);
-					int column, y, timePoint, isLN, hitSound, timePointEnd;
+					int column, y, timePoint, noteType, hitSound, timePointEnd;
 
 					PARSE_COMMA_VALUE(noteStream, column);
 					PARSE_COMMA_VALUE(noteStream, y);
 					PARSE_COMMA_VALUE(noteStream, timePoint);
-					PARSE_COMMA_VALUE(noteStream, isLN);
+					PARSE_COMMA_VALUE(noteStream, noteType);
 					PARSE_COMMA_VALUE(noteStream, hitSound);
 					PARSE_COMMA_VALUE(noteStream, timePointEnd);
 	
-					if (isLN == 128)
+					if (noteType == 128)
 					{
 						NoteData* note = new NoteData();
 						NoteData* holdNote = new NoteData();
@@ -205,13 +220,13 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 						note->timePoint = timePoint;
 						note->column = floor(float(column) * (4.f / 512.f));
 						note->noteType = NoteType::HoldBegin;
-						note->type = isLN;
+						note->type = noteType;
 						note->hitSound = hitSound;
 
 						holdNote->timePoint = timePointEnd;
 						holdNote->column	= note->column;
 						holdNote->noteType  = NoteType::HoldEnd;
-						holdNote->type = isLN;
+						holdNote->type = noteType;
 						holdNote->hitSound = hitSound;
 
 						note->relevantNote = holdNote;
@@ -227,7 +242,7 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 						note->timePoint = timePoint;
 						note->column = floor(float(column) * (4.f / 512.f));
 						note->noteType = NoteType::Note;
-						note->type = isLN;
+						note->type = noteType;
 						note->hitSound = hitSound;
 
 						chartData->noteData.push_back(note);
@@ -243,12 +258,49 @@ ChartSet* ChartResourceHandler::ImportChart(std::string aPath)
 
 	}
 
- 	return &myCharts[aPath];
+	ChartData* chartToCloneFrom = myChartSets[aPath].charts[0];
+
+	myChartSets[aPath].audioFileName = chartToCloneFrom->audioFileName;
+	myChartSets[aPath].audioFilePath = myChartSets[aPath].saveDirectory;
+
+
+ 	return &myChartSets[aPath];
 }
 
-void ChartResourceHandler::SaveChart(std::string aPath, ChartData* aChart)
+void ChartResourceHandler::RegisterChartSet(ChartSet* aChartSet)
 {
-	ChartSet& chartSet = myCharts[aPath];
+	boost::filesystem::path saveDirectory = aChartSet->saveDirectory;
+	saveDirectory.make_preferred();
+
+
+	aChartSet->saveDirectory = saveDirectory.string();
+
+	myChartSets[aChartSet->saveDirectory] = *aChartSet;
+
+	boost::filesystem::path audioFilePath = aChartSet->audioFilePath + aChartSet->audioFileName;
+	audioFilePath.make_preferred();
+
+	std::string path = audioFilePath.string();
+
+	try
+	{
+		boost::filesystem::copy_file(path, aChartSet->saveDirectory + "/audio.mp3");
+
+		myChartSets[aChartSet->saveDirectory].audioFilePath = aChartSet->saveDirectory;
+		myChartSets[aChartSet->saveDirectory].audioFileName = "audio.mp3";
+		aChartSet->audioFilePath = aChartSet->saveDirectory;
+		aChartSet->audioFileName = "audio.mp3";
+	}
+	catch (const boost::filesystem::filesystem_error & ex)
+	{
+		PUSH_NOTIFICATION_DEBUG(ex.what());
+	}
+}
+
+
+void ChartResourceHandler::SaveChart(std::string aFolderPath, std::string aPath, ChartData* aChart)
+{
+	ChartSet& chartSet = myChartSets[aFolderPath];
 	ChartData* chart = aChart;
 
 	std::stringstream chartData;
@@ -284,7 +336,7 @@ void ChartResourceHandler::SaveChart(std::string aPath, ChartData* aChart)
 	chartData << "Artist:" << chartSet.artist << std::endl;
 	chartData << "ArtistUnicode:" << chartSet.artist << std::endl;
 	chartData << "Creator:untitled_chart_editor" << std::endl;
-	chartData << "Version:insane" << std::endl;
+	chartData << "Version:" << chart->difficultyName << std::endl;
 	chartData << "Source:" << std::endl;
 	chartData << "Tags:created by untitled_chart_editor" << std::endl;
 	chartData << "BeatmapID:-1" << std::endl;
@@ -303,7 +355,10 @@ void ChartResourceHandler::SaveChart(std::string aPath, ChartData* aChart)
 	chartData << std::endl;
 	chartData << "[Events]" << std::endl;
 
-	chartData << "0,0,\"" << chart->backgroundFileName << "\",0,0" << std::endl;
+	if (chart->backgroundFileName != "")
+	{
+		chartData << "0,0,\"" << chart->backgroundFileName << "\",0,0" << std::endl;
+	}
 
 	chartData << std::endl;
 	chartData << "[TimingPoints]" << std::endl;
@@ -334,11 +389,26 @@ void ChartResourceHandler::SaveChart(std::string aPath, ChartData* aChart)
 		}
 	}
 
-	std::ofstream chartFile(chart->filePath);
+	std::ofstream chartFile(chart->chartPath);
 	if (chartFile.good())
 	{
 		chartFile.clear();
 		chartFile << chartData.str();
 		chartFile.close();
 	}
+}
+
+void ChartResourceHandler::GenerateChartDifficulty(ChartSet* aChartSet, ChartData* aChart)
+{
+	aChart->audioFileName = aChartSet->audioFileName;
+	aChart->songPath = aChartSet->audioFilePath + "/" + aChartSet->audioFileName;
+
+	std::string fileName = aChartSet->artist + " - " + aChartSet->songTitle + " (" + aChartSet->charter + ") " + "[" + aChart->difficultyName + "].osu";
+	aChart->chartPath = aChartSet->saveDirectory + "\\" + fileName;
+
+
+	std::ofstream outfile(aChart->chartPath);
+	outfile.close();
+
+	SaveChart(aChartSet->saveDirectory, aChart->chartPath, aChart);
 }

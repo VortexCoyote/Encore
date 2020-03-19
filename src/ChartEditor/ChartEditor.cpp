@@ -51,7 +51,6 @@ void ChartEditor::Update()
 
 void ChartEditor::Draw()
 {
-
 	//null check shield
 	if (mySelectedChart == nullptr)
 	{
@@ -59,10 +58,13 @@ void ChartEditor::Draw()
 		return void();
 	}
 
-	ofSetColor(255, 255, 255, 200);
-	float procentualChange = float(ofGetWindowHeight()) / float(mySelectedChart->background.getHeight());	
-	mySelectedChart->background.draw((ofGetWindowWidth() - mySelectedChart->background.getWidth() * procentualChange) / 2, 0, int(float(mySelectedChart->background.getWidth()) * procentualChange), int(float(mySelectedChart->background.getHeight()) * procentualChange));
-	ofSetColor(255, 255, 255, 255);
+	if (mySelectedChart->backgroundFileName != "")
+	{
+		ofSetColor(255, 255, 255, 200);
+		float procentualChange = float(ofGetWindowHeight()) / float(mySelectedChart->background.getHeight());
+		mySelectedChart->background.draw((ofGetWindowWidth() - mySelectedChart->background.getWidth() * procentualChange) / 2, 0, int(float(mySelectedChart->background.getWidth()) * procentualChange), int(float(mySelectedChart->background.getHeight()) * procentualChange));
+		ofSetColor(255, 255, 255, 255);
+	}
 
 	TryTimelinePreview(myMouseX, myMouseY);
 
@@ -358,6 +360,39 @@ void ChartEditor::SetMousePosition(int aX, int aY)
 	myMouseY = aY;
 }
 
+void ChartEditor::TryDropFilesAction(std::string aPath)
+{
+	if (mySelectedChart == nullptr)
+		return void();
+
+	std::string typeEnding;
+
+	int i = aPath.size() - 1;
+	while (aPath[i] != '.')
+	{
+		typeEnding += aPath[i];
+		i--;
+	}
+
+	std::reverse(typeEnding.begin(), typeEnding.end());
+
+	if (typeEnding == "png" || typeEnding == "jpg")
+	{
+		std::string imagePath = mySelectedChartSet->saveDirectory + "/" + mySelectedChart->difficultyName + "." + typeEnding;
+
+		boost::filesystem::copy_file(aPath, imagePath, boost::filesystem::copy_option::overwrite_if_exists);
+
+		mySelectedChart->backgroundFileName = mySelectedChart->difficultyName + "." + typeEnding;
+		mySelectedChart->background.load(imagePath);
+
+		PUSH_NOTIFICATION("Background changed to " + aPath);
+	}
+	else
+	{
+		PUSH_NOTIFICATION_COLORED("Invalid image file!", ofColor(255, 25, 25, 255));
+	}
+}
+
 void ChartEditor::DoShiftAction(bool aShiftDown)
 {
 	myFreePlace = aShiftDown;
@@ -381,7 +416,7 @@ void ChartEditor::MenuBar()
 
 			if (ImGui::MenuItem("New Difficulty"))
 			{
-				if (myNewChartSet != nullptr)
+				if (mySelectedChartSet != nullptr)
 				{
 					myNewDifficultyPopup = true;
 					
@@ -402,7 +437,7 @@ void ChartEditor::MenuBar()
 			if (ImGui::MenuItem("Save", "CTRL+S"))
 			{
 				if(mySelectedChart != nullptr)
-					myChartResourceHandler.SaveChart(myLoadedChartDirectory, mySelectedChart);
+					myChartResourceHandler.SaveChart(mySelectedChartSet->saveDirectory ,myLoadedChartDirectory, mySelectedChart);
 			}
 			
 			if (ImGui::MenuItem("Export", "CTRL+E"));
@@ -495,10 +530,11 @@ void ChartEditor::SetSelectedChart(ChartData* aChartData)
 	mySelectedChart = aChartData;
 
 	myEditHandler.ClearSelectedItems();
+	myBPMLineHandler.ClearAllCurrentBeatLines();
 
 	myNoteHandler.Init(&(mySelectedChart->noteData));
 	myBPMLineHandler.Init(&(mySelectedChart->BPMPoints));
-	mySongTimeHandler.Init(mySelectedChart->song);
+	mySongTimeHandler.Init(mySelectedChart->songPath);
 	myEditHandler.Init(&myBPMLineHandler);
 	
 	mySongTimeHandler.SetTimeNormalized(0.f);
@@ -529,9 +565,9 @@ void ChartEditor::DoNewChartSetWindow()
 	if (ImGui::BeginPopupModal("New Chart Set", &open, windowFlags))
 	{
 		ImGui::Text("Meta Data");
-		ImGui::InputText("Artist", &(myNewChartSet->songTitle));
-		ImGui::InputText("Song Title", &(myNewChartSet->artist));
-		ImGui::InputText("Creator", &(myNewChartSet->charter));
+		ImGui::InputText("Artist", &(myNewChartSet->artist));
+		ImGui::InputText("Song Title", &(myNewChartSet->songTitle));
+		ImGui::InputText("Charter", &(myNewChartSet->charter));
 
 		ImGui::Spacing();
 		ImGui::Spacing();
@@ -539,7 +575,19 @@ void ChartEditor::DoNewChartSetWindow()
 		ImGui::Spacing();
 		ImGui::Spacing();
 
-		if (ImGui::Button("Select Audio File"))
+
+		std::string audioButtonLabel = "Select Audio File";
+		
+		if (myNewChartSet->audioFilePath != "")
+		{
+			audioButtonLabel += " ( " + myNewChartSet->audioFileName + " )";
+		}
+		else
+		{
+			audioButtonLabel += " ( ... )";
+		}
+
+		if (ImGui::Button(audioButtonLabel.c_str()))
 		{
 			ofFileDialogResult result = ofSystemLoadDialog("Load File (.mp3, .wav, .ogg)");
 			if (result.bSuccess) 
@@ -551,6 +599,29 @@ void ChartEditor::DoNewChartSetWindow()
 				myNewChartSet->audioFilePath.erase(path.size() - myNewChartSet->audioFileName.size(), path.size() - 1);
 			}
 		}
+
+		std::string directoryLabel = "Choose Chart Folder";
+
+		if (myNewChartSet->audioFilePath != "")
+		{
+			directoryLabel += " ( " + myNewChartSet->saveDirectory + " )";
+		}
+		else
+		{
+			directoryLabel += " ( ... )";
+		}
+
+		if (ImGui::Button(directoryLabel.c_str()))
+		{
+			ofFileDialogResult result = ofSystemLoadDialog("Load File (.mp3, .wav, .ogg)", true);
+
+			if (result.bSuccess)
+			{
+				std::string path = result.getPath();
+
+				myNewChartSet->saveDirectory = path;
+			}
+		}
 		
 		ImGui::Spacing();
 		ImGui::Spacing();
@@ -560,10 +631,23 @@ void ChartEditor::DoNewChartSetWindow()
 
 		if (ImGui::Button("Create"))
 		{
-			myNewChartSetPopup = false;
-			mySelectedChartSet = myNewChartSet;
+			if (myNewChartSet->artist == "")
+				PUSH_NOTIFICATION_COLORED("You need to specify the artist!", ofColor( 255, 25, 25, 255));
+			else if (myNewChartSet->songTitle == "")
+				PUSH_NOTIFICATION_COLORED("You need to specify the song title!", ofColor(255, 25, 25, 255));
+			else if (myNewChartSet->charter == "")
+				PUSH_NOTIFICATION_COLORED("You need to specify the charter!", ofColor(255, 25, 25, 255));
+			else if (myNewChartSet->audioFileName == "")
+				PUSH_NOTIFICATION_COLORED("You need to select an audio file!", ofColor(255, 25, 25, 255));
+			else
+			{
+				myNewChartSetPopup = false;
+				mySelectedChartSet = myNewChartSet;
 
-			PUSH_NOTIFICATION("Chart Set Created!");
+				PUSH_NOTIFICATION("Chart Set Created!");
+
+				myChartResourceHandler.RegisterChartSet(myNewChartSet);
+			}
 		}
 
 		ImGui::SameLine();
@@ -623,13 +707,33 @@ void ChartEditor::DoNewDifficultyWindow()
 
 		if (ImGui::Button("Create"))
 		{
-			myNewDifficultyPopup = false;
+			if (myNewChart->difficultyName == "")
+			{
+				PUSH_NOTIFICATION_COLORED("Please choose a difficulty name!", ofColor(255, 25, 25, 255));
+			}
+			else
+			{
+				myChartResourceHandler.GenerateChartDifficulty(mySelectedChartSet, myNewChart);
 
-			mySelectedChartSet->charts.push_back(myNewChart);
+				myNewDifficultyPopup = false;
 
-			myNewChart = nullptr;
+				mySelectedChartSet->charts.push_back(myNewChart);
 
-			PUSH_NOTIFICATION("Chart Set Created!");
+				if (mySelectedChart != nullptr)
+				{
+					for (auto bpmPoint : mySelectedChart->BPMPoints)
+					{
+						BPMData* bpmData = new BPMData(*bpmPoint);
+						myNewChart->BPMPoints.push_back(bpmData);
+					}
+				}
+
+				SetSelectedChart(myNewChart);
+
+				myNewChart = nullptr;
+				
+				PUSH_NOTIFICATION("Chart Set Created!");
+			}
 		}
 
 		ImGui::SameLine();

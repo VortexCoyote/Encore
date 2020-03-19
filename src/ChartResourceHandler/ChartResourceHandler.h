@@ -15,9 +15,13 @@ public:
 	~ChartResourceHandler();
 
 	ChartSet* ImportChart(std::string aPath);
-	void SaveChart(std::string aPath, ChartData* aChart);
+
+	void RegisterChartSet(ChartSet* aChartSet);
+
+	void SaveChart(std::string aFolderPath, std::string aPath, ChartData* aChart);
+	void GenerateChartDifficulty(ChartSet* aChartSet, ChartData* aChart);
 
 private:
 
-	std::unordered_map<std::string, ChartSet> myCharts;
+	std::unordered_map<std::string, ChartSet> myChartSets;
 };

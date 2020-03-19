@@ -60,7 +60,7 @@ inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 	{
 		//std::cout << "yaaah, it's rewind time" << std::endl;
 
-		for (unsigned int rewindNoteIndex = myLastObjectIndex; rewindNoteIndex >= 0; rewindNoteIndex--)
+		for (unsigned int rewindNoteIndex = myLastObjectIndex; rewindNoteIndex >= 0 && myObjectData->size() > 0; rewindNoteIndex--)
 		{
 			double rewindNoteTimePoint = GetScreenTimePoint((*myObjectData)[rewindNoteIndex]->timePoint, aTimePoint);
 
