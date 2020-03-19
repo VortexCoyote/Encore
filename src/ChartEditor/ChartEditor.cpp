@@ -46,6 +46,9 @@ void ChartEditor::Update()
 	myEditHandler.SetVisibleItems(&(myNoteHandler.GetVisibleNotes()));
 	myBPMLineHandler.Update();
 
+	myBPMLineHandler.ShowBeatDivisionControls();
+	mySongTimeHandler.ShowPlaybackRateControls();
+
 	TimeLine();
 }
 
@@ -354,6 +357,12 @@ void ChartEditor::TryTimelinePreview(int aX, int aY)
 	}
 }
 
+void ChartEditor::TrySaveCurrentChart()
+{
+	if (mySelectedChart != nullptr)
+		myChartResourceHandler.SaveChart(mySelectedChartSet->saveDirectory, myLoadedChartDirectory, mySelectedChart);
+}
+
 void ChartEditor::SetMousePosition(int aX, int aY)
 {
 	myMouseX = aX;
@@ -436,8 +445,7 @@ void ChartEditor::MenuBar()
 		
 			if (ImGui::MenuItem("Save", "CTRL+S"))
 			{
-				if(mySelectedChart != nullptr)
-					myChartResourceHandler.SaveChart(mySelectedChartSet->saveDirectory ,myLoadedChartDirectory, mySelectedChart);
+				TrySaveCurrentChart();
 			}
 			
 			if (ImGui::MenuItem("Export", "CTRL+E"));
@@ -726,6 +734,9 @@ void ChartEditor::DoNewDifficultyWindow()
 						BPMData* bpmData = new BPMData(*bpmPoint);
 						myNewChart->BPMPoints.push_back(bpmData);
 					}
+
+					myNewChart->backgroundFileName = mySelectedChart->backgroundFileName;
+					myNewChart->background.load(mySelectedChartSet->saveDirectory + "\\" + mySelectedChart->backgroundFileName);
 				}
 
 				SetSelectedChart(myNewChart);

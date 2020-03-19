@@ -69,6 +69,8 @@ public:
 	void TrySelectItem(int aX, int aY);
 	void TryTimelinePreview(int aX, int aY);
 
+	void TrySaveCurrentChart();
+
 private:
 
 	void MenuBar();

@@ -335,7 +335,7 @@ void ChartResourceHandler::SaveChart(std::string aFolderPath, std::string aPath,
 	chartData << "TitleUnicode:" << chartSet.songTitle << std::endl;
 	chartData << "Artist:" << chartSet.artist << std::endl;
 	chartData << "ArtistUnicode:" << chartSet.artist << std::endl;
-	chartData << "Creator:untitled_chart_editor" << std::endl;
+	chartData << "Creator:" << chartSet.charter << std::endl;
 	chartData << "Version:" << chart->difficultyName << std::endl;
 	chartData << "Source:" << std::endl;
 	chartData << "Tags:created by untitled_chart_editor" << std::endl;
@@ -395,6 +395,8 @@ void ChartResourceHandler::SaveChart(std::string aFolderPath, std::string aPath,
 		chartFile.clear();
 		chartFile << chartData.str();
 		chartFile.close();
+
+		PUSH_NOTIFICATION("Chart Saved!");
 	}
 }
 

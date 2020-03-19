@@ -322,7 +322,7 @@ void SongHandler::ShowPlaybackRateControls()
 	if (ImGui::Button("+ 0.05x"))
 		IncreaseSpeed();
 
-	ImGui::SetWindowPos({ ofGetWindowWidth() - ImGui::GetWindowWidth() - 128, ofGetWindowHeight() - ImGui::GetWindowHeight() - 8 });
+	ImGui::SetWindowPos({ 8, ofGetWindowHeight() - ImGui::GetWindowHeight() - 16 - 64 });
 
 	ImGui::End();
 }

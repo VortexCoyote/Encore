@@ -189,6 +189,9 @@ void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
 
 		if (key == KEY_MINUS)
 			myChartEditor.DecreaseSnapDivision();
+
+		if (key == GLFW_KEY_S)
+			myChartEditor.TrySaveCurrentChart();
 	}
 	else
 	{
