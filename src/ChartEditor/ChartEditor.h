@@ -41,6 +41,7 @@ public:
 
 	void SetEditMode(EditActionState aMode);
 	void SetMousePosition(int aX, int aY);
+	void DoUndo();
 
 	void TryDropFilesAction(std::string aPath);
 

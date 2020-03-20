@@ -9,8 +9,8 @@
 #define PUSH_NOTIFICATION(message) NotificationSystem::GetInstance()->SubmitMessage(message)
 #define PUSH_NOTIFICATION_COLORED(message, color) NotificationSystem::GetInstance()->SubmitMessage(message, color)
 
-#define PUSH_NOTIFICATION_DEBUG(message) NotificationSystem::GetInstance()->SubmitMessage(std::string("[DEBUG] ") + message)
 #ifdef _DEBUG
+#define PUSH_NOTIFICATION_DEBUG(message) std::cout << "[DEBUG] " << message << std::endl; NotificationSystem::GetInstance()->SubmitMessage(std::string("[DEBUG] ") + message)
 #else
 #define PUSH_NOTIFICATION_DEBUG(message)
 #endif

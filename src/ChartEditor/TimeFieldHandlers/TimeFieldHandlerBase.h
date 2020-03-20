@@ -62,6 +62,9 @@ inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 
 		for (unsigned int rewindNoteIndex = myLastObjectIndex; rewindNoteIndex >= 0 && myObjectData->size() > 0; rewindNoteIndex--)
 		{
+			if (rewindNoteIndex > myObjectData->size() - 1)
+				continue;
+
 			double rewindNoteTimePoint = GetScreenTimePoint((*myObjectData)[rewindNoteIndex]->timePoint, aTimePoint);
 
 			if (rewindNoteTimePoint < 0 || rewindNoteIndex == 0)

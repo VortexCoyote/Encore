@@ -34,6 +34,8 @@ public:
 
 	void PlaceHold(int acolumn, int aTimePoint, NoteData*& aHoldEndOut);
 
+	std::unordered_map<NoteData*, NoteData*>* GetVisibleHolds();
+
 private:
 
 	void DrawRoutine(NoteData* aTimeObject, float aTimePoint) override;

@@ -1,6 +1,7 @@
 #include "NoteHandler.h"
 
 #include "../NotificationSystem.h"
+#include "../UndoRedoHandler.h"
 
 #include "ofWindowSettings.h"
 #include "ofMain.h"
@@ -119,12 +120,15 @@ void NoteHandler::PlaceNote(int aColumn, int aTimePoint)
 	message += std::to_string(note->timePoint);
 	message += "ms";
 
+	UndoRedoHandler::GetInstance()->PushHistory(ActionType::Place, { note });
+
 	PUSH_NOTIFICATION(message);
 }
 
 void NoteHandler::DeleteNote(int aX, int aY)
 {
 	NoteData* note = GetHoveredNote(aX, aY);
+
 	if (note == nullptr)
 		return void();
 
@@ -132,6 +136,7 @@ void NoteHandler::DeleteNote(int aX, int aY)
 
 	if (noteToDelete != myObjectData->end())
 	{
+
 		switch (note->noteType)
 		{
 		case NoteType::HoldBegin:
@@ -148,6 +153,8 @@ void NoteHandler::DeleteNote(int aX, int aY)
 			RemoveVisibleHold(note);
 			RemoveVisibleHold(note->relevantNote);
 
+			UndoRedoHandler::GetInstance()->PushHistory(ActionType::Remove, { note });
+			
 			myObjectData->erase(noteToDelete);
 			myObjectData->erase(std::find(myObjectData->begin(), myObjectData->end(), note->relevantNote));
 
@@ -166,6 +173,8 @@ void NoteHandler::DeleteNote(int aX, int aY)
 
 			PUSH_NOTIFICATION(message);
 
+			UndoRedoHandler::GetInstance()->PushHistory(ActionType::Remove, { note });
+
 			myObjectData->erase(noteToDelete);
 			delete note;
 		}
@@ -173,7 +182,7 @@ void NoteHandler::DeleteNote(int aX, int aY)
 
 		default:
 
-			std::cout << "invalid notetype" << std::endl;
+			PUSH_NOTIFICATION_DEBUG("Invalid NoteType");
 
 			break;
 		}
@@ -213,6 +222,11 @@ void NoteHandler::PlaceHold(int acolumn, int aTimePoint, NoteData*& aHoldEndOut)
 	message += "ms";
 
 	PUSH_NOTIFICATION(message);
+}
+
+std::unordered_map<NoteData*, NoteData*>* NoteHandler::GetVisibleHolds()
+{
+	return &myVisibleHolds;
 }
 
 

@@ -9,6 +9,8 @@
 #include "../ImGuiExtra.h"
 #include "../imgui_stdlib.h"
 
+#include "UndoRedoHandler.h"
+
 ChartEditor::ChartEditor()
 {
 
@@ -326,6 +328,11 @@ void ChartEditor::TryDragHold(int aX, int aY)
 
 void ChartEditor::TryReleaseHold(int aX, int aY)
 {
+	if (myHoldDrag == false)
+		return void();
+
+	UndoRedoHandler::GetInstance()->PushHistory(ActionType::Place, { myDraggableHoldEnd->relevantNote,  myDraggableHoldEnd });
+
 	myHoldDrag = false;
 	myDraggableHoldEnd = nullptr;
 
@@ -367,6 +374,11 @@ void ChartEditor::SetMousePosition(int aX, int aY)
 {
 	myMouseX = aX;
 	myMouseY = aY;
+}
+
+void ChartEditor::DoUndo()
+{
+	UndoRedoHandler::GetInstance()->Undo();
 }
 
 void ChartEditor::TryDropFilesAction(std::string aPath)
@@ -434,7 +446,7 @@ void ChartEditor::MenuBar()
 				}
 				else
 				{
-					PUSH_NOTIFICATION_COLORED("You need to create a new chartset first!", ofColor(255, 0, 0, 255));
+					PUSH_NOTIFICATION_COLORED("You need to create a new chartset first!", ofColor(255, 25, 25, 255));
 				}
 			}
 			
@@ -448,21 +460,20 @@ void ChartEditor::MenuBar()
 				TrySaveCurrentChart();
 			}
 			
-			if (ImGui::MenuItem("Export", "CTRL+E"));
+			if (ImGui::MenuItem("Export (not implemented yet)", "CTRL+E"));
 
 			ImGui::EndMenu();
 		}
 
 		if (ImGui::BeginMenu("Edit"))
 		{
-			if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-			if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
+			if (ImGui::MenuItem("Undo", "CTRL+Z"))
+				DoUndo();
 
 			ImGui::Separator();
 
-			if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-			if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-			if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+			if (ImGui::MenuItem("Copy (not implemented yet)", "CTRL+C")) {}
+			if (ImGui::MenuItem("Paste (not implemented yet)", "CTRL+V")) {}
 
 			ImGui::EndMenu();
 		}
@@ -541,6 +552,7 @@ void ChartEditor::SetSelectedChart(ChartData* aChartData)
 	myBPMLineHandler.ClearAllCurrentBeatLines();
 
 	myNoteHandler.Init(&(mySelectedChart->noteData));
+	UndoRedoHandler::GetInstance()->Init(&(mySelectedChart->noteData), &myNoteHandler);
 	myBPMLineHandler.Init(&(mySelectedChart->BPMPoints));
 	mySongTimeHandler.Init(mySelectedChart->songPath);
 	myEditHandler.Init(&myBPMLineHandler);

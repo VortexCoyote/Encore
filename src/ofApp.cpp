@@ -192,6 +192,9 @@ void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
 
 		if (key == GLFW_KEY_S)
 			myChartEditor.TrySaveCurrentChart();
+
+		if (key == GLFW_KEY_Z)
+			myChartEditor.DoUndo();
 	}
 	else
 	{
