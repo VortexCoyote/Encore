@@ -246,8 +246,9 @@ void BPMLineHandler::Draw(double aTimePoint)
 			while (time <= myVisibleObjects[bpmLineIndex + 1]->timePoint)
 			{
 				myVisibleBeatLines.emplace_back(time, lineY, myVisibleObjects[bpmLineIndex]->BPM);
-				
+
 				ofSetColor(255, 64, 64, 255);
+
 				ofDrawRectangle({ x - 32, lineY - height }, width + 64, height);
 
 				time = timeOffset + (myVisibleObjects[bpmLineIndex]->timePoint + (60000.f / myVisibleObjects[bpmLineIndex]->BPM * mySnapQuotient) * float(lineForwardIndex));
@@ -367,19 +368,6 @@ void BPMLineHandler::PlaceBPMLine(int aTimePoint)
 	message += "ms";
 
 	PUSH_NOTIFICATION(message);
-}
-
-void BPMLineHandler::DeleteBPMLine(int aX, int aY)
-{
-	int clickTimePoint = GetTimeFromScreenPoint(aY, myLastTimePoint);
-
-	BPMData* BPMLineToDelete = nullptr;
-
-	for (auto& BPMLine : myVisibleObjects)
-	{
-		int y = ofGetWindowHeight() - GetScreenTimePoint(BPMLine->timePoint, myLastTimePoint) + 64;
-		
-	}
 }
 
 int BPMLineHandler::GetClosestTimePoint(float aY)

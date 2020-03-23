@@ -195,6 +195,12 @@ void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
 
 		if (key == GLFW_KEY_Z)
 			myChartEditor.DoUndo();
+
+		if (key == GLFW_KEY_H)
+			myChartEditor.TryFlipSelected();
+
+		if (key == GLFW_KEY_A)
+			myChartEditor.TrySelectAll();
 	}
 	else
 	{
@@ -204,6 +210,9 @@ void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
 		if (key == KEY_MINUS)
 			myChartEditor.ZoomOut();
 	}
+
+	if (key == GLFW_KEY_DELETE)
+		myChartEditor.TryDeleteSelected();
 
 
 	if (key == GLFW_KEY_RIGHT)

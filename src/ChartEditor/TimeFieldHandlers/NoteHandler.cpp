@@ -136,7 +136,6 @@ void NoteHandler::DeleteNote(int aX, int aY)
 
 	if (noteToDelete != myObjectData->end())
 	{
-
 		switch (note->noteType)
 		{
 		case NoteType::HoldBegin:
@@ -189,6 +188,69 @@ void NoteHandler::DeleteNote(int aX, int aY)
 	}
 }
 
+void NoteHandler::DeleteNoteByPointer(NoteData* aNotePointer)
+{
+	NoteData* note = aNotePointer;
+
+	if (note == nullptr)
+		return void();
+
+	auto noteToDelete = std::find(myObjectData->begin(), myObjectData->end(), note);
+
+	if (noteToDelete != myObjectData->end())
+	{
+		switch (note->noteType)
+		{
+		case NoteType::HoldBegin:
+		case NoteType::HoldEnd:
+		{
+			std::string message = "Deleted Hold [";
+			message += std::to_string(note->column + 1);
+			message += "] ";
+			message += std::to_string(note->relevantNote->timePoint);
+			message += "ms";
+
+			PUSH_NOTIFICATION(message);
+
+			RemoveVisibleHold(note);
+			RemoveVisibleHold(note->relevantNote);
+
+			UndoRedoHandler::GetInstance()->PushHistory(ActionType::Remove, { note });
+
+			myObjectData->erase(noteToDelete);
+			myObjectData->erase(std::find(myObjectData->begin(), myObjectData->end(), note->relevantNote));
+
+			delete note->relevantNote;
+			delete note;
+		}
+		break;
+
+		case NoteType::Note:
+		{
+			std::string message = "Deleted Note [";
+			message += std::to_string(note->column + 1);
+			message += "] ";
+			message += std::to_string(note->timePoint);
+			message += "ms";
+
+			PUSH_NOTIFICATION(message);
+
+			UndoRedoHandler::GetInstance()->PushHistory(ActionType::Remove, { note });
+
+			myObjectData->erase(noteToDelete);
+			delete note;
+		}
+		break;
+
+		default:
+
+			PUSH_NOTIFICATION_DEBUG("Invalid NoteType");
+
+			break;
+		}
+	}
+}
+
 void NoteHandler::PlaceHold(int acolumn, int aTimePoint, NoteData*& aHoldEndOut)
 {
 	NoteData* note = new NoteData();
@@ -227,6 +289,14 @@ void NoteHandler::PlaceHold(int acolumn, int aTimePoint, NoteData*& aHoldEndOut)
 std::unordered_map<NoteData*, NoteData*>* NoteHandler::GetVisibleHolds()
 {
 	return &myVisibleHolds;
+}
+
+void NoteHandler::SortAllNotes()
+{
+	std::sort(myObjectData->begin(), myObjectData->end(), [](const auto& lhs, const auto& rhs)
+	{
+		return lhs->timePoint < rhs->timePoint;
+	});
 }
 
 

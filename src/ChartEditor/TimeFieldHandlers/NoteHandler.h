@@ -31,10 +31,13 @@ public:
 
 	void PlaceNote(int aColumn, int aTimePoint);
 	void DeleteNote(int aX, int aY);
+	void DeleteNoteByPointer(NoteData* aNotePointer);
 
 	void PlaceHold(int acolumn, int aTimePoint, NoteData*& aHoldEndOut);
 
 	std::unordered_map<NoteData*, NoteData*>* GetVisibleHolds();
+
+	void SortAllNotes();
 
 private:
 

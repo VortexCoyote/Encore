@@ -17,8 +17,12 @@ public:
 	virtual void Init(std::vector<T*>* aObjectData);
 	virtual void Draw(double aTimePoint);
 
-	double GetScreenTimePoint(int aTimePointMS, double aCurrentTimePointS);
-	int GetTimeFromScreenPoint(float aScreenPoint, double aCurrentTimePointS);
+	static double GetScreenTimePoint(int aTimePointMS, double aCurrentTimePointS);
+	static int GetTimeFromScreenPoint(float aScreenPoint, double aCurrentTimePointS);
+
+	void AddToVisibleObjects(T* aObject);
+
+	void ScheduleRewind();
 
 protected:
 
@@ -26,6 +30,8 @@ protected:
 
 	unsigned int myLastObjectIndex = 0;
 	double		 myLastTimePoint = 0.0;
+
+	bool myScheduleRewind = false;
 
 	std::vector<T*>* myObjectData = nullptr;
 	std::vector<T*> myVisibleObjects;
@@ -56,7 +62,7 @@ template<class T>
 inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 {
 	//handle rewinds
-	if (aTimePoint < myLastTimePoint)
+	if (aTimePoint < myLastTimePoint || myScheduleRewind == true)
 	{
 		//std::cout << "yaaah, it's rewind time" << std::endl;
 
@@ -73,6 +79,8 @@ inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 				break;
 			}
 		}
+
+		myScheduleRewind = false;
 	}
 
 	for (unsigned int noteIndex = myLastObjectIndex; noteIndex < myObjectData->size(); noteIndex++)
@@ -143,4 +151,20 @@ inline int TimeFieldHandlerBase<T>::GetTimeFromScreenPoint(float aScreenPoint, d
 	int timePointMS = aScreenPoint + (aCurrentTimePointS * 1000.0);
 
 	return timePointMS;
+}
+
+template<class T>
+inline void TimeFieldHandlerBase<T>::AddToVisibleObjects(T* aObject)
+{
+	auto it = std::find(myVisibleObjects.begin(), myVisibleObjects.end(), aObject);
+	if (it == myVisibleObjects.end())
+	{
+		myVisibleObjects.push_back(aObject);
+	}
+}
+
+template<class T>
+inline void TimeFieldHandlerBase<T>::ScheduleRewind()
+{
+	myScheduleRewind = true;
 }

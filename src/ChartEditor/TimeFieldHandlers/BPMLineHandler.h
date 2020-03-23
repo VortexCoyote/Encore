@@ -29,7 +29,6 @@ public:
 	float GetBiasedClosestBeatLineMS(int aTime, bool aDown);
 
 	void PlaceBPMLine(int aTimePoint);
-	void DeleteBPMLine(int aX, int aY);
 
 	int GetClosestTimePoint(float aY);
 

@@ -72,6 +72,10 @@ public:
 
 	void TrySaveCurrentChart();
 
+	void TryDeleteSelected();
+	void TryFlipSelected();
+	void TrySelectAll();
+
 private:
 
 	void MenuBar();

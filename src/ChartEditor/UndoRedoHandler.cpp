@@ -141,6 +141,9 @@ void UndoRedoHandler::DoAction(Action& aAction)
 				newNote->timePoint = note.timePoint;
 
 				myNoteData->push_back(newNote);
+
+				PUSH_NOTIFICATION("Undid Note Deletion");
+
 			}
 			break;
 
@@ -165,6 +168,8 @@ void UndoRedoHandler::DoAction(Action& aAction)
 				myNoteData->push_back(hold1);
 
 				delete note.relevantNote;
+
+				PUSH_NOTIFICATION("Undid Hold Deletion");
 			}
 			break;
 

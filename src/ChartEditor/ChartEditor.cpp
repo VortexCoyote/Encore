@@ -46,6 +46,7 @@ void ChartEditor::Update()
 	mySongTimeHandler.Update();
 	myEditHandler.SetCursorInput({ float(myMouseX), float(myMouseY) });
 	myEditHandler.SetVisibleItems(&(myNoteHandler.GetVisibleNotes()));
+	myEditHandler.Update(mySongTimeHandler.GetCurrentTimeS());
 	myBPMLineHandler.Update();
 
 	myBPMLineHandler.ShowBeatDivisionControls();
@@ -117,6 +118,8 @@ void ChartEditor::ZoomOut()
 	else
 	{
 		PUSH_NOTIFICATION(std::string("Zoomed Out: ") + std::to_string(EditorConfig::scale));
+		myNoteHandler.ScheduleRewind();
+		myBPMLineHandler.ScheduleRewind();
 	}
 }
 
@@ -186,6 +189,7 @@ void ChartEditor::DoLeftClickPressedAction(int aX, int aY)
 		break;
 
 	case EditActionState::Select:
+		myEditHandler.ClickAction(aX, aY);
 		break;
 
 	default:
@@ -227,6 +231,7 @@ void ChartEditor::DoLeftClickReleaseAction(int aX, int aY)
 		TryReleaseHold(aX, aY);
 		break;
 	case EditActionState::Select:
+		myEditHandler.ReleaseAction(aX, aY);
 		break;
 
 	default:
@@ -266,6 +271,7 @@ void ChartEditor::DoLeftClickDragAction(int aX, int aY)
 		TryDragHold(aX, aY);
 		break;
 	case EditActionState::Select:
+		myEditHandler.DragAction(aX, aY);
 		break;
 
 	default:
@@ -368,6 +374,30 @@ void ChartEditor::TrySaveCurrentChart()
 {
 	if (mySelectedChart != nullptr)
 		myChartResourceHandler.SaveChart(mySelectedChartSet->saveDirectory, myLoadedChartDirectory, mySelectedChart);
+}
+
+void ChartEditor::TryDeleteSelected()
+{
+	if (mySelectedChart == nullptr)
+		return void();
+
+	myEditHandler.TryDeleteSelectedItems();
+}
+
+void ChartEditor::TryFlipSelected()
+{
+	if (mySelectedChart == nullptr)
+		return void();
+
+	myEditHandler.TryFlipSelectedItemsHorizonally();
+}
+
+void ChartEditor::TrySelectAll()
+{
+	if (mySelectedChart == nullptr)
+		return void();
+
+	myEditHandler.SelectAll();
 }
 
 void ChartEditor::SetMousePosition(int aX, int aY)
@@ -474,7 +504,14 @@ void ChartEditor::MenuBar()
 
 			if (ImGui::MenuItem("Copy (not implemented yet)", "CTRL+C")) {}
 			if (ImGui::MenuItem("Paste (not implemented yet)", "CTRL+V")) {}
+			if (ImGui::MenuItem("Delete", "DELETE"))
+				myEditHandler.TryDeleteSelectedItems();
 
+			ImGui::Separator();
+
+			if (ImGui::MenuItem("Mirror", "CTRL+H"))
+				myEditHandler.TryFlipSelectedItemsHorizonally();
+				
 			ImGui::EndMenu();
 		}
 
@@ -555,7 +592,7 @@ void ChartEditor::SetSelectedChart(ChartData* aChartData)
 	UndoRedoHandler::GetInstance()->Init(&(mySelectedChart->noteData), &myNoteHandler);
 	myBPMLineHandler.Init(&(mySelectedChart->BPMPoints));
 	mySongTimeHandler.Init(mySelectedChart->songPath);
-	myEditHandler.Init(&myBPMLineHandler);
+	myEditHandler.Init(&myBPMLineHandler, &myNoteHandler, &(mySelectedChart->noteData));
 	
 	mySongTimeHandler.SetTimeNormalized(0.f);
 	mySongTimeHandler.ResetSpeed();
