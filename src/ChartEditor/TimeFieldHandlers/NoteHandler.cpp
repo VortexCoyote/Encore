@@ -299,6 +299,33 @@ void NoteHandler::SortAllNotes()
 	});
 }
 
+void NoteHandler::DrawNote(int aColumn, int aTimePoint)
+{
+	double screenTimePoint = GetScreenTimePoint(aTimePoint, myLastTimePoint);
+
+	int x = ofGetWindowWidth() / 2 - myNoteImage[aColumn].getWidth() * 2 + myNoteImage[aColumn].getWidth() * aColumn;
+	int y = ofGetWindowHeight() - int(screenTimePoint + 0.5f);
+
+	myNoteImage[aColumn].draw(x, y);
+}
+
+void NoteHandler::DrawHold(int aColumn, int aTimePointBegin, int aTimePointEnd)
+{
+	double screenTimePointBegin = GetScreenTimePoint(aTimePointBegin, myLastTimePoint);
+	double screenTimePointEnd = GetScreenTimePoint(aTimePointEnd, myLastTimePoint);
+
+	int x = ofGetWindowWidth() / 2 - myNoteImage[aColumn].getWidth() * 2 + myNoteImage[aColumn].getWidth() * aColumn;
+
+	int yBegin = ofGetWindowHeight() - int(screenTimePointBegin + 0.5f);
+	int yEnd = ofGetWindowHeight() - int(screenTimePointEnd + 0.5f);
+	
+	myHoldBodyImage.draw(x, yEnd + myNoteImage[aColumn].getHeight() / 2.f, myHoldBodyImage.getWidth(), (GetScreenTimePoint(aTimePointEnd, 0) - GetScreenTimePoint(aTimePointBegin, 0)));
+
+	myHoldCapImage.draw(x, yEnd - myHoldCapImage.getHeight() / 2.f);
+
+	myNoteImage[aColumn].draw(x, yBegin);
+}
+
 
 void NoteHandler::DrawRoutine(NoteData* aTimeObject, float aTimePoint)
 {

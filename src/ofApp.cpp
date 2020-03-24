@@ -203,6 +203,12 @@ void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
 
 		if (key == GLFW_KEY_A)
 			myChartEditor.TrySelectAll();
+
+		if (key == GLFW_KEY_C)
+			myChartEditor.Copy();
+
+		if (key == GLFW_KEY_V)
+			myChartEditor.Paste();
 	}
 	else
 	{

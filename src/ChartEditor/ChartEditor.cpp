@@ -163,6 +163,18 @@ void ChartEditor::MoveUp()
 		mySongTimeHandler.SetTimeS(float(myBPMLineHandler.GetBiasedClosestBeatLineMS(mySongTimeHandler.GetCurrentTimeMS(), false)) / 1000.0);
 }
 
+void ChartEditor::Copy()
+{
+	if (mySelectedChart != nullptr && myEditHandler.GetEditActionState() == EditActionState::Select)
+		myEditHandler.Copy();
+}
+
+void ChartEditor::Paste()
+{
+	if (mySelectedChart != nullptr && myEditHandler.GetEditActionState() == EditActionState::Select)
+		myEditHandler.Paste();
+}
+
 void ChartEditor::SetEditMode(EditActionState aMode)
 {
 	if (mySelectedChart != nullptr)
@@ -392,7 +404,7 @@ void ChartEditor::TryFlipSelected()
 
 void ChartEditor::TrySelectAll()
 {
-	if (mySelectedChart == nullptr)
+	if (mySelectedChart != nullptr && myEditHandler.GetEditActionState() != EditActionState::Select)
 		return void();
 
 	myEditHandler.SelectAll();

@@ -53,16 +53,25 @@ public:
 
 	int GetColumn(int aX);
 
+	void Copy();
+	void Paste();
+
+	void PlacePaste();
+
 private:
 
 	void TryDragBoxSelect(double aCurrentTime);
 	void TryMoveSelectedNotes(double aCurrentTime);
+
+	void DrawPastePreview();
 
 	ofImage myCursorImage;
 	ofVec2f myCursorPosition;
 
 	BPMLineHandler* myBPMLineHandler;
 	NoteHandler* myNoteHandler;
+
+	bool myPastePreview = false;
 
 	bool myFreePlace = false;
 
@@ -80,9 +89,11 @@ private:
 	EditActionState myCursorState = EditActionState::EditNotes;
 
 	std::vector<NoteData*>* myVisibleItems = nullptr;
-	std::unordered_map<NoteData*, NoteData*>  mySelectedItems;
-
 	std::vector<NoteData*>* myNoteData = nullptr;
+
+	std::vector<NoteData*>	myClipBoard;
+
+	std::unordered_map<NoteData*, NoteData*>  mySelectedItems;
 
 	double mySavedTimeS = 0.0;
 };

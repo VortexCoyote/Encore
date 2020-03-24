@@ -2,12 +2,14 @@
 
 #include "../ChartData/ChartData.h"
 
+
 #include "TimeFieldHandlers/BPMLineHandler.h"
 #include "TimeFieldHandlers/NoteHandler.h"
 
 #include "ofMain.h"
 
 #include "NotificationSystem.h"
+#include "UndoRedoHandler.h"
 
 EditHandler::EditHandler()
 {
@@ -79,6 +81,11 @@ void EditHandler::Draw()
 		ofSetColor(255, 255, 255, 96);
 		ofDrawRectangle(myAnchoredDragPoint, myUpdatedDragPoint.x - myAnchoredDragPoint.x, myUpdatedDragPoint.y - myAnchoredDragPoint.y);
 		ofSetColor(255, 255, 255, 255);
+	}
+
+	if (myPastePreview == true)
+	{
+		DrawPastePreview();
 	}
 }
 
@@ -242,6 +249,9 @@ void EditHandler::ClickAction(int aX, int aY)
 	if (ImGui::GetIO().WantCaptureMouse == true)
 		return void();
 
+	if (myPastePreview == true)
+		PlacePaste();
+
 	NoteData* potentialDragNote = myNoteHandler->GetHoveredNote(aX, aY);
 	if (potentialDragNote != nullptr)
 	{
@@ -322,6 +332,69 @@ int EditHandler::GetColumn(int aX)
 
 
 	assert(false && "bad input coordinate");
+}
+
+void EditHandler::Copy()
+{
+	myClipBoard.clear();
+
+	for (auto item : mySelectedItems)
+	{
+		if (item.first->selected == false)
+			continue;
+
+		myClipBoard.push_back(item.first);
+	}
+}
+
+void EditHandler::Paste()
+{
+	if(myClipBoard.size() > 0)
+		myPastePreview = true;
+}
+
+void EditHandler::PlacePaste()
+{
+	myPastePreview = false;
+
+	int cursorTimePoint = myBPMLineHandler->GetClosestTimePoint(myCursorPosition.y);
+
+	int minTimePoint = INT_MAX;
+
+	for (auto item : myClipBoard)
+	{
+		int deltaTimePoint = cursorTimePoint - item->timePoint;
+
+		minTimePoint = std::min(minTimePoint, item->timePoint);
+	}
+
+	for (auto item : myClipBoard)
+	{
+		int deltaTimePoint = item->timePoint - minTimePoint;
+		
+		switch (item->noteType)
+		{
+		case NoteType::HoldBegin:
+		{
+			NoteData* holdEnd;
+			myNoteHandler->PlaceHold(item->column, cursorTimePoint + deltaTimePoint, holdEnd);
+
+			holdEnd->timePoint = cursorTimePoint + (item->relevantNote->timePoint - minTimePoint);
+
+			UndoRedoHandler::GetInstance()->PushHistory(ActionType::Place, { holdEnd->relevantNote, holdEnd });
+		}
+			break;
+
+		case NoteType::Note:
+			myNoteHandler->PlaceNote(item->column, cursorTimePoint + deltaTimePoint);
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	myNoteHandler->ScheduleRewind();
 }
 
 void EditHandler::TryDragBoxSelect(double aCurrentTime)
@@ -435,4 +508,47 @@ void EditHandler::TryMoveSelectedNotes(double aCurrentTime)
 
 	myNoteHandler->SortAllNotes();
 	myNoteHandler->ScheduleRewind();
+}
+
+void EditHandler::DrawPastePreview()
+{
+	//could be optimized by calculating the minTimePoint once
+
+	int cursorTimePoint = myBPMLineHandler->GetClosestTimePoint(myCursorPosition.y);
+
+	int minTimePoint = INT_MAX;
+
+	for (auto item : myClipBoard)
+	{
+		int deltaTimePoint = cursorTimePoint - item->timePoint;
+
+		minTimePoint = std::min(minTimePoint, item->timePoint);
+	}
+
+	ofSetColor(128, 255, 128, 128);
+
+	for (auto item : myClipBoard)
+	{
+		int deltaTimePoint = item->timePoint - minTimePoint;
+
+		switch (item->noteType)
+		{
+			case NoteType::HoldBegin:
+			{
+				int deltaEndTimePoint = item->relevantNote->timePoint - minTimePoint;
+				myNoteHandler->DrawHold(item->column, cursorTimePoint + deltaTimePoint, 
+													  cursorTimePoint + deltaEndTimePoint);
+			}
+				break;
+
+			case NoteType::Note:
+				myNoteHandler->DrawNote(item->column, cursorTimePoint + deltaTimePoint);
+				break;
+
+			default:
+				break;
+			}
+	}
+
+	ofSetColor(255, 255, 255, 255);
 }

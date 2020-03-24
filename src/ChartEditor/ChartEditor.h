@@ -39,6 +39,9 @@ public:
 	void MoveDown();
 	void MoveUp();
 
+	void Copy();
+	void Paste();
+
 	void SetEditMode(EditActionState aMode);
 	void SetMousePosition(int aX, int aY);
 	void DoUndo();
