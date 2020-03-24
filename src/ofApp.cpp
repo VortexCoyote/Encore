@@ -34,6 +34,8 @@ void ofApp::draw() {
 	myChartEditor.Draw();
 
 	myGui.end();
+
+	NotificationSystem::GetInstance()->Draw();
 }
 
 //--------------------------------------------------------------

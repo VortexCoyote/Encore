@@ -60,7 +60,6 @@ void ChartEditor::Draw()
 	//null check shield
 	if (mySelectedChart == nullptr)
 	{
-		NotificationSystem::GetInstance()->Draw();
 		return void();
 	}
 
@@ -80,7 +79,6 @@ void ChartEditor::Draw()
 	myNoteHandler.Draw(mySongTimeHandler.GetCurrentTimeS());
 	myEditHandler.Draw();
 
-	NotificationSystem::GetInstance()->Draw();
 }
 
 void ChartEditor::TogglePlaying()

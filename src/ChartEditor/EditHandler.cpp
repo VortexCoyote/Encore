@@ -251,7 +251,10 @@ void EditHandler::ClickAction(int aX, int aY)
 		if (myDraggableItem->selected == true)
 			myWasItemSelected = true;
 		else
+		{
 			myDraggableItem->selected = true;
+			myWasItemSelected = false;
+		}
 		
 		mySelectedItems[myDraggableItem] = myDraggableItem;
 		return void();

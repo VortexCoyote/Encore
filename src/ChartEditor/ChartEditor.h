@@ -113,8 +113,9 @@ private:
 
 	bool myHoldDrag = false;
 	bool myFreePlace = false;
+
 	NoteData* myDraggableHoldEnd = nullptr;
 
 	bool myNewChartSetPopup = false;
-	bool myNewDifficultyPopup = false;
+	bool myNewDifficultyPopup = false; 
 };
