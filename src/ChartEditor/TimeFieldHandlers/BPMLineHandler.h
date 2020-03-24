@@ -41,6 +41,8 @@ private:
 	int	  mySnapDivision = 2;
 	float mySnapQuotient = 0;	
 
+	ofColor GetBeatLineColor(int aBeatLineCount);
+
 	struct BeatLine
 	{
 		BeatLine(int aTimePoint, float aVisualTimePoint, float aBPM)

@@ -512,8 +512,12 @@ void ChartEditor::MenuBar()
 
 			ImGui::Separator();
 
-			if (ImGui::MenuItem("Copy (not implemented yet)", "CTRL+C")) {}
-			if (ImGui::MenuItem("Paste (not implemented yet)", "CTRL+V")) {}
+			if (ImGui::MenuItem("Copy", "CTRL+C"))
+				Copy();
+
+			if (ImGui::MenuItem("Paste", "CTRL+V"))
+				Paste();
+
 			if (ImGui::MenuItem("Delete", "DELETE"))
 				myEditHandler.TryDeleteSelectedItems();
 

@@ -238,6 +238,7 @@ void BPMLineHandler::Draw(double aTimePoint)
 			if (ofGetWindowHeight() - GetScreenTimePoint(time, aTimePoint) > ofGetWindowHeight())
 			{
 				int timeJumps = int(float(GetTimeFromScreenPoint(0, aTimePoint) - time) / (60000.f / myVisibleObjects[bpmLineIndex]->BPM));
+				
 				timeOffset = (60000.f / myVisibleObjects[bpmLineIndex]->BPM) * float(timeJumps);
 				time += timeOffset;
 			}
@@ -247,7 +248,9 @@ void BPMLineHandler::Draw(double aTimePoint)
 			{
 				myVisibleBeatLines.emplace_back(time, lineY, myVisibleObjects[bpmLineIndex]->BPM);
 
-				ofSetColor(255, 64, 64, 255);
+				int lineCountFromBPMpoint = int(float(time - myVisibleObjects[bpmLineIndex]->timePoint) / (60000.f / myVisibleObjects[bpmLineIndex]->BPM * mySnapQuotient) + 0.5f);
+
+				ofSetColor(GetBeatLineColor(lineCountFromBPMpoint));
 
 				ofDrawRectangle({ x - 32, lineY - height }, width + 64, height);
 
@@ -399,6 +402,31 @@ void BPMLineHandler::ClearAllCurrentBeatLines()
 {
 	myVisibleObjects.clear();
 	myVisibleBeatLines.clear();
+}
+
+ofColor BPMLineHandler::GetBeatLineColor(int aBeatLineCount)
+{
+	int relativeBeatCount = aBeatLineCount % mySnapDivision;
+
+	if (aBeatLineCount % mySnapDivision == 0)
+		return ofColor(255, 255, 255, 255);
+	
+	if (float(relativeBeatCount) == float(mySnapDivision) / 2.f)
+		return ofColor(200, 0, 0, 255);
+
+	if (mySnapDivision % 3 == 0)
+		return ofColor(155, 0, 155, 255);
+
+	if (mySnapDivision % 2 == 0)
+	{
+		if (relativeBeatCount % 2 == 1)
+		{
+			return ofColor(40, 100, 200, 255);
+		}
+		return ofColor(200, 200, 0, 255);
+	}
+
+	return ofColor(0, 155, 0, 255);
 }
 
 BPMLineHandler::BPMLineHandler()
