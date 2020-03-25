@@ -48,6 +48,10 @@ public:
 
 	void ShowPlaybackRateControls();
 
+	void UpdateRateOption();
+
+	bool usePitch = false;
+
 private:
 
 

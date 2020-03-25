@@ -47,16 +47,12 @@ private:
 	void DrawRoutine(NoteData* aTimeObject, float aTimePoint) override;
 	void VisibleHoldDrawRoutine(double aTimePoint);
 
+	int GetItemPosXbyColumn(int aColumn);
+
 	std::unordered_map<NoteData*, NoteData*> myVisibleHolds;
 	std::vector<std::unordered_map<NoteData*, NoteData*>::iterator> myVisibleHoldsToRemove;
 
 	ofFbo myPreviewBuffer;
-
-	ofImage myNoteImage[4];
-	ofImage mySelectedImage;
-
-	ofImage myHoldBodyImage;
-	ofImage myHoldCapImage;
 
 	ofImage myHitLineImage;
 };

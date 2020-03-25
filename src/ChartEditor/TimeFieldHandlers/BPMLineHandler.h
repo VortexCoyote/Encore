@@ -51,7 +51,7 @@ private:
 			visualTimePoint = aVisualTimePoint;
 			BPM = aBPM;
 		};
-
+		
 		int   timePoint;
 		float visualTimePoint;
 		float BPM;

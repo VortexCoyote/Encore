@@ -404,9 +404,10 @@ void ChartEditor::TryFlipSelected()
 
 void ChartEditor::TrySelectAll()
 {
-	if (mySelectedChart != nullptr && myEditHandler.GetEditActionState() != EditActionState::Select)
+	if (mySelectedChart == nullptr)
 		return void();
 
+	myEditHandler.SetEditActionState(EditActionState::Select);
 	myEditHandler.SelectAll();
 }
 
@@ -529,6 +530,14 @@ void ChartEditor::MenuBar()
 			ImGui::EndMenu();
 		}
 
+		if (ImGui::BeginMenu("Options"))
+		{
+			if (ImGui::Checkbox("Use Pitched Rate", &mySongTimeHandler.usePitch))
+				mySongTimeHandler.UpdateRateOption();
+
+			ImGui::EndMenu();
+		}
+
 		std::string selectedDifficulty = mySelectedChart == nullptr ? "* Difficulty: No Difficulty Selected" 
 																	: "* Difficulty: " + mySelectedChart->difficultyName;	
 
@@ -598,6 +607,9 @@ void ChartEditor::LoadChartFromDirectory()
 void ChartEditor::SetSelectedChart(ChartData* aChartData)
 {
 	mySelectedChart = aChartData;
+
+	mySkinHandler.LoadSkin(mySelectedChart->keyAmount);
+	EditorConfig::keyAmount = mySelectedChart->keyAmount;
 
 	myEditHandler.ClearSelectedItems();
 	myBPMLineHandler.ClearAllCurrentBeatLines();
@@ -761,6 +773,7 @@ void ChartEditor::DoNewDifficultyWindow()
 	{
 		ImGui::Text("Meta Data");
 		ImGui::InputText("Difficulty Name", &(myNewChart->difficultyName));
+		ImGui::SliderInt("Keymode", &myNewChart->keyAmount, 1, 16);
 
 		ImGui::Spacing();
 		ImGui::Spacing();
@@ -826,8 +839,8 @@ void ChartEditor::DoNewDifficultyWindow()
 
 bool ChartEditor::IsCursorWithinBounds(int aX, int aY)
 {
-	int leftBorder = ofGetWindowWidth() / 2 - 64 * 2;
-	int rightBorder = ofGetWindowWidth() / 2 + 64 * 2;
+	int leftBorder = ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2 - 32;
+	int rightBorder = ofGetWindowWidth() / 2 + EditorConfig::fieldWidth / 2 + 32;
 
 	bool withinBounds = aX >= leftBorder && aX <= rightBorder;
 

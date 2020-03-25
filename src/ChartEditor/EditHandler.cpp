@@ -13,7 +13,7 @@
 
 EditHandler::EditHandler()
 {
-	myCursorImage.loadImage("images/selected.png");
+
 }
 
 EditHandler::~EditHandler()
@@ -49,7 +49,7 @@ void EditHandler::Draw()
 		return void();
 	}
 
-	myCursorImage.draw(GetSnappedCursorPosition() - ofVec2f(0, 64));
+	EditorConfig::Skin::selectImage.draw(GetSnappedCursorPosition() - ofVec2f(0, 64));
 
 	if (myDraggableItem != nullptr)
 	{
@@ -61,12 +61,12 @@ void EditHandler::Draw()
 		case NoteType::HoldEnd:
 		{
 			ofVec2f pos = { float(myDraggableItem->x), float(ofGetWindowHeight() - int(TimeFieldHandlerBase<NoteData>::GetScreenTimePoint(myDraggableItem->timePoint, mySavedTimeS) + 0.5)) };
-			myCursorImage.draw(pos);
+			EditorConfig::Skin::selectImage.draw(pos);
 		}
 			break;
 
 		case NoteType::Note:
-			myCursorImage.draw(ofVec2f(myDraggableItem->x, myDraggableItem->y));
+			EditorConfig::Skin::selectImage.draw(ofVec2f(myDraggableItem->x, myDraggableItem->y));
 			break;
 
 		default:
@@ -93,8 +93,10 @@ ofVec2f EditHandler::GetSnappedCursorPosition()
 {
 	float inputX = myCursorPosition.x;
 	float x = inputX;
-	float leftBorder = ofGetWindowWidth() / 2 - 64 * 2;
-	float rightBorder = ofGetWindowWidth() / 2 + 64 * 2;
+	float leftBorder = ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2;
+	float rightBorder = ofGetWindowWidth() / 2 + EditorConfig::fieldWidth / 2;
+
+	int noteWidth = EditorConfig::Skin::noteImages[0].getWidth();
 
 	//std::cout << leftBorder << std::endl;
 
@@ -103,20 +105,14 @@ ofVec2f EditHandler::GetSnappedCursorPosition()
 	case EditActionState::EditBPM:
 	case EditActionState::EditHolds:
 	case EditActionState::EditNotes:
+	{
+		x = ofClamp(inputX, leftBorder, rightBorder - noteWidth);
 
-		x = ofClamp(inputX, leftBorder, rightBorder - 64.f);
-		
-		if (x >= leftBorder && x < leftBorder + 64.f)
-			x = leftBorder;
-
-		if (x >= leftBorder + 64.f && x < leftBorder + 128.f)
-			x = leftBorder + 64.f;
-
-		if (x >= leftBorder + 128.f && x < leftBorder + 192.f)
-			x = leftBorder + 128.f;
-
-		if (x >= leftBorder + 192.f && x < leftBorder + 256.f)
-			x = leftBorder + 192.f;
+		for (size_t column = 0; column < EditorConfig::keyAmount; column++)
+		{
+			if (x >= leftBorder + noteWidth * column && x < leftBorder + noteWidth + noteWidth * column)
+				x = leftBorder + noteWidth * column;
+		}
 
 		if (myFreePlace == true)
 		{
@@ -126,6 +122,7 @@ ofVec2f EditHandler::GetSnappedCursorPosition()
 		{
 			return ofVec2f(x, myBPMLineHandler->GetClosestBeatLinePos(myCursorPosition.y));
 		}
+	}
 
 		break;
 
@@ -230,6 +227,7 @@ void EditHandler::TryDeleteSelectedItems()
 		myNoteHandler->DeleteNoteByPointer(note.first);
 	}
 
+	myNoteHandler->ScheduleRewind();
 	mySelectedItems.clear();
 }
 
@@ -315,23 +313,26 @@ int EditHandler::GetColumn(int aX)
 {
 	float inputX = aX;
 	float x = inputX;
-	float leftBorder = ofGetWindowWidth() / 2 - 64 * 2;
-	float rightBorder = ofGetWindowWidth() / 2 + 64 * 2;
+	float leftBorder = ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2;
+	float rightBorder = ofGetWindowWidth() / 2 + EditorConfig::fieldWidth / 2;
 
-	if (x >= 0 && x < leftBorder + 64.f)
+	int noteWidth = EditorConfig::Skin::noteImages[0].getWidth();
+
+	for (size_t column = 0; column < EditorConfig::keyAmount; column++)
+	{
+		if (x >= leftBorder + noteWidth * column && x < leftBorder + noteWidth + noteWidth * column)
+			return column;
+	}
+
+	if (aX <= leftBorder)
 		return 0;
 
-	if (x >= leftBorder + 64.f && x < leftBorder + 128.f)
-		return 1;
-
-	if (x >= leftBorder + 128.f && x < leftBorder + 192.f)
-		return 2;
-
-	if (x >= leftBorder + 192.f && x < ofGetWindowWidth())
-		return 3;
-
+	if (aX >= leftBorder)
+		return EditorConfig::keyAmount - 1;
 
 	assert(false && "bad input coordinate");
+
+	return -1;
 }
 
 void EditHandler::Copy()

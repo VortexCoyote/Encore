@@ -66,6 +66,8 @@ struct ChartData
 	std::string difficultyName;
 
 	std::vector<BPMData*> BPMPoints;
+
+	int keyAmount = 4;
 };
 
 struct ChartSet

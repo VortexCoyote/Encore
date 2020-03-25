@@ -10,17 +10,7 @@
 
 NoteHandler::NoteHandler()
 {
-	myNoteImage[0].loadImage("images/arrows/left.png");
-	myNoteImage[1].loadImage("images/arrows/down.png");
-	myNoteImage[2].loadImage("images/arrows/up.png");
-	myNoteImage[3].loadImage("images/arrows/right.png");
-	
-	myHoldCapImage.loadImage("images/holdcap.png");
-	myHoldBodyImage.loadImage("images/holdbody.png");
-	
-	mySelectedImage.loadImage("images/selected.png");
-	
-	myHitLineImage.loadImage("images/hitline.png");
+	myHitLineImage.loadImage("skin/hitline.png");
 
 	myVisibleObjects.reserve(100000);
 
@@ -57,11 +47,11 @@ NoteData* NoteHandler::GetHoveredNote(int aX, int aY)
 		case NoteType::HoldBegin:
 		{
 			int column = note->column;
-			float x = ofGetWindowWidth() / 2 - myNoteImage[column].getWidth() * 2 + myNoteImage[column].getWidth() * column;
+			float x = ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2 + EditorConfig::Skin::noteImages[column].getWidth() * column;
 			float y = ofGetWindowHeight() - note->visibleTimePoint;
 
-			if (aX > x && aX < x + 64 &&
-				aY > y && aY < y + 64)
+			if (aX > x && aX < x + EditorConfig::Skin::noteImages[column].getWidth() &&
+				aY > y && aY < y + EditorConfig::Skin::noteImages[column].getWidth())
 			{
 				return note;
 			}
@@ -70,13 +60,15 @@ NoteData* NoteHandler::GetHoveredNote(int aX, int aY)
 
 		case NoteType::HoldEnd:
 		case NoteType::Note:
-
-			if (aX > note->x && aX < note->x + 64 &&
-				aY > note->y && aY < note->y + 64)
+		{
+			int column = note->column;
+			if (aX > note->x&& aX < note->x + EditorConfig::Skin::noteImages[column].getWidth() &&
+				aY > note->y&& aY < note->y + EditorConfig::Skin::noteImages[column].getWidth())
 			{
 				return note;
 			}
-		
+		}
+
 			break;
 
 		default:
@@ -303,10 +295,10 @@ void NoteHandler::DrawNote(int aColumn, int aTimePoint)
 {
 	double screenTimePoint = GetScreenTimePoint(aTimePoint, myLastTimePoint);
 
-	int x = ofGetWindowWidth() / 2 - myNoteImage[aColumn].getWidth() * 2 + myNoteImage[aColumn].getWidth() * aColumn;
+	int x = GetItemPosXbyColumn(aColumn);
 	int y = ofGetWindowHeight() - int(screenTimePoint + 0.5f);
 
-	myNoteImage[aColumn].draw(x, y);
+	EditorConfig::Skin::noteImages[aColumn].draw(x, y);
 }
 
 void NoteHandler::DrawHold(int aColumn, int aTimePointBegin, int aTimePointEnd)
@@ -314,16 +306,16 @@ void NoteHandler::DrawHold(int aColumn, int aTimePointBegin, int aTimePointEnd)
 	double screenTimePointBegin = GetScreenTimePoint(aTimePointBegin, myLastTimePoint);
 	double screenTimePointEnd = GetScreenTimePoint(aTimePointEnd, myLastTimePoint);
 
-	int x = ofGetWindowWidth() / 2 - myNoteImage[aColumn].getWidth() * 2 + myNoteImage[aColumn].getWidth() * aColumn;
+	int x = GetItemPosXbyColumn(aColumn);
 
 	int yBegin = ofGetWindowHeight() - int(screenTimePointBegin + 0.5f);
 	int yEnd = ofGetWindowHeight() - int(screenTimePointEnd + 0.5f);
 	
-	myHoldBodyImage.draw(x, yEnd + myNoteImage[aColumn].getHeight() / 2.f, myHoldBodyImage.getWidth(), (GetScreenTimePoint(aTimePointEnd, 0) - GetScreenTimePoint(aTimePointBegin, 0)));
+	EditorConfig::Skin::holdBodyImage.draw(x, yEnd + EditorConfig::Skin::noteImages[aColumn].getHeight() / 2.f, EditorConfig::Skin::holdBodyImage.getWidth(), (GetScreenTimePoint(aTimePointEnd, 0) - GetScreenTimePoint(aTimePointBegin, 0)));
 
-	myHoldCapImage.draw(x, yEnd - myHoldCapImage.getHeight() / 2.f);
+	EditorConfig::Skin::holdCapImage.draw(x, yEnd - EditorConfig::Skin::holdCapImage.getHeight() / 2.f);
 
-	myNoteImage[aColumn].draw(x, yBegin);
+	EditorConfig::Skin::noteImages[aColumn].draw(x, yBegin);
 }
 
 
@@ -331,7 +323,7 @@ void NoteHandler::DrawRoutine(NoteData* aTimeObject, float aTimePoint)
 {
 	int column = aTimeObject->column;
 
-	aTimeObject->x = ofGetWindowWidth() / 2 - myNoteImage[column].getWidth() * 2 + myNoteImage[column].getWidth() * column;
+	aTimeObject->x = GetItemPosXbyColumn(column);
 	aTimeObject->y = ofGetWindowHeight() - int(aTimePoint + 0.5f);
 
 	switch (aTimeObject->noteType)
@@ -351,7 +343,7 @@ void NoteHandler::DrawRoutine(NoteData* aTimeObject, float aTimePoint)
 
 	case NoteType::Note:
 
-		myNoteImage[column].draw(aTimeObject->x, aTimeObject->y);
+		EditorConfig::Skin::noteImages[column].draw(aTimeObject->x, aTimeObject->y);
 
 		break;
 
@@ -363,7 +355,7 @@ void NoteHandler::DrawRoutine(NoteData* aTimeObject, float aTimePoint)
 	}
 
 	if (aTimeObject->selected)
-		mySelectedImage.draw(aTimeObject->x, aTimeObject->y);
+		EditorConfig::Skin::selectImage.draw(aTimeObject->x, aTimeObject->y);
 }
 
 void NoteHandler::VisibleHoldDrawRoutine(double aTimePoint)
@@ -373,9 +365,9 @@ void NoteHandler::VisibleHoldDrawRoutine(double aTimePoint)
 		float y = ofGetWindowHeight() - GetScreenTimePoint(hold.first->timePoint, aTimePoint);
 		float yParent = ofGetWindowHeight() - GetScreenTimePoint(hold.first->relevantNote->timePoint, aTimePoint);
 
-		myHoldCapImage.draw(hold.first->x, yParent - myHoldCapImage.getHeight() / 2.f);
+		EditorConfig::Skin::holdCapImage.draw(hold.first->x, yParent - EditorConfig::Skin::holdCapImage.getHeight() / 2.f);
 		
-		myHoldBodyImage.draw(hold.second->x, y + myNoteImage[hold.first->column].getHeight() / 2.f, myHoldBodyImage.getWidth(), (GetScreenTimePoint(hold.second->timePoint, 0) - GetScreenTimePoint(hold.second->relevantNote->timePoint, 0)));
+		EditorConfig::Skin::holdBodyImage.draw(hold.second->x, y + EditorConfig::Skin::noteImages[hold.first->column].getHeight() / 2.f, EditorConfig::Skin::holdBodyImage.getWidth(), (GetScreenTimePoint(hold.second->timePoint, 0) - GetScreenTimePoint(hold.second->relevantNote->timePoint, 0)));
 		
 		if (yParent > ofGetWindowHeight() || y < 0)
 		{
@@ -391,6 +383,11 @@ void NoteHandler::VisibleHoldDrawRoutine(double aTimePoint)
 	myVisibleHoldsToRemove.clear();
 }
 
+int NoteHandler::GetItemPosXbyColumn(int aColumn)
+{
+	return ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2 + EditorConfig::Skin::noteImages[aColumn].getWidth() * aColumn;
+}
+
 void NoteHandler::Draw(double aTimePoint)
 {
 	if (myObjectData == nullptr)
@@ -400,7 +397,7 @@ void NoteHandler::Draw(double aTimePoint)
 
 	TimeFieldHandlerBase<NoteData>::Draw(aTimePoint);
 
-	myHitLineImage.draw(ofGetWindowWidth() / 2 - myNoteImage[0].getWidth() * 2, ofGetWindowHeight() - EditorConfig::hitLinePosition /*+ myNoteImage[0].getHeight()*/ );
+	myHitLineImage.draw(ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2, ofGetWindowHeight() - EditorConfig::hitLinePosition, EditorConfig::fieldWidth, myHitLineImage.getHeight());
 }
 
 void NoteHandler::DrawPreviewBox(double aTimePoint, float aMouseY)
@@ -430,6 +427,6 @@ void NoteHandler::DrawPreviewBox(double aTimePoint, float aMouseY)
 void NoteHandler::DrawNoteFieldBackground()
 {
 	ofSetColor(0, 0, 0, 216);
-	ofDrawRectangle(ofGetWindowWidth() / 2 - myNoteImage[0].getWidth() * 2 - 32, 0.f, 1.f, myNoteImage[0].getWidth() * 4 + 64, ofGetWindowHeight());
+	ofDrawRectangle(ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2 - 32, 0.f, 1.f, EditorConfig::fieldWidth + 64, ofGetWindowHeight());
 	ofSetColor(255, 255, 255, 255);
 }

@@ -1,6 +1,8 @@
 #pragma once
 
-#include "../ChartResourceHandler/ChartResourceHandler.h"
+#include "ResourceManagement/ChartResourceHandler.h"
+#include "ResourceManagement/SkinHandler.h"
+
 #include "SongHandler.h"
 #include "EditHandler.h"
 
@@ -94,6 +96,8 @@ private:
 	int GetScreenTimePoint(float aY);
 
 	ChartResourceHandler myChartResourceHandler;
+	SkinHandler mySkinHandler;
+
 	SongHandler mySongTimeHandler;
 	NoteHandler myNoteHandler;
 	BPMLineHandler myBPMLineHandler;

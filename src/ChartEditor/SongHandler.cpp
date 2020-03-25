@@ -29,7 +29,7 @@ void SongHandler::Init(std::string aPath, double aSyncThreshold)
 	BASS_Init(myDevice, myFreq, 0, 0, NULL);
 
 	myStreamHandle = BASS_FX_TempoCreate(BASS_StreamCreateFile(FALSE, aPath.c_str(), 0, 0, BASS_STREAM_DECODE | BASS_STREAM_PRESCAN), BASS_FX_FREESOURCE);
-
+	
 	auto error = BASS_ErrorGetCode();
 	if (error != 0)
 	{
@@ -40,6 +40,9 @@ void SongHandler::Init(std::string aPath, double aSyncThreshold)
 
 	BASS_ChannelPlay(myStreamHandle, FALSE);
 	BASS_ChannelPause(myStreamHandle);
+
+	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO_OPTION_SEQUENCE_MS, 50);
+	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO_OPTION_SEEKWINDOW_MS, 8);
 
 	myIsPausing = true;
 }
@@ -130,8 +133,17 @@ void SongHandler::ResetSpeed()
 	BASS_CHANNELINFO info;
 	BASS_ChannelGetInfo(myStreamHandle, &info);
 
-	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_FREQ, float(info.freq) * mySpeed);
-	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, 0);
+
+	if (usePitch == true)
+	{
+		BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_FREQ, float(info.freq) * mySpeed);
+		BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, 0);
+	}
+	else
+	{
+		BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, (mySpeed - 1.f) * 100.f);
+	}
+
 }
 
 void SongHandler::SongJumpAmount(double aSongJumpAmount)
@@ -172,10 +184,17 @@ void SongHandler::IncreaseSpeed()
 	
 	BASS_CHANNELINFO info;
 	BASS_ChannelGetInfo(myStreamHandle, &info);
-	
-	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_FREQ, float(info.freq) * mySpeed);
-	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, 0);
-	
+
+	if (usePitch == true)
+	{
+		BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_FREQ, float(info.freq) * mySpeed);
+		BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, 0);
+	}
+	else
+	{
+		BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, (mySpeed - 1.f) * 100.f);
+	}
+
 	PUSH_NOTIFICATION(std::string("Playback Speed: ") + std::to_string(mySpeed));
 }
 
@@ -189,8 +208,15 @@ void SongHandler::DecreaseSpeed()
 	BASS_CHANNELINFO info;
 	BASS_ChannelGetInfo(myStreamHandle, &info);
 
-	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_FREQ, float(info.freq) * mySpeed);
-	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, 0);
+	if (usePitch == true)
+	{
+		BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_FREQ, float(info.freq) * mySpeed);
+		BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, 0);
+	}
+	else
+	{
+		BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, (mySpeed - 1.f) * 100.f);
+	}
 
 	PUSH_NOTIFICATION(std::string("Playback Speed: ") + std::to_string(mySpeed));
 }
@@ -207,7 +233,7 @@ void SongHandler::DrawWaveFormSliceAtIndex(int aIndex)
 
 void SongHandler::GenerateWaveForm(std::string aPath)
 {
-	HSTREAM decoder = BASS_StreamCreateFile(FALSE, aPath.c_str(), 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_DECODE); // create a stream from the file
+	HSTREAM decoder = BASS_StreamCreateFile(FALSE, aPath.c_str(), 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_DECODE); 
 
 	if (myWaveFormData != nullptr)
 	{
@@ -222,9 +248,9 @@ void SongHandler::GenerateWaveForm(std::string aPath)
 
 	myWaveFormStructure.clear();
 
-	mySongByteLength = BASS_ChannelGetLength(decoder, BASS_POS_BYTE); // get byte length
-	myWaveFormData = (float*)std::malloc(mySongByteLength); // allocate a buffer for the data
-	mySongByteLength = BASS_ChannelGetData(decoder, myWaveFormData, mySongByteLength); // decode the stream into the buffer
+	mySongByteLength = BASS_ChannelGetLength(decoder, BASS_POS_BYTE);
+	myWaveFormData = (float*)std::malloc(mySongByteLength); 
+	mySongByteLength = BASS_ChannelGetData(decoder, myWaveFormData, mySongByteLength);
 
 	if (myWaveFormData == nullptr)
 		return void();
@@ -325,6 +351,23 @@ void SongHandler::ShowPlaybackRateControls()
 	ImGui::SetWindowPos({ 8, ofGetWindowHeight() - ImGui::GetWindowHeight() - 16 - 64 });
 
 	ImGui::End();
+}
+
+void SongHandler::UpdateRateOption()
+{
+	BASS_CHANNELINFO info;
+	BASS_ChannelGetInfo(myStreamHandle, &info);
+
+	if (usePitch == true)
+	{
+		BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_FREQ, float(info.freq) * mySpeed);
+		BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, 0);
+	}
+	else
+	{
+		BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_FREQ, float(info.freq) * 1.f);
+		BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO, (mySpeed - 1.f) * 100.f);
+	}
 }
 
 void SongHandler::TryTimingSync()

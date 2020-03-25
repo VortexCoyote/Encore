@@ -1,6 +1,8 @@
 #include "BPMLineHandler.h"
 #include "imgui.h"
 
+#include <algorithm>
+
 #include "../NotificationSystem.h"
 
 void BPMLineHandler::ShowBeatDivisionControls()
@@ -138,10 +140,10 @@ void BPMLineHandler::Update()
 void BPMLineHandler::DrawRoutine(BPMData* aTimeObject, float aTimePoint)
 {
 	//bpm line
-	int x = ofGetWindowWidth() / 2 - 64 * 2;
+	int x = ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2;
 	int y = ofGetWindowHeight() - aTimePoint + 64;
 
-	int width = 64 * 4;
+	int width = EditorConfig::fieldWidth;
 	int height = 2;
 
 	ofSetColor(255, 255, 255, 255);
@@ -223,10 +225,10 @@ void BPMLineHandler::Draw(double aTimePoint)
 
 		for (unsigned int bpmLineIndex = 0; bpmLineIndex < myVisibleObjects.size() - 1; bpmLineIndex++ )
 		{
-			int x = ofGetWindowWidth() / 2 - 64 * 2;
+			int x = ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2;
 			int y = ofGetWindowHeight() - GetScreenTimePoint(myVisibleObjects[bpmLineIndex]->timePoint, aTimePoint) + 64;
 
-			int width = 64 * 4;
+			int width = EditorConfig::fieldWidth;
 			int height = 2;
 
 			int lineY = y;
