@@ -5,6 +5,7 @@
 
 #include "SongHandler.h"
 #include "EditHandler.h"
+#include "MiniMap.h"
 
 #include "TimeFieldHandlers/NoteHandler.h"
 #include "TimeFieldHandlers/BPMLineHandler.h"
@@ -84,7 +85,6 @@ public:
 private:
 
 	void MenuBar();
-	void TimeLine();
 	void LoadChartFromDirectory();
 	void SetSelectedChart(ChartData* aChartData);
 
@@ -104,6 +104,8 @@ private:
 	BPMLineHandler myBPMLineHandler;
 	EditHandler myEditHandler;
 
+	MiniMap myMiniMap;
+
 	ChartSet* mySelectedChartSet = nullptr;
 	ChartData* mySelectedChart	 = nullptr;
 
@@ -112,7 +114,6 @@ private:
 
 	std::string myLoadedChartDirectory = "";
 
-	float myTimeLine		= 0.f;
 	float myPreviewTimeLine = 0.f;
 	float myZoom			= 1.f;
 

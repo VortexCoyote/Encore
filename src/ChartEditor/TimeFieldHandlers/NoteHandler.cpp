@@ -164,15 +164,6 @@ void NoteHandler::DeleteNoteByPointer(NoteData* aNotePointer)
 			myObjectData->erase(noteToDelete);
 			myObjectData->erase(std::find(myObjectData->begin(), myObjectData->end(), note->relevantNote));
 
-			auto begin = std::find(myVisibleObjects.begin(), myVisibleObjects.end(), note);
-			auto end = std::find(myVisibleObjects.begin(), myVisibleObjects.end(), note->relevantNote);
-			
-			if (begin != myVisibleObjects.end())
-				myVisibleObjects.erase(begin);
-
-			if (end != myVisibleObjects.end())
-				myVisibleObjects.erase(end);
-
 			if (note->hasMoved == false)
 			{
 				delete note->relevantNote;

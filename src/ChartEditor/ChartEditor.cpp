@@ -49,6 +49,7 @@ void ChartEditor::Update()
 		myFreePlace = true;*/
 
 	mySongTimeHandler.Update();
+
 	myEditHandler.SetCursorInput({ float(myMouseX), float(myMouseY) });
 	myEditHandler.SetVisibleItems(&(myNoteHandler.GetVisibleNotes()));
 	myEditHandler.Update(mySongTimeHandler.GetCurrentTimeS());
@@ -57,7 +58,7 @@ void ChartEditor::Update()
 	myBPMLineHandler.ShowBeatDivisionControls();
 	mySongTimeHandler.ShowPlaybackRateControls();
 
-	TimeLine();
+	myMiniMap.Update();
 }
 
 void ChartEditor::Draw()
@@ -84,6 +85,7 @@ void ChartEditor::Draw()
 	myNoteHandler.Draw(mySongTimeHandler.GetCurrentTimeS());
 	myEditHandler.Draw();
 
+	myMiniMap.Draw();
 }
 
 void ChartEditor::TogglePlaying()
@@ -582,35 +584,6 @@ void ChartEditor::MenuBar()
 	}
 }
 
-void ChartEditor::TimeLine()
-{
-	ImGuiWindowFlags windowFlags = 0;
-	windowFlags |= ImGuiWindowFlags_NoTitleBar;
-	windowFlags |= ImGuiWindowFlags_NoMove;
-	windowFlags |= ImGuiWindowFlags_NoResize;
-	windowFlags |= ImGuiWindowFlags_NoCollapse;
-    windowFlags |= ImGuiWindowFlags_NoBackground;
-	windowFlags |= ImGuiWindowFlags_NoScrollbar;
-
-	bool open = true;
-	ImGui::Begin("TL", &open, windowFlags);
-
-	ImGui::SetWindowSize({0, float(ofGetWindowHeight()) - 16 });
-
-	ImGui::SetWindowPos({ float(ofGetWindowWidth() - 32.f - 16.f - 4.f),  20 });
-
-	if (ImGui::VSliderFloat("", { 32.f,  float(ofGetWindowHeight() - 40) /* - menuBarHeight * 2.f */ }, &myTimeLine, 0.0f, 1.0f, ""))
-	{
-		mySongTimeHandler.SetTimeNormalized(myTimeLine);
-	}
-	else
-	{
-		myTimeLine = mySongTimeHandler.GetCurrentTimeS() / mySongTimeHandler.GetSongLength();
-	}
-
-	ImGui::End();
-}
-
 void ChartEditor::LoadChartFromDirectory()
 {
 	ofFileDialogResult result = ofSystemLoadDialog("select chart folder", true);
@@ -649,6 +622,8 @@ void ChartEditor::SetSelectedChart(ChartData* aChartData)
 	
 	mySongTimeHandler.SetTimeNormalized(0.f);
 	mySongTimeHandler.ResetSpeed();
+
+	myMiniMap.Init(&myNoteHandler, &mySongTimeHandler);
 
 	//if (mySelectedChart->BPMPoints.empty() == true)
 		//myEditHandler.SetEditActionState(EditActionState::EditBPM);

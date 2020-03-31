@@ -24,6 +24,8 @@ public:
 
 	void ScheduleRewind();
 
+	std::vector<T*>* GetObjectData();
+
 protected:
 
 	virtual void DrawRoutine(T* aTimeObject, float aTimePoint) = 0;
@@ -171,4 +173,10 @@ template<class T>
 inline void TimeFieldHandlerBase<T>::ScheduleRewind()
 {
 	myScheduleRewind = true;
+}
+
+template<class T>
+inline std::vector<T*>* TimeFieldHandlerBase<T>::GetObjectData()
+{
+	return myObjectData;
 }
