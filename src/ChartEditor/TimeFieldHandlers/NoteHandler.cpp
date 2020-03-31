@@ -15,6 +15,8 @@ NoteHandler::NoteHandler()
 	myVisibleObjects.reserve(100000);
 
 	myPreviewBuffer.allocate(ofGetWindowWidth(), ofGetWindowHeight(), GL_RGBA);
+
+	myAlwaysClearVisibles = true;
 }
 
 NoteHandler::~NoteHandler()
@@ -92,6 +94,14 @@ void NoteHandler::RemoveVisibleHold(NoteData* aNote)
 
 void NoteHandler::PlaceNote(int aColumn, int aTimePoint)
 {
+	for (auto visibleNote : myVisibleObjects)
+		if (visibleNote->column == aColumn
+			&& visibleNote->timePoint <= aTimePoint + 1
+			&& visibleNote->timePoint >= aTimePoint - 1)
+		{
+			return PUSH_NOTIFICATION_COLORED("Can't Place Duplicates!", ofColor(255, 25, 25, 255));
+		}
+
 	NoteData* note = new NoteData();
 
 	note->column = aColumn;
@@ -119,65 +129,7 @@ void NoteHandler::PlaceNote(int aColumn, int aTimePoint)
 
 void NoteHandler::DeleteNote(int aX, int aY)
 {
-	NoteData* note = GetHoveredNote(aX, aY);
-
-	if (note == nullptr)
-		return void();
-
-	auto noteToDelete = std::find(myObjectData->begin(), myObjectData->end(), note);
-
-	if (noteToDelete != myObjectData->end())
-	{
-		switch (note->noteType)
-		{
-		case NoteType::HoldBegin:
-		case NoteType::HoldEnd:
-		{
-			std::string message = "Deleted Hold [";
-			message += std::to_string(note->column + 1);
-			message += "] ";
-			message += std::to_string(note->relevantNote->timePoint);
-			message += "ms";
-
-			PUSH_NOTIFICATION(message);
-
-			RemoveVisibleHold(note);
-			RemoveVisibleHold(note->relevantNote);
-
-			UndoRedoHandler::GetInstance()->PushHistory(ActionType::Remove, { note });
-			
-			myObjectData->erase(noteToDelete);
-			myObjectData->erase(std::find(myObjectData->begin(), myObjectData->end(), note->relevantNote));
-
-			delete note->relevantNote;
-			delete note;
-		}
-			break;
-
-		case NoteType::Note:
-		{
-			std::string message = "Deleted Note [";
-			message += std::to_string(note->column + 1);
-			message += "] ";
-			message += std::to_string(note->timePoint);
-			message += "ms";
-
-			PUSH_NOTIFICATION(message);
-
-			UndoRedoHandler::GetInstance()->PushHistory(ActionType::Remove, { note });
-
-			myObjectData->erase(noteToDelete);
-			delete note;
-		}
-			break;
-
-		default:
-
-			PUSH_NOTIFICATION_DEBUG("Invalid NoteType");
-
-			break;
-		}
-	}
+	DeleteNoteByPointer(GetHoveredNote(aX, aY));
 }
 
 void NoteHandler::DeleteNoteByPointer(NoteData* aNotePointer)
@@ -212,8 +164,20 @@ void NoteHandler::DeleteNoteByPointer(NoteData* aNotePointer)
 			myObjectData->erase(noteToDelete);
 			myObjectData->erase(std::find(myObjectData->begin(), myObjectData->end(), note->relevantNote));
 
-			delete note->relevantNote;
-			delete note;
+			auto begin = std::find(myVisibleObjects.begin(), myVisibleObjects.end(), note);
+			auto end = std::find(myVisibleObjects.begin(), myVisibleObjects.end(), note->relevantNote);
+			
+			if (begin != myVisibleObjects.end())
+				myVisibleObjects.erase(begin);
+
+			if (end != myVisibleObjects.end())
+				myVisibleObjects.erase(end);
+
+			if (note->hasMoved == false)
+			{
+				delete note->relevantNote;
+				delete note;
+			}
 		}
 		break;
 
@@ -230,7 +194,9 @@ void NoteHandler::DeleteNoteByPointer(NoteData* aNotePointer)
 			UndoRedoHandler::GetInstance()->PushHistory(ActionType::Remove, { note });
 
 			myObjectData->erase(noteToDelete);
-			delete note;
+
+			if(note->hasMoved == false)
+				delete note;
 		}
 		break;
 
@@ -243,13 +209,24 @@ void NoteHandler::DeleteNoteByPointer(NoteData* aNotePointer)
 	}
 }
 
-void NoteHandler::PlaceHold(int acolumn, int aTimePoint, NoteData*& aHoldEndOut)
+bool NoteHandler::PlaceHold(int aColumn, int aTimePoint, NoteData*& aHoldEndOut)
 {
+	for (auto visibleNote : myVisibleObjects)
+		if (visibleNote->column == aColumn
+			&& visibleNote->timePoint <= aTimePoint + 1
+			&& visibleNote->timePoint >= aTimePoint - 1)
+		{
+			aHoldEndOut = nullptr;
+			PUSH_NOTIFICATION_COLORED("Can't Place Duplicates!", ofColor(255, 25, 25, 255));
+
+			return false;
+		}
+
 	NoteData* note = new NoteData();
 	NoteData* holdNote = new NoteData();
 
 	note->timePoint = aTimePoint;
-	note->column = acolumn;
+	note->column = aColumn;
 	note->noteType = NoteType::HoldBegin;
 
 	holdNote->timePoint = note->timePoint;
@@ -276,6 +253,8 @@ void NoteHandler::PlaceHold(int acolumn, int aTimePoint, NoteData*& aHoldEndOut)
 	message += "ms";
 
 	PUSH_NOTIFICATION(message);
+
+	return true;
 }
 
 std::unordered_map<NoteData*, NoteData*>* NoteHandler::GetVisibleHolds()
@@ -311,9 +290,10 @@ void NoteHandler::DrawHold(int aColumn, int aTimePointBegin, int aTimePointEnd)
 	int yBegin = ofGetWindowHeight() - int(screenTimePointBegin + 0.5f);
 	int yEnd = ofGetWindowHeight() - int(screenTimePointEnd + 0.5f);
 	
-	EditorConfig::Skin::holdBodyImage.draw(x, yEnd + EditorConfig::Skin::noteImages[aColumn].getHeight() / 2.f, EditorConfig::Skin::holdBodyImage.getWidth(), (GetScreenTimePoint(aTimePointEnd, 0) - GetScreenTimePoint(aTimePointBegin, 0)));
+	EditorConfig::Skin::holdCapImage.draw(x, yEnd);
 
-	EditorConfig::Skin::holdCapImage.draw(x, yEnd - EditorConfig::Skin::holdCapImage.getHeight() / 2.f);
+	EditorConfig::Skin::holdBodyImage.draw(x, yBegin + EditorConfig::Skin::noteImages[aColumn].getHeight() / 2,
+	EditorConfig::Skin::holdBodyImage.getWidth(), (GetScreenTimePoint(aTimePointBegin, 0) - GetScreenTimePoint(aTimePointEnd, 0)) + EditorConfig::Skin::noteImages[aColumn].getHeight() / 2);
 
 	EditorConfig::Skin::noteImages[aColumn].draw(x, yBegin);
 }
@@ -365,9 +345,10 @@ void NoteHandler::VisibleHoldDrawRoutine(double aTimePoint)
 		float y = ofGetWindowHeight() - GetScreenTimePoint(hold.first->timePoint, aTimePoint);
 		float yParent = ofGetWindowHeight() - GetScreenTimePoint(hold.first->relevantNote->timePoint, aTimePoint);
 
-		EditorConfig::Skin::holdCapImage.draw(hold.first->x, yParent - EditorConfig::Skin::holdCapImage.getHeight() / 2.f);
+		EditorConfig::Skin::holdCapImage.draw(hold.first->x, yParent);
 		
-		EditorConfig::Skin::holdBodyImage.draw(hold.second->x, y + EditorConfig::Skin::noteImages[hold.first->column].getHeight() / 2.f, EditorConfig::Skin::holdBodyImage.getWidth(), (GetScreenTimePoint(hold.second->timePoint, 0) - GetScreenTimePoint(hold.second->relevantNote->timePoint, 0)));
+		EditorConfig::Skin::holdBodyImage.draw(hold.second->x, y + EditorConfig::Skin::noteImages[hold.first->column].getHeight() / 2, 
+		EditorConfig::Skin::holdBodyImage.getWidth(), (GetScreenTimePoint(hold.second->timePoint, 0) - GetScreenTimePoint(hold.second->relevantNote->timePoint, 0)) + EditorConfig::Skin::noteImages[hold.first->column].getHeight() / 2);
 		
 		if (yParent > ofGetWindowHeight() || y < 0)
 		{
@@ -396,6 +377,21 @@ void NoteHandler::Draw(double aTimePoint)
 	VisibleHoldDrawRoutine(aTimePoint);
 
 	TimeFieldHandlerBase<NoteData>::Draw(aTimePoint);
+
+	if (showColumnLines == true)
+	{
+		ofSetColor(255, 255, 255, 64);
+		for (int column = 0; column < EditorConfig::keyAmount; column++)
+		{
+			ofDrawLine(GetItemPosXbyColumn(column), 0, GetItemPosXbyColumn(column), ofGetWindowHeight());
+		}
+
+		ofDrawLine(GetItemPosXbyColumn(EditorConfig::keyAmount - 1) + EditorConfig::Skin::noteImages[0].getWidth() , 0, GetItemPosXbyColumn(EditorConfig::keyAmount - 1) + EditorConfig::Skin::noteImages[0].getWidth(), ofGetWindowHeight());
+
+
+		ofSetColor(255, 255, 255, 255);
+	}
+
 
 	myHitLineImage.draw(ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2, ofGetWindowHeight() - EditorConfig::hitLinePosition, EditorConfig::fieldWidth, myHitLineImage.getHeight());
 }

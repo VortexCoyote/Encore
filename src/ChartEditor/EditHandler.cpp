@@ -35,7 +35,7 @@ void EditHandler::Update(double aCurrentTime)
 	if (myDragBox == true)
 		TryDragBoxSelect(aCurrentTime);
 
-	if (myMoveAllSelectedNotes == true)
+	if (myMoveAllSelectedNotes == true || myPastePreview == true)
 		TryMoveSelectedNotes(aCurrentTime);
 }
 
@@ -43,15 +43,17 @@ void EditHandler::Draw()
 {
 	if (myCursorState == EditActionState::EditBPM)
 	{
+		ofSetColor(255, 0, 255, 255);
+		ofDrawRectangle(ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2 - 32, GetSnappedCursorPosition().y, EditorConfig::fieldWidth + 32 * 2, 4 );
 		ofSetColor(255, 255, 255, 255);
-		ofDrawRectangle(ofGetWindowWidth() / 2 - 64 * 2 - 32, GetSnappedCursorPosition().y, 64 * 4 + 32 * 2, 4 );
 
+		
 		return void();
 	}
 
 	EditorConfig::Skin::selectImage.draw(GetSnappedCursorPosition() - ofVec2f(0, 64));
 
-	if (myDraggableItem != nullptr)
+	if (myDraggableItem != nullptr && myPastePreview == false)
 	{
 		ofSetColor(32, 255, 32, 255);
 
@@ -233,22 +235,47 @@ void EditHandler::TryDeleteSelectedItems()
 
 void EditHandler::TryFlipSelectedItemsHorizonally()
 {
+	bool flipped = false;
+
+	if (myPastePreview == false)
+	{
+		std::vector<NoteData*> notesToPushToHistory;
+
+		for (auto item : mySelectedItems)
+		{
+			if (item.first->selected == false)
+				continue;
+
+			notesToPushToHistory.push_back(item.first);
+		}
+
+		UndoRedoHandler::GetInstance()->PushHistory(ActionType::Move, notesToPushToHistory);
+	}
+
 	for (auto note : mySelectedItems)
 	{
 		if (note.first->selected == false)
 			continue;
 
 		note.first->column = 3 - note.first->column;
+		note.first->hasMoved = true;
+
+		flipped = true;
 	}
+
+	myNoteHandler->ScheduleRewind();
+
+	if (flipped == true)
+		PUSH_NOTIFICATION("Flipped Horizontally");
 }
 
 void EditHandler::ClickAction(int aX, int aY)
 {	
-	if (ImGui::GetIO().WantCaptureMouse == true)
-		return void();
-
 	if (myPastePreview == true)
+	{
 		PlacePaste();
+		return void();
+	}
 
 	NoteData* potentialDragNote = myNoteHandler->GetHoveredNote(aX, aY);
 	if (potentialDragNote != nullptr)
@@ -268,16 +295,13 @@ void EditHandler::ClickAction(int aX, int aY)
 		return void();
 	}
 
-	for (auto note : mySelectedItems)
-		note.first->selected = false;
-
-	mySelectedItems.clear();
+	ResetSelection();
 
 	myDragBox = true;
 	myAnchoredDragPoint = { float(aX),float(aY) };
 	myUpdatedDragPoint = { float(aX), float(aY) };
 
-	myAnchoredTimePoint = TimeFieldHandlerBase<NoteData>::GetTimeFromScreenPoint(ofGetScreenHeight() - myAnchoredDragPoint.y, mySavedTimeS);
+	myAnchoredTimePoint = TimeFieldHandlerBase<NoteData>::GetTimeFromScreenPoint(ofGetWindowHeight() - myAnchoredDragPoint.y, mySavedTimeS);
 }
 
 void EditHandler::DragAction(int aX, int aY)
@@ -302,11 +326,6 @@ void EditHandler::ReleaseAction(int aX, int aY)
 EditActionState EditHandler::GetEditActionState()
 {
 	return myCursorState;
-}
-
-void EditHandler::ClearSelectedItems() 
-{
-	mySelectedItems.clear();
 }
 
 int EditHandler::GetColumn(int aX)
@@ -337,6 +356,9 @@ int EditHandler::GetColumn(int aX)
 
 void EditHandler::Copy()
 {
+	for (auto item : myClipBoard)
+		delete item;
+	
 	myClipBoard.clear();
 
 	for (auto item : mySelectedItems)
@@ -344,19 +366,64 @@ void EditHandler::Copy()
 		if (item.first->selected == false)
 			continue;
 
-		myClipBoard.push_back(item.first);
+		switch (item.first->noteType)
+		{
+		case NoteType::HoldBegin:
+		{
+			NoteData* newNote = new NoteData();
+			*newNote = *item.first;
+
+			NoteData* newHoldEnd = new NoteData();
+			*newHoldEnd = *item.first->relevantNote;
+
+			newNote->relevantNote = newHoldEnd;
+			newHoldEnd->relevantNote = newNote;
+
+			myClipBoard.push_back(newHoldEnd);
+			myClipBoard.push_back(newNote);
+		}
+			break;
+
+		case NoteType::Note:
+		{
+			NoteData* newNote = new NoteData();
+			*newNote = *item.first;
+
+			myClipBoard.push_back(newNote);
+		}
+			break;
+		default:
+			break;
+		}
 	}
+
+	std::sort(myClipBoard.begin(), myClipBoard.end(), [](const auto& lhs, const auto& rhs)
+	{
+		return lhs->timePoint < rhs->timePoint;
+	});
+
 }
 
 void EditHandler::Paste()
 {
 	if(myClipBoard.size() > 0)
 		myPastePreview = true;
+
+	ResetSelection();
+
+	for (auto item : myClipBoard)
+	{
+		item->selected = true;
+		mySelectedItems[item] = item;
+	}
 }
 
 void EditHandler::PlacePaste()
 {
 	myPastePreview = false;
+	myDraggableItem = nullptr;
+
+	ResetSelection();
 
 	int cursorTimePoint = myBPMLineHandler->GetClosestTimePoint(myCursorPosition.y);
 
@@ -378,11 +445,12 @@ void EditHandler::PlacePaste()
 		case NoteType::HoldBegin:
 		{
 			NoteData* holdEnd;
-			myNoteHandler->PlaceHold(item->column, cursorTimePoint + deltaTimePoint, holdEnd);
+			if (myNoteHandler->PlaceHold(item->column, cursorTimePoint + deltaTimePoint, holdEnd) == true)
+			{
+				holdEnd->timePoint = cursorTimePoint + (item->relevantNote->timePoint - minTimePoint);
 
-			holdEnd->timePoint = cursorTimePoint + (item->relevantNote->timePoint - minTimePoint);
-
-			UndoRedoHandler::GetInstance()->PushHistory(ActionType::Place, { holdEnd->relevantNote, holdEnd });
+				UndoRedoHandler::GetInstance()->PushHistory(ActionType::Place, { holdEnd->relevantNote, holdEnd });
+			}
 		}
 			break;
 
@@ -400,7 +468,7 @@ void EditHandler::PlacePaste()
 
 void EditHandler::TryDragBoxSelect(double aCurrentTime)
 {
-	myAnchoredDragPoint.y = ofGetScreenHeight() - TimeFieldHandlerBase<NoteData>::GetScreenTimePoint(myAnchoredTimePoint, aCurrentTime);
+	myAnchoredDragPoint.y = ofGetWindowHeight() - TimeFieldHandlerBase<NoteData>::GetScreenTimePoint(myAnchoredTimePoint, aCurrentTime);
 
 	ofRectangle dragBoxRect;
 
@@ -415,9 +483,11 @@ void EditHandler::TryDragBoxSelect(double aCurrentTime)
 		case NoteType::HoldBegin:
 		case NoteType::HoldEnd:
 		{
-			note = { float(visibleNote->x), float(ofGetWindowHeight() - int(TimeFieldHandlerBase<NoteData>::GetScreenTimePoint(visibleNote->timePoint, aCurrentTime) + 0.5)), 64.f, 64.f };
+			note = { float(visibleNote->x), float(ofGetWindowHeight() - int(TimeFieldHandlerBase<NoteData>::GetScreenTimePoint(visibleNote->timePoint, aCurrentTime) + 0.5)),  
+					 EditorConfig::Skin::noteImages->getWidth(), EditorConfig::Skin::noteImages->getHeight() };
 
-			ofRectangle note2 = { float(visibleNote->relevantNote->x), float(ofGetWindowHeight() - int(TimeFieldHandlerBase<NoteData>::GetScreenTimePoint(visibleNote->relevantNote->timePoint, aCurrentTime) + 0.5)), 64.f, 64.f };
+			ofRectangle note2 = { float(visibleNote->relevantNote->x), float(ofGetWindowHeight() - int(TimeFieldHandlerBase<NoteData>::GetScreenTimePoint(visibleNote->relevantNote->timePoint, aCurrentTime) + 0.5)),  
+								  EditorConfig::Skin::noteImages->getWidth(), EditorConfig::Skin::noteImages->getHeight() };
 
 			if (dragBoxRect.intersects(note) == true || dragBoxRect.intersects(note2) == true)
 			{
@@ -439,7 +509,7 @@ void EditHandler::TryDragBoxSelect(double aCurrentTime)
 
 		case NoteType::Note:
 		{
-			note = { float(visibleNote->x), float(visibleNote->y), 64.f, 64.f };
+			note = { float(visibleNote->x), float(ofGetWindowHeight() - int(TimeFieldHandlerBase<NoteData>::GetScreenTimePoint(visibleNote->timePoint, aCurrentTime) + 0.5)), EditorConfig::Skin::noteImages->getWidth(), EditorConfig::Skin::noteImages->getHeight() };
 
 			if (dragBoxRect.intersects(note) == true)
 			{
@@ -470,14 +540,35 @@ void EditHandler::TryMoveSelectedNotes(double aCurrentTime)
 	if (myDraggableItem == nullptr)
 		return void();
 
+	bool hasMoved = false;
+
 	int savedTimePoint = myDraggableItem->timePoint;
 	int deltaTimePoint = myBPMLineHandler->GetClosestTimePoint(myCursorPosition.y) - savedTimePoint;
 
-	int minColumn = 4;
+	int minColumn = EditorConfig::keyAmount;
 	int maxColumn = -1;
 
 	int savedColumn = myDraggableItem->column;
 	int deltaColumn = GetColumn(myCursorPosition.x) - savedColumn;
+
+	if ((deltaColumn != 0 || deltaTimePoint != 0) && myPastePreview == false)
+	{
+		std::vector<NoteData*> notesToPushToHistory;
+
+		for (auto item : mySelectedItems)
+		{
+			if (item.first->selected == false)
+				continue;
+
+			item.first->hasMoved = true;
+			if (mySelectedItems.size() == 1 && (item.first->noteType == NoteType::HoldBegin || item.first->noteType == NoteType::HoldEnd))
+				item.first->relevantNote->hasMoved = true;
+
+			notesToPushToHistory.push_back(item.first);
+		}
+
+		UndoRedoHandler::GetInstance()->PushHistory(ActionType::Move, notesToPushToHistory);
+	}
 
 	for (auto item : mySelectedItems)
 	{
@@ -490,13 +581,10 @@ void EditHandler::TryMoveSelectedNotes(double aCurrentTime)
 		maxColumn = std::max(maxColumn, item.first->column);
 
 		myNoteHandler->AddToVisibleObjects(item.first);
-		if (item.first->noteType == NoteType::HoldBegin || item.first->noteType == NoteType::HoldEnd)
-		{
-			(*myNoteHandler->GetVisibleHolds())[item.first] = item.first;
-		}
 	}
 
-	if (minColumn + deltaColumn >= 0 && maxColumn + deltaColumn <= 3)
+
+	if (minColumn + deltaColumn >= 0 && maxColumn + deltaColumn <= EditorConfig::keyAmount - 1)
 	{
 		for (auto item : mySelectedItems)
 		{
@@ -507,6 +595,7 @@ void EditHandler::TryMoveSelectedNotes(double aCurrentTime)
 		}
 	}
 
+
 	myNoteHandler->SortAllNotes();
 	myNoteHandler->ScheduleRewind();
 }
@@ -514,15 +603,13 @@ void EditHandler::TryMoveSelectedNotes(double aCurrentTime)
 void EditHandler::DrawPastePreview()
 {
 	//could be optimized by calculating the minTimePoint once
-
-	int cursorTimePoint = myBPMLineHandler->GetClosestTimePoint(myCursorPosition.y);
-
 	int minTimePoint = INT_MAX;
 
 	for (auto item : myClipBoard)
 	{
-		int deltaTimePoint = cursorTimePoint - item->timePoint;
-
+		if (item->timePoint < minTimePoint)
+			myDraggableItem = item;
+		
 		minTimePoint = std::min(minTimePoint, item->timePoint);
 	}
 
@@ -530,20 +617,14 @@ void EditHandler::DrawPastePreview()
 
 	for (auto item : myClipBoard)
 	{
-		int deltaTimePoint = item->timePoint - minTimePoint;
-
 		switch (item->noteType)
 		{
 			case NoteType::HoldBegin:
-			{
-				int deltaEndTimePoint = item->relevantNote->timePoint - minTimePoint;
-				myNoteHandler->DrawHold(item->column, cursorTimePoint + deltaTimePoint, 
-													  cursorTimePoint + deltaEndTimePoint);
-			}
+				myNoteHandler->DrawHold(item->column, item->timePoint, item->relevantNote->timePoint);	
 				break;
 
 			case NoteType::Note:
-				myNoteHandler->DrawNote(item->column, cursorTimePoint + deltaTimePoint);
+				myNoteHandler->DrawNote(item->column, item->timePoint);
 				break;
 
 			default:
@@ -552,4 +633,12 @@ void EditHandler::DrawPastePreview()
 	}
 
 	ofSetColor(255, 255, 255, 255);
+}
+
+void EditHandler::ResetSelection()
+{
+	for (auto note : mySelectedItems)
+		note.first->selected = false;
+
+	mySelectedItems.clear();
 }

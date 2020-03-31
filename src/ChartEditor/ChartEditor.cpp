@@ -34,14 +34,19 @@ void ChartEditor::Load()
 void ChartEditor::Update()
 {
 	MenuBar();
+
 	DoNewChartSetWindow();
 	DoNewDifficultyWindow();
+	DoShortcutsWindow();
 
 	NotificationSystem::GetInstance()->Update();
 
 	//null check shield
 	if (mySelectedChart == nullptr)
 		return void();
+
+	/*if (mySelectedChart->BPMPoints.empty() == true)
+		myFreePlace = true;*/
 
 	mySongTimeHandler.Update();
 	myEditHandler.SetCursorInput({ float(myMouseX), float(myMouseY) });
@@ -329,9 +334,8 @@ void ChartEditor::TryPlaceHold(int aX, int aY)
 	if (IsCursorWithinBounds(aX, aY) == false)
 		return void();
 
-	myNoteHandler.PlaceHold(myEditHandler.GetColumn(aX), GetScreenTimePoint(aY), myDraggableHoldEnd);
-	
-	myHoldDrag = true;
+	if(myNoteHandler.PlaceHold(myEditHandler.GetColumn(aX), GetScreenTimePoint(aY), myDraggableHoldEnd) == true)
+		myHoldDrag = true;
 }
 
 void ChartEditor::TryDragHold(int aX, int aY)
@@ -347,15 +351,28 @@ void ChartEditor::TryReleaseHold(int aX, int aY)
 	if (myHoldDrag == false)
 		return void();
 
+	if (myDraggableHoldEnd->timePoint == myDraggableHoldEnd->relevantNote->timePoint)
+	{
+		UndoRedoHandler::GetInstance()->PushHistory(ActionType::Place, { myDraggableHoldEnd->relevantNote,  myDraggableHoldEnd });
+
+		int column = myDraggableHoldEnd->relevantNote->column;
+		int timePoint = myDraggableHoldEnd->relevantNote->timePoint;
+
+		myNoteHandler.DeleteNoteByPointer(myDraggableHoldEnd);
+		myNoteHandler.PlaceNote(column, timePoint);
+
+		myHoldDrag = false;
+		myDraggableHoldEnd = nullptr;
+
+		return void();
+	}
+
 	UndoRedoHandler::GetInstance()->PushHistory(ActionType::Place, { myDraggableHoldEnd->relevantNote,  myDraggableHoldEnd });
 
 	myHoldDrag = false;
 	myDraggableHoldEnd = nullptr;
 
-	std::sort(mySelectedChart->noteData.begin(), mySelectedChart->noteData.end(), [](const auto& lhs, const auto& rhs)
-	{
-		return lhs->timePoint < rhs->timePoint;
-	});
+	myNoteHandler.SortAllNotes();
 }
 
 void ChartEditor::TryPlaceBPMLine(int aX, int aY)
@@ -363,7 +380,7 @@ void ChartEditor::TryPlaceBPMLine(int aX, int aY)
 	if (IsCursorWithinBounds(aX, aY) == false)
 		return void();
 
-	myBPMLineHandler.PlaceBPMLine(GetScreenTimePoint(aY));
+	myBPMLineHandler.PlaceBPMLine(GetScreenTimePoint(aY));		
 }
 
 void ChartEditor::TrySelectItem(int aX, int aY)
@@ -535,6 +552,16 @@ void ChartEditor::MenuBar()
 			if (ImGui::Checkbox("Use Pitched Rate", &mySongTimeHandler.usePitch))
 				mySongTimeHandler.UpdateRateOption();
 
+			if (ImGui::Checkbox("Show Column Lines", &myNoteHandler.showColumnLines));
+
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Help"))
+		{
+			if (ImGui::MenuItem("Shortcuts", "F1"))
+				myShowShortcuts = true;
+
 			ImGui::EndMenu();
 		}
 
@@ -611,7 +638,7 @@ void ChartEditor::SetSelectedChart(ChartData* aChartData)
 	mySkinHandler.LoadSkin(mySelectedChart->keyAmount);
 	EditorConfig::keyAmount = mySelectedChart->keyAmount;
 
-	myEditHandler.ClearSelectedItems();
+	myEditHandler.ResetSelection();
 	myBPMLineHandler.ClearAllCurrentBeatLines();
 
 	myNoteHandler.Init(&(mySelectedChart->noteData));
@@ -622,6 +649,9 @@ void ChartEditor::SetSelectedChart(ChartData* aChartData)
 	
 	mySongTimeHandler.SetTimeNormalized(0.f);
 	mySongTimeHandler.ResetSpeed();
+
+	//if (mySelectedChart->BPMPoints.empty() == true)
+		//myEditHandler.SetEditActionState(EditActionState::EditBPM);
 }
 
 void ChartEditor::DoNewChartSetWindow()
@@ -768,6 +798,8 @@ void ChartEditor::DoNewDifficultyWindow()
 	windowFlags |= ImGuiWindowFlags_NoScrollbar;
 	windowFlags |= ImGuiWindowFlags_AlwaysAutoResize;
 
+
+
 	bool open = true;
 	if (ImGui::BeginPopupModal("New Difficulty", &open, windowFlags))
 	{
@@ -831,6 +863,73 @@ void ChartEditor::DoNewDifficultyWindow()
 
 			myNewDifficultyPopup = false;
 		}
+
+		ImGui::SetWindowPos({ ofGetWindowWidth() / 2.f - ImGui::GetWindowSize().x / 2.f, ofGetWindowHeight() / 2.f - ImGui::GetWindowSize().y / 2.f });
+		ImGui::EndPopup();
+	}
+}
+
+void ChartEditor::DoShortcutsWindow()
+{
+	if (myShowShortcuts == true)
+	{
+		ImGui::OpenPopup("Shortcuts");
+	}
+	else
+	{
+		return void();
+	}
+
+	ImGuiWindowFlags windowFlags = 0;
+	windowFlags |= ImGuiWindowFlags_NoTitleBar;
+	windowFlags |= ImGuiWindowFlags_NoMove;
+	windowFlags |= ImGuiWindowFlags_NoResize;
+	//windowFlags |= ImGuiWindowFlags_NoCollapse;
+	//windowFlags |= ImGuiWindowFlags_NoBackground;
+	windowFlags |= ImGuiWindowFlags_NoScrollbar;
+	windowFlags |= ImGuiWindowFlags_AlwaysAutoResize;
+
+	ImGui::SetNextWindowSize({ 512, 192 });
+
+	bool open = true;
+	if (ImGui::BeginPopupModal("Shortcuts", &open, windowFlags))
+	{
+		ImGui::BeginColumns("Shortcut", 2);
+
+		ImGui::Text("Edit Mode");
+		ImGui::Text("Note Mode");
+		ImGui::Text("Hold Mode");
+		ImGui::Text("Timepoint Mode");
+
+		ImGui::Text("Scroll Through Time");
+		ImGui::Text("Playback Speed");
+		ImGui::Text("Zoom");
+		ImGui::Text("Change Snap");
+		ImGui::Text("Freeplace");
+		
+		ImGui::NextColumn();
+
+		ImGui::Text("1");
+		ImGui::Text("2");
+		ImGui::Text("3");
+		ImGui::Text("4");
+
+		ImGui::Text("SCROLL");
+		ImGui::Text("SHIFT+SCROLL");
+		ImGui::Text("CTRL+SCROLL");
+		ImGui::Text("ALT+SCROLL");
+		ImGui::Text("SHIFT");
+
+		ImGui::EndColumns();
+
+		ImGui::Spacing();
+		ImGui::Spacing();
+		ImGui::Separator();
+		ImGui::Spacing();
+		ImGui::Spacing();
+
+		if (ImGui::Button("Close"))
+			myShowShortcuts = false;
 
 		ImGui::SetWindowPos({ ofGetWindowWidth() / 2.f - ImGui::GetWindowSize().x / 2.f, ofGetWindowHeight() / 2.f - ImGui::GetWindowSize().y / 2.f });
 		ImGui::EndPopup();

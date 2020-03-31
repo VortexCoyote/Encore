@@ -1,6 +1,6 @@
 #include "ofApp.h"
 
-#include "BASS\bass.h"
+#include "BASS/bass.h"
 #include "GLFW/glfw3.h"
 
 //--------------------------------------------------------------
@@ -15,6 +15,8 @@ void ofApp::setup()
 	myChartEditor.Load();
 
 	ImGui::GetIO().IniFilename = nullptr;
+
+	ofSetEscapeQuitsApp(false);
 }
 
 //--------------------------------------------------------------
@@ -70,6 +72,9 @@ void ofApp::mouseDragged(int x, int y, int button) {
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
 	
+	if (ImGui::GetIO().WantCaptureMouse == true)
+		return void();
+
 	if (myChartEditor.ShouldBlockInput() == true)
 		return void();
 

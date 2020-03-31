@@ -32,6 +32,7 @@ protected:
 	double		 myLastTimePoint = 0.0;
 
 	bool myScheduleRewind = false;
+	bool myAlwaysClearVisibles = false;
 
 	std::vector<T*>* myObjectData = nullptr;
 	std::vector<T*> myVisibleObjects;
@@ -87,7 +88,10 @@ inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 	{
 		double noteTimePoint = GetScreenTimePoint((*myObjectData)[noteIndex]->timePoint, aTimePoint);
 
-		//render all visible notesb
+		if(myAlwaysClearVisibles == true)
+			myVisibleObjects.clear();
+
+		//render all visible notes
 		if (noteTimePoint >= 0)
 		{
 			myLastObjectIndex = noteIndex;

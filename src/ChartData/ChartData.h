@@ -41,13 +41,14 @@ struct NoteData : public TimeFieldObject
 
 	NoteData* relevantNote = nullptr;
 
-	bool selected = false;
-
 	int x = 0;
 	int y = 0;
 
 	int type = -1;
 	int hitSound = 0;
+
+	bool selected = false;
+	bool hasMoved = false;
 };
 
 struct ChartData

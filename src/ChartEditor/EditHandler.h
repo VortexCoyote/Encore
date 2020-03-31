@@ -49,14 +49,14 @@ public:
 
 	EditActionState GetEditActionState();
 
-	void ClearSelectedItems();
-
 	int GetColumn(int aX);
 
 	void Copy();
 	void Paste();
 
 	void PlacePaste();
+
+	void ResetSelection();
 
 private:
 

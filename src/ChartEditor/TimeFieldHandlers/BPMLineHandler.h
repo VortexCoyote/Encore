@@ -65,6 +65,5 @@ private:
 
 	BPMData* myBPMLineToDelete = nullptr;
 
-
 	float myBPMChangeValue = 0.01f;
 };

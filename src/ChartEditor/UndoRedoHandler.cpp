@@ -62,6 +62,8 @@ void UndoRedoHandler::PushHistory(ActionType aType, const std::vector<NoteData*>
 		savedNote.noteType = note->noteType;
 		savedNote.timePoint = note->timePoint;
 		savedNote.column = note->column;
+		savedNote.originalNote = note;
+		savedNote.wasMoved = note->hasMoved;
 
 		if (action.type == ActionType::Remove && (note->noteType == NoteType::HoldBegin || note->noteType == NoteType::HoldEnd))
 		{
@@ -69,6 +71,8 @@ void UndoRedoHandler::PushHistory(ActionType aType, const std::vector<NoteData*>
 			savedNote.relevantNote->noteType = note->relevantNote->noteType;
 			savedNote.relevantNote->column = note->relevantNote->column;
 			savedNote.relevantNote->timePoint = note->relevantNote->timePoint;
+			savedNote.relevantNote->originalNote = note->relevantNote;
+			savedNote.relevantNote->wasMoved = note->relevantNote->hasMoved;
 		}
 
 		action.relevantNotes.push_back(savedNote);
@@ -134,13 +138,20 @@ void UndoRedoHandler::DoAction(Action& aAction)
 			{
 			case NoteType::Note:
 			{
-				NoteData* newNote = new NoteData();
+				if (note.wasMoved == false)
+				{
+					NoteData* newNote = new NoteData();
 
-				newNote->noteType = note.noteType;
-				newNote->column = note.column;
-				newNote->timePoint = note.timePoint;
+					newNote->noteType = note.noteType;
+					newNote->column = note.column;
+					newNote->timePoint = note.timePoint;
 
-				myNoteData->push_back(newNote);
+					myNoteData->push_back(newNote);
+				}
+				else
+				{
+					myNoteData->push_back(note.originalNote);
+				}
 
 				PUSH_NOTIFICATION("Undid Note Deletion");
 
@@ -150,24 +161,32 @@ void UndoRedoHandler::DoAction(Action& aAction)
 			case NoteType::HoldBegin:
 			case NoteType::HoldEnd:
 			{
-				NoteData* hold1 = new NoteData();
-				NoteData* hold2 = new NoteData();
+				if (note.wasMoved == false)
+				{
+					NoteData* hold1 = new NoteData();
+					NoteData* hold2 = new NoteData();
 
-				hold1->noteType = note.noteType;
-				hold1->column = note.column;
-				hold1->timePoint = note.timePoint;
+					hold1->noteType = note.noteType;
+					hold1->column = note.column;
+					hold1->timePoint = note.timePoint;
 
-				hold2->noteType = note.relevantNote->noteType;
-				hold2->column = note.relevantNote->column;
-				hold2->timePoint = note.relevantNote->timePoint;
+					hold2->noteType = note.relevantNote->noteType;
+					hold2->column = note.relevantNote->column;
+					hold2->timePoint = note.relevantNote->timePoint;
 
-				hold1->relevantNote = hold2;
-				hold2->relevantNote = hold1;
+					hold1->relevantNote = hold2;
+					hold2->relevantNote = hold1;
 
-				myNoteData->push_back(hold2);
-				myNoteData->push_back(hold1);
+					myNoteData->push_back(hold2);
+					myNoteData->push_back(hold1);
 
-				delete note.relevantNote;
+					delete note.relevantNote;
+				}
+				else
+				{
+					myNoteData->push_back(note.originalNote);
+					myNoteData->push_back(note.originalNote->relevantNote);
+				}
 
 				PUSH_NOTIFICATION("Undid Hold Deletion");
 			}
@@ -182,17 +201,23 @@ void UndoRedoHandler::DoAction(Action& aAction)
 	break;
 
 	case ActionType::Move:
+		for (auto note : aAction.relevantNotes)
+		{
+			note.originalNote->column = note.column;
+			note.originalNote->timePoint = note.timePoint;
+			note.originalNote->hasMoved = false;
+		}
 
+		PUSH_NOTIFICATION("Undid Move Action");
 		break;
 
 	default:
 		break;
 	}
 
-	std::sort(myNoteData->begin(), myNoteData->end(), [](const auto& lhs, const auto& rhs)
-	{
-		return lhs->timePoint < rhs->timePoint;
-	});
+
+	myNoteHandler->SortAllNotes();
+	myNoteHandler->ScheduleRewind();
 }
 
 bool UndoRedoHandler::FindAndRemoveFromSavedNote(SavedNote aSavedNote)

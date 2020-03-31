@@ -11,6 +11,7 @@
 #include "EditorConfig.h"
 #include "NotificationSystem.h"
 
+
 SongHandler::SongHandler()
 {
 
@@ -41,8 +42,9 @@ void SongHandler::Init(std::string aPath, double aSyncThreshold)
 	BASS_ChannelPlay(myStreamHandle, FALSE);
 	BASS_ChannelPause(myStreamHandle);
 
-	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO_OPTION_SEQUENCE_MS, 50);
-	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO_OPTION_SEEKWINDOW_MS, 8);
+	//BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO_OPTION_USE_QUICKALGO, true);
+	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO_OPTION_SEQUENCE_MS, 32);
+	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO_OPTION_SEEKWINDOW_MS, 4);
 
 	myIsPausing = true;
 }
@@ -266,7 +268,6 @@ void SongHandler::GenerateWaveForm(std::string aPath)
 		surface->begin();
 		ofClear(255, 255, 255, 0);
 
-
 		bool first = true;
 		int time = -1;
 
@@ -310,6 +311,7 @@ void SongHandler::GenerateWaveForm(std::string aPath)
 				}
 			}
 		}
+
 		surface->end();
 
 		myWaveFormStructure.push_back({ surface, time });

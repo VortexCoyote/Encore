@@ -21,6 +21,9 @@ struct SavedNote
 	int column = -1;
 
 	SavedNote* relevantNote;
+	NoteData* originalNote;
+
+	bool wasMoved = false;
 };
 
 struct Action

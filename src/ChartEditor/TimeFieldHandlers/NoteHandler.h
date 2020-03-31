@@ -33,7 +33,7 @@ public:
 	void DeleteNote(int aX, int aY);
 	void DeleteNoteByPointer(NoteData* aNotePointer);
 
-	void PlaceHold(int aColumn, int aTimePoint, NoteData*& aHoldEndOut);
+	bool PlaceHold(int aColumn, int aTimePoint, NoteData*& aHoldEndOut);
 
 	std::unordered_map<NoteData*, NoteData*>* GetVisibleHolds();
 
@@ -41,6 +41,8 @@ public:
 
 	void DrawNote(int aColumn, int aTimePoint);
 	void DrawHold(int aColumn, int aTimePointBegin, int aTimePointEnd);
+
+	bool showColumnLines = false;
 
 private:
 

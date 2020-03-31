@@ -50,10 +50,9 @@ public:
 
 	void UpdateRateOption();
 
-	bool usePitch = false;
+	bool usePitch = true;
 
 private:
-
 
 	void DrawWaveFormSliceAtIndex(int aIndex);
 	void GenerateWaveForm(std::string aPath);

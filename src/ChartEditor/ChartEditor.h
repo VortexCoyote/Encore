@@ -90,6 +90,7 @@ private:
 
 	void DoNewChartSetWindow();
 	void DoNewDifficultyWindow();
+	void DoShortcutsWindow();
 
 	bool IsCursorWithinBounds(int aX, int aY);
 
@@ -125,4 +126,5 @@ private:
 
 	bool myNewChartSetPopup = false;
 	bool myNewDifficultyPopup = false; 
+	bool myShowShortcuts = false;
 };
