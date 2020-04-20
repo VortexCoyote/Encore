@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-#include "../NotificationSystem.h"
+#include "../Utilities/NotificationSystem.h"
 
 void BPMLineHandler::ShowBeatDivisionControls()
 {
@@ -140,7 +140,7 @@ void BPMLineHandler::Update()
 void BPMLineHandler::DrawRoutine(BPMData* aTimeObject, float aTimePoint)
 {
 	//bpm line
-	int x = ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2;
+	int x = EditorConfig::leftSidePosition;
 	int y = ofGetWindowHeight() - aTimePoint + 64;
 
 	int width = EditorConfig::fieldWidth;
@@ -225,7 +225,7 @@ void BPMLineHandler::Draw(double aTimePoint)
 
 		for (unsigned int bpmLineIndex = 0; bpmLineIndex < myVisibleObjects.size() - 1; bpmLineIndex++ )
 		{
-			int x = ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2;
+			int x = EditorConfig::leftSidePosition;
 			int y = ofGetWindowHeight() - GetScreenTimePoint(myVisibleObjects[bpmLineIndex]->timePoint, aTimePoint) + 64;
 
 			int width = EditorConfig::fieldWidth;

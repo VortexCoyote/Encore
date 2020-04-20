@@ -5,12 +5,12 @@
 
 #include "SongHandler.h"
 #include "EditHandler.h"
-#include "MiniMap.h"
+#include "Utilities/MiniMap.h"
 
 #include "TimeFieldHandlers/NoteHandler.h"
 #include "TimeFieldHandlers/BPMLineHandler.h"
 
-#include "NotificationSystem.h"
+#include "Utilities/NotificationSystem.h"
 
 class ChartEditor
 {
@@ -72,15 +72,16 @@ public:
 	void TryReleaseHold(int aX, int aY);
 	
 	void TryPlaceBPMLine(int aX, int aY);
-
 	void TrySelectItem(int aX, int aY);
-	void TryTimelinePreview(int aX, int aY);
 
 	void TrySaveCurrentChart();
 
 	void TryDeleteSelected();
 	void TryFlipSelected();
 	void TrySelectAll();
+
+	void ExportChart();
+	void OpenChartWithOsu();
 
 private:
 

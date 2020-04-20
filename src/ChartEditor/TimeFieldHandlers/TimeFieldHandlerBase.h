@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../ChartData/ChartData.h"
-#include "../EditorConfig.h"
+#include "../ResourceManagement/EditorConfig.h"
 
 
 #include "ofMain.h"
@@ -67,8 +67,6 @@ inline void TimeFieldHandlerBase<T>::Draw(double aTimePoint)
 	//handle rewinds
 	if (aTimePoint < myLastTimePoint || myScheduleRewind == true)
 	{
-		//std::cout << "yaaah, it's rewind time" << std::endl;
-
 		for (unsigned int rewindNoteIndex = myLastObjectIndex; rewindNoteIndex >= 0 && myObjectData->size() > 0; rewindNoteIndex--)
 		{
 			if (rewindNoteIndex > myObjectData->size() - 1)

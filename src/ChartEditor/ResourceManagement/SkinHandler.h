@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../EditorConfig.h"
+#include "EditorConfig.h"
 
 class SkinHandler
 {

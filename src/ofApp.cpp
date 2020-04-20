@@ -214,6 +214,9 @@ void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
 
 		if (key == GLFW_KEY_V)
 			myChartEditor.Paste();
+
+		if (key == GLFW_KEY_E)
+			myChartEditor.ExportChart();
 	}
 	else
 	{
@@ -252,6 +255,9 @@ void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
 
 	if (key == GLFW_KEY_4)
 		myChartEditor.SetEditMode(EditActionState::EditBPM);
+
+	if (key == GLFW_KEY_F5)
+		myChartEditor.OpenChartWithOsu();
 }
 
 void ofApp::keyReleased(ofKeyEventArgs& keyEvent)

@@ -41,7 +41,7 @@ void SongHandler::Init(std::string aPath, double aSyncThreshold)
 
 	BASS_ChannelPlay(myStreamHandle, FALSE);
 	BASS_ChannelPause(myStreamHandle);
-
+	
 	//BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO_OPTION_USE_QUICKALGO, true);
 	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO_OPTION_SEQUENCE_MS, 32);
 	BASS_ChannelSetAttribute(myStreamHandle, BASS_ATTRIB_TEMPO_OPTION_SEEKWINDOW_MS, 4);
@@ -230,7 +230,7 @@ void SongHandler::DrawWaveFormSliceAtIndex(int aIndex)
 	int textureHeight = float(myWaveFormSliceSize) * EditorConfig::scale;
 	int drawY = ofGetWindowHeight() - EditorConfig::hitLinePosition - float(deltaSliceTime) * EditorConfig::scale;
 
-	myWaveFormStructure[aIndex].surface->draw(ofGetWindowWidth() / 2 - 128, drawY, 256, textureHeight);
+	myWaveFormStructure[aIndex].surface->draw(EditorConfig::leftSidePosition + EditorConfig::fieldWidthHalf - 128, drawY, 256, textureHeight);
 }
 
 void SongHandler::GenerateWaveForm(std::string aPath)

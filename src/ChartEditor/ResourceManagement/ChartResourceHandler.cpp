@@ -10,7 +10,7 @@
 #include <sstream>
 #include <algorithm>
 
-#include "../NotificationSystem.h"
+#include "../Utilities/NotificationSystem.h"
 
 ChartResourceHandler::ChartResourceHandler()
 {

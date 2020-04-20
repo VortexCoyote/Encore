@@ -1,7 +1,7 @@
 #include "NoteHandler.h"
 
-#include "../NotificationSystem.h"
-#include "../UndoRedoHandler.h"
+#include "../Utilities/NotificationSystem.h"
+#include "../Utilities/UndoRedoHandler.h"
 
 #include "ofWindowSettings.h"
 #include "ofMain.h"
@@ -49,7 +49,7 @@ NoteData* NoteHandler::GetHoveredNote(int aX, int aY)
 		case NoteType::HoldBegin:
 		{
 			int column = note->column;
-			float x = ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2 + EditorConfig::Skin::noteImages[column].getWidth() * column;
+			float x = EditorConfig::leftSidePosition + EditorConfig::Skin::noteImages[column].getWidth() * column;
 			float y = ofGetWindowHeight() - note->visibleTimePoint;
 
 			if (aX > x && aX < x + EditorConfig::Skin::noteImages[column].getWidth() &&
@@ -357,7 +357,7 @@ void NoteHandler::VisibleHoldDrawRoutine(double aTimePoint)
 
 int NoteHandler::GetItemPosXbyColumn(int aColumn)
 {
-	return ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2 + EditorConfig::Skin::noteImages[aColumn].getWidth() * aColumn;
+	return EditorConfig::leftSidePosition + EditorConfig::Skin::noteImages[aColumn].getWidth() * aColumn;
 }
 
 void NoteHandler::Draw(double aTimePoint)
@@ -384,7 +384,7 @@ void NoteHandler::Draw(double aTimePoint)
 	}
 
 
-	myHitLineImage.draw(ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2, ofGetWindowHeight() - EditorConfig::hitLinePosition, EditorConfig::fieldWidth, myHitLineImage.getHeight());
+	myHitLineImage.draw(EditorConfig::leftSidePosition, ofGetWindowHeight() - EditorConfig::hitLinePosition, EditorConfig::fieldWidth, myHitLineImage.getHeight());
 }
 
 void NoteHandler::DrawPreviewBox(double aTimePoint, float aMouseY)
@@ -414,6 +414,6 @@ void NoteHandler::DrawPreviewBox(double aTimePoint, float aMouseY)
 void NoteHandler::DrawNoteFieldBackground()
 {
 	ofSetColor(0, 0, 0, 216);
-	ofDrawRectangle(ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2 - 32, 0.f, 1.f, EditorConfig::fieldWidth + 64, ofGetWindowHeight());
+	ofDrawRectangle(EditorConfig::leftSidePosition - EditorConfig::sideSpace, 0.f, 1.f, EditorConfig::fieldWidth + EditorConfig::sideSpace * 2.f, ofGetWindowHeight());
 	ofSetColor(255, 255, 255, 255);
 }

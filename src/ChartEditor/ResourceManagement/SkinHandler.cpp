@@ -26,4 +26,5 @@ void SkinHandler::LoadSkin(int aKeyMode)
 	EditorConfig::Skin::selectImage.loadImage(path + "selected.png");
 
 	EditorConfig::fieldWidth = EditorConfig::Skin::noteImages[0].getWidth() * aKeyMode;
+	EditorConfig::fieldWidthHalf = EditorConfig::fieldWidth / 2.f;
 }

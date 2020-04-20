@@ -9,7 +9,9 @@
 #include "../ImGuiExtra.h"
 #include "../imgui_stdlib.h"
 
-#include "UndoRedoHandler.h"
+#include "Utilities/UndoRedoHandler.h"
+
+#include <regex>
 
 ChartEditor::ChartEditor()
 {
@@ -76,8 +78,6 @@ void ChartEditor::Draw()
 		mySelectedChart->background.draw((ofGetWindowWidth() - mySelectedChart->background.getWidth() * procentualChange) / 2, 0, int(float(mySelectedChart->background.getWidth()) * procentualChange), int(float(mySelectedChart->background.getHeight()) * procentualChange));
 		ofSetColor(255, 255, 255, 255);
 	}
-
-	TryTimelinePreview(myMouseX, myMouseY);
 
 	myNoteHandler.DrawNoteFieldBackground();
 	mySongTimeHandler.DrawWaveForm();
@@ -390,14 +390,6 @@ void ChartEditor::TrySelectItem(int aX, int aY)
 	myEditHandler.TrySelectItem(aX, aY);
 }
 
-void ChartEditor::TryTimelinePreview(int aX, int aY)
-{
-	if (aX >= ofGetWindowWidth() - 32)
-	{
-		myPreviewTimeLine = float(1.0 - float(aY) / float(ofGetWindowHeight())) * (float(mySelectedChart->songLength) / 1000.f);
-		myNoteHandler.DrawPreviewBox(myPreviewTimeLine, aY);
-	}
-}
 
 void ChartEditor::TrySaveCurrentChart()
 {
@@ -520,7 +512,11 @@ void ChartEditor::MenuBar()
 				TrySaveCurrentChart();
 			}
 			
-			if (ImGui::MenuItem("Export (not implemented yet)", "CTRL+E"));
+			if (ImGui::MenuItem("Export", "CTRL+E"))
+				ExportChart();
+
+			if (ImGui::MenuItem("Open in osu!", "F5"))
+				OpenChartWithOsu();
 
 			ImGui::EndMenu();
 		}
@@ -911,10 +907,42 @@ void ChartEditor::DoShortcutsWindow()
 	}
 }
 
+void ChartEditor::ExportChart()
+{
+	if (mySelectedChart == nullptr)
+		return void();
+
+	std::string command = "7za.exe a -tzip \"";
+	command += mySelectedChartSet->saveDirectory + "\\" + mySelectedChartSet->artist + " - " + mySelectedChartSet->songTitle + ".osz\" ";
+	command += "-spf \"" + mySelectedChartSet->saveDirectory + "\\" + '\"';
+
+	ofSystem(command);
+
+	std::string message = "Exported Chart To ";
+	message += mySelectedChartSet->saveDirectory + "\\ exported.osz";
+
+	PUSH_NOTIFICATION(message);
+}
+
+void ChartEditor::OpenChartWithOsu()
+{
+	if (mySelectedChart == nullptr)
+		return void();
+
+	std::string command = "7za.exe a -tzip ";
+	command += "temp.osz ";
+	command += "-spf \"" + mySelectedChartSet->saveDirectory + "\\" + '\"';
+
+	ofSystem(command);
+	ofSystem("start temp.osz");
+
+	PUSH_NOTIFICATION("Opening osu! ...");
+}
+
 bool ChartEditor::IsCursorWithinBounds(int aX, int aY)
 {
-	int leftBorder = ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2 - 32;
-	int rightBorder = ofGetWindowWidth() / 2 + EditorConfig::fieldWidth / 2 + 32;
+	int leftBorder = EditorConfig::leftSidePosition - EditorConfig::sideSpace;
+	int rightBorder = EditorConfig::leftSidePosition + EditorConfig::fieldWidth + EditorConfig::sideSpace;
 
 	bool withinBounds = aX >= leftBorder && aX <= rightBorder;
 

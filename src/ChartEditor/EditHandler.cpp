@@ -8,8 +8,8 @@
 
 #include "ofMain.h"
 
-#include "NotificationSystem.h"
-#include "UndoRedoHandler.h"
+#include "Utilities/NotificationSystem.h"
+#include "Utilities/UndoRedoHandler.h"
 
 EditHandler::EditHandler()
 {
@@ -44,7 +44,7 @@ void EditHandler::Draw()
 	if (myCursorState == EditActionState::EditBPM)
 	{
 		ofSetColor(255, 0, 255, 255);
-		ofDrawRectangle(ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2 - 32, GetSnappedCursorPosition().y, EditorConfig::fieldWidth + 32 * 2, 4 );
+		ofDrawRectangle(EditorConfig::leftSidePosition - EditorConfig::sideSpace, GetSnappedCursorPosition().y, EditorConfig::fieldWidth + EditorConfig::sideSpace * 2, 4 );
 		ofSetColor(255, 255, 255, 255);
 
 		
@@ -95,8 +95,8 @@ ofVec2f EditHandler::GetSnappedCursorPosition()
 {
 	float inputX = myCursorPosition.x;
 	float x = inputX;
-	float leftBorder = ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2;
-	float rightBorder = ofGetWindowWidth() / 2 + EditorConfig::fieldWidth / 2;
+	float leftBorder = EditorConfig::leftSidePosition;
+	float rightBorder = EditorConfig::leftSidePosition + EditorConfig::fieldWidth;
 
 	int noteWidth = EditorConfig::Skin::noteImages[0].getWidth();
 
@@ -271,6 +271,9 @@ void EditHandler::TryFlipSelectedItemsHorizonally()
 
 void EditHandler::ClickAction(int aX, int aY)
 {	
+	if (aX <= EditorConfig::leftSidePosition - EditorConfig::sideSpace - EditorConfig::MiniMap::spacingFromLeftSide)
+		return void();
+
 	if (myPastePreview == true)
 	{
 		PlacePaste();
@@ -332,8 +335,8 @@ int EditHandler::GetColumn(int aX)
 {
 	float inputX = aX;
 	float x = inputX;
-	float leftBorder = ofGetWindowWidth() / 2 - EditorConfig::fieldWidth / 2;
-	float rightBorder = ofGetWindowWidth() / 2 + EditorConfig::fieldWidth / 2;
+	float leftBorder = EditorConfig::leftSidePosition;
+	float rightBorder = EditorConfig::leftSidePosition + EditorConfig::fieldWidth;
 
 	int noteWidth = EditorConfig::Skin::noteImages[0].getWidth();
 
