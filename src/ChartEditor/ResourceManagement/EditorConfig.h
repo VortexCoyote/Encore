@@ -6,6 +6,7 @@ namespace EditorConfig
 {
 	extern float hitLinePosition;
 	extern float scale;
+	extern float leftSidePositionFromCenter;
 	extern float leftSidePosition;
 	extern float sideSpace;
 

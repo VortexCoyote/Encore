@@ -332,3 +332,6 @@ obj/x64/Debug/BPMLineHandler.obj
 obj/x64/Debug/BaseEngine.obj
 obj/Win32/Release/MiniMap.obj
 obj/Win32/Release/MiniMap.obj
+obj/x64/Debug/TileableGUI.obj
+obj/x64/Debug/untitled.7FD42DF7.tlog/link.141928.delete.1.tlog
+obj/x64/Release/TileableGUI.obj

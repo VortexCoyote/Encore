@@ -8,13 +8,35 @@
 
 #include <Windows.h>
 
-#include "EditorConfig.h"
-#include "NotificationSystem.h"
+#include "ResourceManagement/EditorConfig.h"
+
+#include "Utilities/NotificationSystem.h"
+#include "Utilities/TileableGUI.h"
 
 
 SongHandler::SongHandler()
 {
+	TileableGUI::GetInstance()->RegisterTile([this]() {
 
+		ImGui::Text("Playback Rate:");
+		ImGui::SameLine();
+
+		std::stringstream stream;
+		stream << std::fixed << std::setprecision(2) << mySpeed << "x";
+		std::string s = stream.str();
+
+		ImGui::Text(s.c_str());
+
+
+		if (ImGui::Button("- 0.05x"))
+			DecreaseSpeed();
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("+ 0.05x"))
+			IncreaseSpeed();
+
+		}, "Playback Rate", true);
 }
 
 SongHandler::~SongHandler()

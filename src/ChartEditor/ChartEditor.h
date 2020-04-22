@@ -93,6 +93,8 @@ private:
 	void DoNewDifficultyWindow();
 	void DoShortcutsWindow();
 
+	void AdjustFieldPosition();
+
 	bool IsCursorWithinBounds(int aX, int aY);
 
 	int GetScreenTimePoint(float aY);

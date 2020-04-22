@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "../Utilities/NotificationSystem.h"
+#include "../Utilities/TileableGUI.h"
 
 void BPMLineHandler::ShowBeatDivisionControls()
 {
@@ -435,6 +436,27 @@ BPMLineHandler::BPMLineHandler()
 {
 	mySnapQuotient = 1.f / float(mySnapDivision);
 	myVisibleBeatLines.reserve(100000);
+
+	TileableGUI::GetInstance()->RegisterTile([this]() {
+
+		ImGui::Text("Beat Division");
+
+		if (ImGui::Button("+"))
+			mySnapDivision++;
+
+		ImGui::SameLine();
+		if (ImGui::Button("-"))
+			mySnapDivision--;
+
+		ImGui::SameLine();
+		ImGui::Text(" 1 / ");
+
+		ImGui::SameLine();
+		ImGui::SliderInt("", &mySnapDivision, 1, 32);
+
+		mySnapQuotient = 1.f / float(mySnapDivision);
+
+	}, "Beat Division", true);
 }
 
 BPMLineHandler::~BPMLineHandler()

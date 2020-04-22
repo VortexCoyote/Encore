@@ -5,7 +5,8 @@ namespace EditorConfig
 	float hitLinePosition = 216.f;
 	float scale = 1.f;
 
-	float leftSidePosition = 256.f;
+	float leftSidePositionFromCenter = -364.f;
+	float leftSidePosition = -1.f;
 	float sideSpace = 32.f;
 
 	int keyAmount = -1;

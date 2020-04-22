@@ -10,6 +10,7 @@
 #include "../imgui_stdlib.h"
 
 #include "Utilities/UndoRedoHandler.h"
+#include "Utilities/TileableGUI.h"
 
 #include <regex>
 
@@ -30,11 +31,13 @@ bool ChartEditor::ShouldBlockInput()
 
 void ChartEditor::Load()
 {
-
+	TileableGUI::GetInstance()->Init();
 }
 
 void ChartEditor::Update()
 {
+	AdjustFieldPosition();
+
 	MenuBar();
 
 	DoNewChartSetWindow();
@@ -57,8 +60,7 @@ void ChartEditor::Update()
 	myEditHandler.Update(mySongTimeHandler.GetCurrentTimeS());
 	myBPMLineHandler.Update();
 
-	myBPMLineHandler.ShowBeatDivisionControls();
-	mySongTimeHandler.ShowPlaybackRateControls();
+	TileableGUI::GetInstance()->Update();
 
 	myMiniMap.Update();
 }
@@ -905,6 +907,11 @@ void ChartEditor::DoShortcutsWindow()
 		ImGui::SetWindowPos({ ofGetWindowWidth() / 2.f - ImGui::GetWindowSize().x / 2.f, ofGetWindowHeight() / 2.f - ImGui::GetWindowSize().y / 2.f });
 		ImGui::EndPopup();
 	}
+}
+
+void ChartEditor::AdjustFieldPosition()
+{
+	EditorConfig::leftSidePosition = ofGetWindowWidth() / 2.f + EditorConfig::leftSidePositionFromCenter;
 }
 
 void ChartEditor::ExportChart()

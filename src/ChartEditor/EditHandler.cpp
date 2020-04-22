@@ -10,10 +10,21 @@
 
 #include "Utilities/NotificationSystem.h"
 #include "Utilities/UndoRedoHandler.h"
+#include "Utilities/TileableGUI.h"
 
 EditHandler::EditHandler()
 {
+	TileableGUI::GetInstance()->RegisterTile([this]() {
+		
+		std::string modes[4] = {"Select Mode" , "Edit Note Mode", "Edit Hold Mode" , "Edit BPM Points Mode"};
 
+		for (int n = 0; n < 4; n++)
+		{
+			if (ImGui::Selectable(modes[n].c_str(), static_cast<int>(myCursorState) == n))
+				SetEditActionState(static_cast<EditActionState>(n));
+		}
+
+	}, "Edit Mode", true);
 }
 
 EditHandler::~EditHandler()
@@ -48,10 +59,19 @@ void EditHandler::Draw()
 		ofSetColor(255, 255, 255, 255);
 
 		
-		return void();
+		return void(); 
 	}
 
-	EditorConfig::Skin::selectImage.draw(GetSnappedCursorPosition() - ofVec2f(0, 64));
+	if (myCursorState == EditActionState::EditNotes || myCursorState == EditActionState::EditHolds)
+	{
+		ofSetColor(255, 255, 255, 128);
+		EditorConfig::Skin::noteImages[GetColumn(GetSnappedCursorPosition().x)].draw(GetSnappedCursorPosition() - ofVec2f(0, 64));
+		ofSetColor(255, 255, 255, 255);
+	}
+	else
+	{
+		EditorConfig::Skin::selectImage.draw(GetSnappedCursorPosition() - ofVec2f(0, 64));
+	}
 
 	if (myDraggableItem != nullptr && myPastePreview == false)
 	{
@@ -616,7 +636,7 @@ void EditHandler::DrawPastePreview()
 		minTimePoint = std::min(minTimePoint, item->timePoint);
 	}
 
-	ofSetColor(128, 255, 128, 128);
+	ofSetColor(255, 255, 255, 128);
 
 	for (auto item : myClipBoard)
 	{
