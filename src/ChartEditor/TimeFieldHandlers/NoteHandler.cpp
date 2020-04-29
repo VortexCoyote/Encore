@@ -384,7 +384,21 @@ void NoteHandler::Draw(double aTimePoint)
 	}
 
 
+
 	myHitLineImage.draw(EditorConfig::leftSidePosition, ofGetWindowHeight() - EditorConfig::hitLinePosition, EditorConfig::fieldWidth, myHitLineImage.getHeight());
+	
+	std::stringstream time;
+	time << (int(aTimePoint * 1000.0)) << "ms";
+
+	auto stringDimensions = StringHelpfunctions::getBitmapStringBoundingBox(time.str().c_str());
+
+	ofVec2f timePointPos = { EditorConfig::leftSidePosition + EditorConfig::fieldWidth / 2.f - stringDimensions.width / 2.f,  ofGetWindowHeight() - EditorConfig::hitLinePosition + stringDimensions.height + 4 };
+
+	ofSetColor(0, 0, 0, 196);
+	ofDrawRectangle(timePointPos, stringDimensions.width, stringDimensions.height);
+	ofSetColor(255, 255, 255, 255);
+
+	ofDrawBitmapString(time.str().c_str(), { timePointPos.x, timePointPos.y + stringDimensions.height - 1 });
 }
 
 void NoteHandler::DrawPreviewBox(double aTimePoint, float aMouseY)

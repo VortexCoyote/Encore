@@ -217,6 +217,9 @@ void ofApp::keyPressed(ofKeyEventArgs& keyEvent)
 
 		if (key == GLFW_KEY_E)
 			myChartEditor.ExportChart();
+
+		if (key == GLFW_KEY_T)
+			myChartEditor.TryPromptGotoTimePoint();
 	}
 	else
 	{

@@ -43,6 +43,7 @@ void ChartEditor::Update()
 	DoNewChartSetWindow();
 	DoNewDifficultyWindow();
 	DoShortcutsWindow();
+	PromptGototimePointMS();
 
 	NotificationSystem::GetInstance()->Update();
 
@@ -186,7 +187,7 @@ void ChartEditor::Paste()
 
 void ChartEditor::SetEditMode(EditActionState aMode)
 {
-	if (mySelectedChart != nullptr)
+	if (mySelectedChart != nullptr && myGotoTimePointPopup == false)
 		myEditHandler.SetEditActionState(aMode);
 }
 
@@ -230,6 +231,7 @@ void ChartEditor::DoRightClickPressedAction(int aX, int aY)
 		TryDeleteNote(aX, aY);
 		break;
 	case EditActionState::Select:
+		myNoteHandler.GetHoveredNote(aX, aY)->selected = true;
 		break;
 
 	default:
@@ -424,6 +426,11 @@ void ChartEditor::TrySelectAll()
 	myEditHandler.SelectAll();
 }
 
+void ChartEditor::TryPromptGotoTimePoint()
+{
+	myGotoTimePointPopup = true;
+}
+
 void ChartEditor::SetMousePosition(int aX, int aY)
 {
 	myMouseX = aX;
@@ -466,6 +473,70 @@ void ChartEditor::TryDropFilesAction(std::string aPath)
 	{
 		PUSH_NOTIFICATION_COLORED("Invalid image file!", ofColor(255, 25, 25, 255));
 	}
+}
+
+void ChartEditor::PromptGototimePointMS()
+{
+	if (myGotoTimePointPopup == true)
+	{
+		ImGui::OpenPopup("Goto Time Point (MS)");
+	}
+	else
+	{
+		return void();
+	}
+
+	ImGuiWindowFlags windowFlags = 0;
+	windowFlags |= ImGuiWindowFlags_NoTitleBar;
+	windowFlags |= ImGuiWindowFlags_NoMove;
+	windowFlags |= ImGuiWindowFlags_NoResize;
+	//windowFlags |= ImGuiWindowFlags_NoCollapse;
+	//windowFlags |= ImGuiWindowFlags_NoBackground;
+	windowFlags |= ImGuiWindowFlags_NoScrollbar;
+	windowFlags |= ImGuiWindowFlags_AlwaysAutoResize;
+
+	std::string timePointInput;
+
+	bool open = true;
+	if (ImGui::BeginPopupModal("Goto Time Point (MS)", &open, windowFlags))
+	{
+		if (ImGui::InputText("Time Point (MS)", &(timePointInput)));
+
+		if (ImGui::Button("Cancel"))
+		{
+			myGotoTimePointPopup = false;
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Go") || ImGui::IsKeyPressedMap(ImGuiKey_Enter))
+		{
+			if (std::any_of(std::begin(timePointInput), std::end(timePointInput), ::isalpha) == false)
+			{
+				int length = timePointInput.length();
+				if (length > 8)
+				{
+					timePointInput = timePointInput.substr(0, 7);
+					PUSH_NOTIFICATION_COLORED("Too many digits!", ofColor(200, 0, 0, 255));
+				}
+
+				int timePoint = std::stoi(timePointInput);
+
+				mySongTimeHandler.SetTimeS(double(ofClamp(double(timePoint) / 1000.f, 0, mySongTimeHandler.GetSongLength())));
+
+				myGotoTimePointPopup = false;
+			}
+			else
+			{
+				PUSH_NOTIFICATION_COLORED("Invalid Input!", ofColor(200, 0, 0, 255));
+			}
+		}
+
+		ImGui::SetWindowPos({ ofGetWindowWidth() / 2.f - ImGui::GetWindowSize().x / 2.f, ofGetWindowHeight() / 2.f - ImGui::GetWindowSize().y / 2.f });
+		ImGui::EndPopup();
+	}
+
+	myShouldBlockInput = myGotoTimePointPopup;
 }
 
 void ChartEditor::DoShiftAction(bool aShiftDown)
@@ -543,6 +614,9 @@ void ChartEditor::MenuBar()
 
 			if (ImGui::MenuItem("Mirror", "CTRL+H"))
 				myEditHandler.TryFlipSelectedItemsHorizonally();
+
+			if (ImGui::MenuItem("Goto Timepoint", "CTRL+T"))
+				TryPromptGotoTimePoint();
 				
 			ImGui::EndMenu();
 		}

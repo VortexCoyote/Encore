@@ -63,6 +63,7 @@ public:
 
 	void DoShiftAction(bool aFreePlace);
 
+
 	//Edit Actions
 	void TryPlaceNote(int aX, int aY);
 	void TryDeleteNote(int aX, int aY);
@@ -80,6 +81,8 @@ public:
 	void TryFlipSelected();
 	void TrySelectAll();
 
+	void TryPromptGotoTimePoint();
+
 	void ExportChart();
 	void OpenChartWithOsu();
 
@@ -92,6 +95,7 @@ private:
 	void DoNewChartSetWindow();
 	void DoNewDifficultyWindow();
 	void DoShortcutsWindow();
+	void PromptGototimePointMS();
 
 	void AdjustFieldPosition();
 
@@ -130,5 +134,8 @@ private:
 
 	bool myNewChartSetPopup = false;
 	bool myNewDifficultyPopup = false; 
+	bool myGotoTimePointPopup = false;
 	bool myShowShortcuts = false;
+
+	bool myShouldBlockInput = false;
 };
