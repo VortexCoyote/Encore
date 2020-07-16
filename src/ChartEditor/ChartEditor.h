@@ -66,6 +66,7 @@ public:
 
 	//Edit Actions
 	void TryPlaceNote(int aX, int aY);
+	void TryPaintNote(int aX, int aY);
 	void TryDeleteNote(int aX, int aY);
 	
 	void TryPlaceHold(int aX, int aY);

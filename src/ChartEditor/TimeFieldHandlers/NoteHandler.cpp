@@ -94,13 +94,12 @@ void NoteHandler::RemoveVisibleHold(NoteData* aNote)
 
 void NoteHandler::PlaceNote(int aColumn, int aTimePoint)
 {
-	for (auto visibleNote : myVisibleObjects)
-		if (visibleNote->column == aColumn
-			&& visibleNote->timePoint <= aTimePoint + 1
-			&& visibleNote->timePoint >= aTimePoint - 1)
-		{
-			return PUSH_NOTIFICATION_COLORED("Can't Place Duplicates!", ofColor(255, 25, 25, 255));
-		}
+	if (CheckForDuplicates(aColumn, aTimePoint) == true)
+	{
+		PUSH_NOTIFICATION_COLORED("Can't Place Duplicates!", ofColor(255, 25, 25, 255));
+
+		return void();
+	}
 
 	NoteData* note = new NoteData();
 
@@ -132,7 +131,7 @@ void NoteHandler::DeleteNote(int aX, int aY)
 	DeleteNoteByPointer(GetHoveredNote(aX, aY));
 }
 
-void NoteHandler::DeleteNoteByPointer(NoteData* aNotePointer)
+void NoteHandler::DeleteNoteByPointer(NoteData* aNotePointer, bool aRegisterHistory)
 {
 	NoteData* note = aNotePointer;
 
@@ -154,12 +153,14 @@ void NoteHandler::DeleteNoteByPointer(NoteData* aNotePointer)
 			message += std::to_string(note->relevantNote->timePoint);
 			message += "ms";
 
-			PUSH_NOTIFICATION(message);
-
 			RemoveVisibleHold(note);
 			RemoveVisibleHold(note->relevantNote);
 
-			UndoRedoHandler::GetInstance()->PushHistory(ActionType::Remove, { note });
+			if (aRegisterHistory == true)
+			{
+				PUSH_NOTIFICATION(message);
+				UndoRedoHandler::GetInstance()->PushHistory(ActionType::Remove, { note });
+			}
 
 			myObjectData->erase(noteToDelete);
 			myObjectData->erase(std::find(myObjectData->begin(), myObjectData->end(), note->relevantNote));
@@ -180,9 +181,11 @@ void NoteHandler::DeleteNoteByPointer(NoteData* aNotePointer)
 			message += std::to_string(note->timePoint);
 			message += "ms";
 
-			PUSH_NOTIFICATION(message);
-
-			UndoRedoHandler::GetInstance()->PushHistory(ActionType::Remove, { note });
+			if (aRegisterHistory == true)
+			{
+				PUSH_NOTIFICATION(message);
+				UndoRedoHandler::GetInstance()->PushHistory(ActionType::Remove, { note });
+			}
 
 			myObjectData->erase(noteToDelete);
 
@@ -202,16 +205,13 @@ void NoteHandler::DeleteNoteByPointer(NoteData* aNotePointer)
 
 bool NoteHandler::PlaceHold(int aColumn, int aTimePoint, NoteData*& aHoldEndOut)
 {
-	for (auto visibleNote : myVisibleObjects)
-		if (visibleNote->column == aColumn
-			&& visibleNote->timePoint <= aTimePoint + 1
-			&& visibleNote->timePoint >= aTimePoint - 1)
-		{
-			aHoldEndOut = nullptr;
-			PUSH_NOTIFICATION_COLORED("Can't Place Duplicates!", ofColor(255, 25, 25, 255));
+	if (CheckForDuplicates(aColumn, aTimePoint) == true)
+	{
+		aHoldEndOut = nullptr;
+		PUSH_NOTIFICATION_COLORED("Can't Place Duplicates!", ofColor(255, 25, 25, 255));
 
-			return false;
-		}
+		return false;
+	}
 
 	NoteData* note = new NoteData();
 	NoteData* holdNote = new NoteData();
@@ -281,10 +281,13 @@ void NoteHandler::DrawHold(int aColumn, int aTimePointBegin, int aTimePointEnd)
 	int yBegin = ofGetWindowHeight() - int(screenTimePointBegin + 0.5f);
 	int yEnd = ofGetWindowHeight() - int(screenTimePointEnd + 0.5f);
 	
-	EditorConfig::Skin::holdCapImage.draw(x, yEnd);
+	if (aTimePointBegin != aTimePointEnd)
+	{
+		EditorConfig::Skin::holdCapImage.draw(x, yEnd);
 
-	EditorConfig::Skin::holdBodyImage.draw(x, yBegin + EditorConfig::Skin::noteImages[aColumn].getHeight() / 2,
-	EditorConfig::Skin::holdBodyImage.getWidth(), (GetScreenTimePoint(aTimePointBegin, 0) - GetScreenTimePoint(aTimePointEnd, 0)) + EditorConfig::Skin::noteImages[aColumn].getHeight() / 2);
+		EditorConfig::Skin::holdBodyImage.draw(x, yBegin + EditorConfig::Skin::noteImages[aColumn].getHeight() / 2,
+		EditorConfig::Skin::holdBodyImage.getWidth(), (GetScreenTimePoint(aTimePointBegin, 0) - GetScreenTimePoint(aTimePointEnd, 0)) + EditorConfig::Skin::noteImages[aColumn].getHeight() / 2);
+	}
 
 	EditorConfig::Skin::noteImages[aColumn].draw(x, yBegin);
 }
@@ -336,11 +339,14 @@ void NoteHandler::VisibleHoldDrawRoutine(double aTimePoint)
 		float y = ofGetWindowHeight() - GetScreenTimePoint(hold.first->timePoint, aTimePoint);
 		float yParent = ofGetWindowHeight() - GetScreenTimePoint(hold.first->relevantNote->timePoint, aTimePoint);
 
-		EditorConfig::Skin::holdCapImage.draw(hold.first->x, yParent);
-		
-		EditorConfig::Skin::holdBodyImage.draw(hold.second->x, y + EditorConfig::Skin::noteImages[hold.first->column].getHeight() / 2, 
-		EditorConfig::Skin::holdBodyImage.getWidth(), (GetScreenTimePoint(hold.second->timePoint, 0) - GetScreenTimePoint(hold.second->relevantNote->timePoint, 0)) + EditorConfig::Skin::noteImages[hold.first->column].getHeight() / 2);
-		
+		if (hold.first->timePoint != hold.first->relevantNote->timePoint)
+		{
+			EditorConfig::Skin::holdCapImage.draw(hold.first->x, yParent);
+
+			EditorConfig::Skin::holdBodyImage.draw(hold.second->x, y + EditorConfig::Skin::noteImages[hold.first->column].getHeight() / 2,
+			EditorConfig::Skin::holdBodyImage.getWidth(), (GetScreenTimePoint(hold.second->timePoint, 0) - GetScreenTimePoint(hold.second->relevantNote->timePoint, 0)) + EditorConfig::Skin::noteImages[hold.first->column].getHeight() / 2);
+		}
+
 		if (yParent > ofGetWindowHeight() || y < 0)
 		{
 			myVisibleHoldsToRemove.push_back(myVisibleHolds.find(hold.first));
@@ -353,6 +359,19 @@ void NoteHandler::VisibleHoldDrawRoutine(double aTimePoint)
 	}
 
 	myVisibleHoldsToRemove.clear();
+}
+
+bool NoteHandler::CheckForDuplicates(int aColumn, float aTimePoint)
+{
+	for (auto visibleNote : myVisibleObjects)
+		if (visibleNote->column == aColumn
+			&& visibleNote->timePoint <= aTimePoint + 1
+			&& visibleNote->timePoint >= aTimePoint - 1)
+		{
+			return true;
+		}
+
+	return false;
 }
 
 int NoteHandler::GetItemPosXbyColumn(int aColumn)

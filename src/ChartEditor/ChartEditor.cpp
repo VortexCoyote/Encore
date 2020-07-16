@@ -54,6 +54,9 @@ void ChartEditor::Update()
 	/*if (mySelectedChart->BPMPoints.empty() == true)
 		myFreePlace = true;*/
 
+	//TODO: Make pivot modes
+	EditorConfig::leftSidePositionFromCenter = -EditorConfig::fieldWidthHalf;
+
 	mySongTimeHandler.Update();
 
 	myEditHandler.SetCursorInput({ float(myMouseX), float(myMouseY) });
@@ -61,7 +64,7 @@ void ChartEditor::Update()
 	myEditHandler.Update(mySongTimeHandler.GetCurrentTimeS());
 	myBPMLineHandler.Update();
 
-	TileableGUI::GetInstance()->Update();
+	//TileableGUI::GetInstance()->Update();
 
 	myMiniMap.Update();
 }
@@ -231,7 +234,10 @@ void ChartEditor::DoRightClickPressedAction(int aX, int aY)
 		TryDeleteNote(aX, aY);
 		break;
 	case EditActionState::Select:
-		myNoteHandler.GetHoveredNote(aX, aY)->selected = true;
+		
+		if (myNoteHandler.GetHoveredNote(aX, aY) != nullptr)
+			myNoteHandler.GetHoveredNote(aX, aY)->selected = true;
+		
 		break;
 
 	default:
@@ -287,6 +293,7 @@ void ChartEditor::DoLeftClickDragAction(int aX, int aY)
 	switch (myEditHandler.GetEditActionState())
 	{
 	case EditActionState::EditNotes:
+		TryPaintNote(aX, aY);
 		break;
 	case EditActionState::EditHolds:
 		TryDragHold(aX, aY);
@@ -327,6 +334,15 @@ void ChartEditor::TryPlaceNote(int aX, int aY)
 	myNoteHandler.PlaceNote(myEditHandler.GetColumn(aX), GetScreenTimePoint(aY));
 }
 
+void ChartEditor::TryPaintNote(int aX, int aY)
+{
+	if (IsCursorWithinBounds(aX, aY) == false)
+		return void();
+
+	if (myNoteHandler.CheckForDuplicates(myEditHandler.GetColumn(aX), GetScreenTimePoint(aY)) == false)
+		myNoteHandler.PlaceNote(myEditHandler.GetColumn(aX), GetScreenTimePoint(aY));
+}
+
 void ChartEditor::TryDeleteNote(int aX, int aY)
 {
 	if (IsCursorWithinBounds(aX, aY) == false)
@@ -359,12 +375,12 @@ void ChartEditor::TryReleaseHold(int aX, int aY)
 
 	if (myDraggableHoldEnd->timePoint == myDraggableHoldEnd->relevantNote->timePoint)
 	{
-		UndoRedoHandler::GetInstance()->PushHistory(ActionType::Place, { myDraggableHoldEnd->relevantNote,  myDraggableHoldEnd });
+		//UndoRedoHandler::GetInstance()->PushHistory(ActionType::Place, { myDraggableHoldEnd->relevantNote ,  myDraggableHoldEnd });
 
 		int column = myDraggableHoldEnd->relevantNote->column;
 		int timePoint = myDraggableHoldEnd->relevantNote->timePoint;
 
-		myNoteHandler.DeleteNoteByPointer(myDraggableHoldEnd);
+		myNoteHandler.DeleteNoteByPointer(myDraggableHoldEnd, false);
 		myNoteHandler.PlaceNote(column, timePoint);
 
 		myHoldDrag = false;

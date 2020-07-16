@@ -257,7 +257,7 @@ void SongHandler::DrawWaveFormSliceAtIndex(int aIndex)
 
 void SongHandler::GenerateWaveForm(std::string aPath)
 {
-	HSTREAM decoder = BASS_StreamCreateFile(FALSE, aPath.c_str(), 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_DECODE); 
+	HSTREAM decoder = BASS_StreamCreateFile(FALSE, aPath.c_str(), 0, 0, BASS_SAMPLE_FLOAT | BASS_STREAM_DECODE);
 
 	if (myWaveFormData != nullptr)
 	{
